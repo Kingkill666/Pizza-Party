@@ -901,7 +901,7 @@ export default function GamePage() {
                       height={24}
                       className="inline mr-2 rounded-full"
                     />
-                    ENTER GAME ($1 VMF)
+                    ENTER GAME $1 VMF
                     <Image
                       src="/images/star-favicon-original.png"
                       alt="Star"
