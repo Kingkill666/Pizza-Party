@@ -115,6 +115,9 @@ export default function JackpotPage() {
               >
                 🍕 Claim Toppings 🍕
               </Button>
+              <p className="text-sm text-green-600 mt-2" style={customFontStyle}>
+                {weeklyInfo.totalToppings.toLocaleString()} toppings available to claim
+              </p>
             </div>
 
             {/* Countdown Timer */}
