@@ -8,36 +8,66 @@ Thank you for being part of our beta testing program! This guide will help you u
 
 ### 1. Connect Your Wallet
 - **Supported Wallets**: MetaMask, Coinbase Wallet, Trust Wallet, Rainbow, Phantom, Farcaster
-- **Network**: Base Network (L2)
-- **Token**: VMF tokens required for gameplay
+- **Network**: Sepolia Testnet (for beta testing)
+- **Token**: Sepolia ETH required for gas fees
 
-### 2. Get VMF Tokens
-- **Purchase**: Buy VMF tokens on supported exchanges
-- **Transfer**: Send VMF to your wallet on Base network
-- **Minimum**: $1 VMF token required to play
+#### **How to Switch to Sepolia Testnet (MetaMask):**
+1. **Open MetaMask**
+2. **Click the network dropdown** (top of wallet)
+3. **Select "Sepolia"** from the list
+4. **If Sepolia isn't listed**, click "Add network" and enter:
+   - **Network Name**: Sepolia
+   - **RPC URL**: https://rpc.sepolia.org
+   - **Chain ID**: 11155111
+   - **Currency Symbol**: ETH
+   - **Block Explorer**: https://sepolia.etherscan.io
 
-### 3. Start Playing
-- **Daily Game**: Enter once per day for $1 VMF token
+### 2. Get Sepolia ETH (Free)
+Since we're testing on Sepolia testnet, you'll need Sepolia ETH for gas fees. Here are free faucets:
+
+#### **Free Sepolia ETH Faucets:**
+- **Alchemy Sepolia Faucet**: https://sepoliafaucet.com/
+- **Infura Sepolia Faucet**: https://www.infura.io/faucet/sepolia
+- **Chainlink Sepolia Faucet**: https://faucets.chain.link/sepolia
+- **Paradigm Sepolia Faucet**: https://faucet.paradigm.xyz/
+- **QuickNode Sepolia Faucet**: https://faucet.quicknode.com/ethereum/sepolia
+
+#### **How to Get Free Sepolia ETH:**
+1. **Visit any faucet above**
+2. **Connect your wallet** (MetaMask recommended)
+3. **Enter your wallet address**
+4. **Complete any verification** (if required)
+5. **Receive 0.1-0.5 Sepolia ETH** (usually within minutes)
+
+#### **Important Notes:**
+- **Sepolia ETH has no real value** - it's only for testing
+- **Each faucet has daily limits** - try multiple faucets if needed
+- **Keep some ETH for gas fees** - transactions cost ~0.001-0.01 Sepolia ETH
+- **Faucets may require social media verification** - this is normal
+
+### 3. Start Playing (Beta Version)
+- **Daily Game**: Enter once per day (no real tokens needed)
 - **Weekly Jackpot**: Earn toppings to participate
 - **Referrals**: Invite friends to earn bonus toppings
+- **All gameplay is simulated** for beta testing
 
-## 🎯 Game Mechanics
+## 🎯 Game Mechanics (Beta Version)
 
 ### Daily Game
-- **Entry Fee**: $1 VMF token
+- **Entry Fee**: Free (simulated for beta)
 - **Winners**: 8 random winners per day
-- **Prize**: Equal split of daily jackpot
+- **Prize**: Simulated rewards (no real tokens)
 - **Timing**: New game starts daily at 12pm PST
 
 ### Weekly Jackpot
-- **Prize Pool**: Total toppings from all players
+- **Prize Pool**: Simulated toppings from all players
 - **Winners**: 10 random winners
 - **Timing**: Draw every Sunday at 12pm PST
 - **Weighting**: More toppings = higher chance to win
 
-### Toppings System
+### Toppings System (Simulated)
 - **Daily Play**: 1 topping per day
-- **VMF Holdings**: 2 toppings per 10 VMF held
+- **VMF Holdings**: 2 toppings per 10 VMF held (simulated)
 - **Referrals**: 2 toppings per successful referral
 - **Streak Bonus**: 3 toppings for 7-day streak
 
@@ -162,10 +192,29 @@ Solution:
 ```
 Issue: "Wrong network"
 Solution:
-1. Switch wallet to Base network
-2. Add Base network if not available
+1. Switch wallet to Sepolia testnet
+2. Add Sepolia network if not available
 3. Refresh the page
 4. Reconnect wallet
+```
+
+#### Sepolia ETH Issues
+```
+Issue: "Insufficient gas fees"
+Solution:
+1. Visit a Sepolia faucet (listed above)
+2. Request free Sepolia ETH
+3. Wait for confirmation (usually 1-5 minutes)
+4. Try transaction again
+```
+
+#### Beta Testing Notes
+```
+Important: This is beta testing on Sepolia testnet
+- No real tokens or money involved
+- All gameplay is simulated
+- Sepolia ETH has no real value
+- Perfect for testing without risk
 ```
 
 #### UI Problems
