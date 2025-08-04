@@ -10,7 +10,6 @@ import {
   getWalletDisplayName,
   connectMobileWallet,
   requestWalletConnection,
-  debugProviders,
 } from "../lib/wallet-config"
 
 export const useWallet = () => {
@@ -18,55 +17,51 @@ export const useWallet = () => {
   const [isConnecting, setIsConnecting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // Check for existing connection on mount - DISABLED for fresh start
+  // Listen for wallet events
   useEffect(() => {
-    // Don't auto-connect on page load - start fresh
-    console.log("🚀 Starting fresh - no auto-connection")
-  }, [])
+    if (typeof window === "undefined") return
 
-  // Listen for account changes
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.ethereum) {
-      const handleAccountsChanged = (accounts: string[]) => {
-        console.log("👤 Accounts changed:", accounts)
-        if (accounts.length === 0) {
-          // User disconnected their wallet
-          console.log("🔌 Wallet accounts cleared - user disconnected")
-          disconnect()
-        } else if (connection && accounts[0] !== connection.address) {
-          setConnection((prev) => (prev ? { ...prev, address: accounts[0] } : null))
-        }
+    const handleAccountsChanged = (accounts: string[]) => {
+      console.log("👤 Accounts changed:", accounts)
+      if (accounts.length === 0) {
+        // User disconnected their wallet
+        console.log("🔌 Wallet accounts cleared - user disconnected")
+        disconnect() // Call disconnect to clear state and refresh
+      } else if (connection && accounts[0] !== connection.address) {
+        setConnection((prev) => (prev ? { ...prev, address: accounts[0] } : null))
       }
+    }
 
-      const handleChainChanged = (chainId: string) => {
-        console.log("🔗 Chain changed:", chainId)
-        setConnection((prev) => (prev ? { ...prev, chainId: Number.parseInt(chainId, 16) } : null))
-      }
+    const handleChainChanged = (chainId: string) => {
+      console.log("🔗 Chain changed:", chainId)
+      setConnection((prev) => (prev ? { ...prev, chainId: Number.parseInt(chainId, 16) } : null))
+    }
 
-      const handleConnect = (connectInfo: any) => {
-        console.log("🔌 Wallet connected:", connectInfo)
-        // Don't auto-connect - let user manually connect
-        console.log("ℹ️ Ignoring auto-connect - manual connection only")
-      }
+    const handleConnect = (connectInfo: any) => {
+      console.log("🔌 Wallet connected:", connectInfo)
+      // Don't auto-connect - let user manually connect
+      console.log("ℹ️ Ignoring auto-connect - manual connection only")
+    }
 
-      const handleDisconnect = (error: any) => {
-        console.log("🔌 Wallet disconnected:", error)
-        disconnect()
-      }
+    const handleDisconnect = (error: any) => {
+      console.log("🔌 Wallet disconnected:", error)
+      disconnect()
+    }
 
-      // Add event listeners
+    // Add event listeners
+    if (window.ethereum) {
       window.ethereum.on("accountsChanged", handleAccountsChanged)
       window.ethereum.on("chainChanged", handleChainChanged)
       window.ethereum.on("connect", handleConnect)
       window.ethereum.on("disconnect", handleDisconnect)
+    }
 
-      return () => {
-        if (window.ethereum.removeListener) {
-          window.ethereum.removeListener("accountsChanged", handleAccountsChanged)
-          window.ethereum.removeListener("chainChanged", handleChainChanged)
-          window.ethereum.removeListener("connect", handleConnect)
-          window.ethereum.removeListener("disconnect", handleDisconnect)
-        }
+    return () => {
+      if (window.ethereum) {
+        window.ethereum.removeListener("accountsChanged", handleAccountsChanged)
+        window.ethereum.removeListener("chainChanged", handleChainChanged)
+        window.ethereum.removeListener("connect", handleConnect)
+        window.ethereum.removeListener("disconnect", handleDisconnect)
       }
     }
   }, [connection])
@@ -84,20 +79,27 @@ export const useWallet = () => {
       if (typeof window !== "undefined" && window.ethereum) {
         console.log("🔍 Checking for existing wallet connection...")
 
-        const accounts = await window.ethereum.request({ method: "eth_accounts" })
-
-        if (accounts && accounts.length > 0) {
-          console.log("✅ Found existing connection:", accounts[0])
-
-          const chainId = await window.ethereum.request({ method: "eth_chainId" })
-
-          setConnection({
-            address: accounts[0],
-            chainId: Number.parseInt(chainId, 16),
-            walletName: "Connected Wallet",
+        try {
+          const accounts = await window.ethereum.request({
+            method: "eth_accounts",
           })
-        } else {
-          console.log("ℹ️ No existing wallet connection found")
+
+          if (accounts && accounts.length > 0) {
+            const chainId = await window.ethereum.request({
+              method: "eth_chainId",
+            })
+
+            const existingConnection: WalletConnection = {
+              address: accounts[0],
+              chainId: Number.parseInt(chainId, 16),
+              walletName: "Connected Wallet",
+            }
+
+            console.log("✅ Found existing connection:", existingConnection)
+            setConnection(existingConnection)
+          }
+        } catch (error) {
+          console.log("❌ Error getting existing accounts:", error)
         }
       }
     } catch (error) {
@@ -111,9 +113,6 @@ export const useWallet = () => {
 
     console.log(`🎯 Attempting to connect to ${walletId}`)
     console.log(`📱 Mobile device: ${isMobile()}`)
-    
-    // Debug available providers
-    debugProviders()
 
     try {
       let result
@@ -216,7 +215,9 @@ export const useWallet = () => {
   }, [])
 
   const getBalance = useCallback(async (): Promise<string> => {
-    if (!connection) return "0"
+    if (!connection?.address || typeof window === "undefined" || !window.ethereum) {
+      return "0"
+    }
 
     try {
       const balance = await window.ethereum.request({
@@ -224,13 +225,12 @@ export const useWallet = () => {
         params: [connection.address, "latest"],
       })
 
-      const balanceInEth = Number.parseInt(balance, 16) / Math.pow(10, 18)
-      return balanceInEth.toString()
+      return balance
     } catch (error) {
-      console.error("Error getting balance:", error)
+      console.error("❌ Error getting balance:", error)
       return "0"
     }
-  }, [connection])
+  }, [connection?.address])
 
   return {
     connection,
@@ -239,8 +239,6 @@ export const useWallet = () => {
     connectWallet,
     disconnect,
     getBalance,
-    isConnected: !!connection,
-    formattedAddress: connection ? formatAddress(connection.address) : null,
-    setError,
+    formatAddress: (address: string) => formatAddress(address),
   }
 }

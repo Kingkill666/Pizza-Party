@@ -162,151 +162,47 @@ export const getCurrentPageUrl = (): string => {
   return window.location.href
 }
 
-// Improved mobile wallet connection - use WalletConnect and manual instructions
+// Simple wallet connection - back to basics
 export const connectMobileWallet = async (walletId: string): Promise<any> => {
   const wallet = SUPPORTED_WALLETS.find((w) => w.id === walletId)
   if (!wallet) throw new Error("Wallet not found")
 
   console.log(`🚀 Attempting mobile connection to ${walletId}`)
 
-  // Check if we're already in the wallet's browser
-  const inWalletBrowser = isInWalletBrowser()
-  if (inWalletBrowser === walletId) {
-    console.log(`✅ Already in ${walletId} browser, using direct connection`)
-    return requestWalletConnection(walletId)
-  }
+  // Simple approach - just try to connect
+  if (typeof window !== "undefined" && window.ethereum) {
+    try {
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      })
 
-  // For mobile, use a completely different approach
-  if (isMobile()) {
-    // Strategy 1: Try direct Web3 connection (works if user is in wallet browser)
-    if (window.ethereum) {
-      try {
-        console.log("📱 Attempting direct Web3 connection...")
-
-        const accounts = await window.ethereum.request({
-          method: "eth_requestAccounts",
+      if (accounts && accounts.length > 0) {
+        const chainId = await window.ethereum.request({
+          method: "eth_chainId",
         })
 
-        if (accounts && accounts.length > 0) {
-          const chainId = await window.ethereum.request({
-            method: "eth_chainId",
-          })
-
-          console.log(`✅ Direct mobile connection successful: ${accounts[0]}`)
-          return {
-            accounts,
-            chainId,
-            provider: window.ethereum,
-          }
-        }
-      } catch (error: any) {
-        console.log("❌ Direct Web3 connection failed:", error.message)
-
-        // If user rejected, don't continue
-        if (error.code === 4001) {
-          throw new Error("Connection rejected. Please approve the connection in your wallet.")
+        console.log(`✅ Mobile connection successful: ${accounts[0]}`)
+        return {
+          accounts,
+          chainId,
+          provider: window.ethereum,
         }
       }
+    } catch (error: any) {
+      console.log("❌ Mobile connection failed:", error.message)
+      throw error
     }
-
-    // Strategy 2: For mobile browsers, provide manual connection instructions
-    const currentUrl = getCurrentPageUrl()
-
-    // Create a more user-friendly error with instructions
-    const instructions = `To connect your ${wallet.name}:
-
-1. Copy this URL: ${currentUrl}
-2. Open your ${wallet.name} app
-3. Go to the browser/dApp section
-4. Paste the URL and visit this page
-5. Try connecting again
-
-Or use WalletConnect if available.`
-
-    throw new Error(instructions)
   }
 
-  // Desktop fallback (unchanged)
-  return requestWalletConnection(walletId)
+  throw new Error(`Please install ${wallet.name} and try again.`)
 }
 
-// Initialize WalletConnect for mobile wallets
-export const initWalletConnect = async (): Promise<any> => {
-  try {
-    console.log("🔗 Initializing WalletConnect...")
-
-    // Simple WalletConnect implementation
-    // In a real app, you'd use @walletconnect/web3-provider
-    if (window.ethereum) {
-      return await window.ethereum
-        .request({
-          method: "eth_requestAccounts",
-        })
-        .then(async (accounts: string[]) => {
-          const chainId = await window.ethereum.request({
-            method: "eth_chainId",
-          })
-
-          return {
-            accounts,
-            chainId,
-            provider: window.ethereum,
-          }
-        })
-    }
-
-    throw new Error("WalletConnect not available")
-  } catch (error) {
-    console.error("❌ WalletConnect failed:", error)
-    throw error
-  }
-}
-
-// Enhanced wallet provider detection for mobile
+// Simple wallet provider detection
 export const getWalletProvider = (walletId: string): any => {
   if (typeof window === "undefined") return null
 
-  // Check if we're in a specific wallet's browser
-  const inWalletBrowser = isInWalletBrowser()
-  if (inWalletBrowser && inWalletBrowser === walletId) {
-    console.log(`✅ Detected ${walletId} browser environment`)
-    return window.ethereum
-  }
-
-  // For mobile, be more permissive with provider detection
-  if (isMobile() && window.ethereum) {
-    console.log("📱 Using available mobile provider")
-    return window.ethereum
-  }
-
-  // Desktop logic (existing)
-  const allProviders = getAllProviders()
-
-  switch (walletId) {
-    case "metamask":
-      return (
-        allProviders.find((provider) => provider.isMetaMask && !provider.isCoinbaseWallet && !provider.isCoinbase) ||
-        window.ethereum
-      )
-    case "coinbase":
-      // Improved Coinbase detection
-      const coinbaseProvider = allProviders.find((provider) => 
-        provider.isCoinbaseWallet || 
-        provider.isCoinbase || 
-        provider.isCoinbaseExtension ||
-        (provider.providers && provider.providers.some((p: any) => p.isCoinbaseWallet || p.isCoinbase))
-      )
-      console.log("🔍 Coinbase provider found:", !!coinbaseProvider)
-      return coinbaseProvider || window.ethereum
-    case "rainbow":
-      return allProviders.find((provider) => provider.isRainbow) || window.ethereum
-    case "farcaster":
-      return allProviders.find((provider) => provider.isFarcaster) || window.ethereum
-    case "walletconnect":
-      return window.ethereum // WalletConnect will inject here
-    default:
-      return window.ethereum
-  }
+  // Just return window.ethereum for all wallets
+  return window.ethereum
 }
 
 // Get all available providers
@@ -325,112 +221,17 @@ export const getAllProviders = (): any[] => {
   return providers
 }
 
-// Enhanced wallet connection request with better mobile support
+// Simple wallet connection request
 export const requestWalletConnection = async (walletId: string): Promise<any> => {
   console.log(`🚀 Requesting connection from ${walletId}`)
 
-  // For mobile, use simplified connection logic
-  if (isMobile()) {
-    if (!window.ethereum) {
-      // Provide specific instructions for mobile users
-      const wallet = SUPPORTED_WALLETS.find((w) => w.id === walletId)
-      const walletName = wallet?.name || "wallet"
-
-      throw new Error(`No Web3 wallet detected. Please:
-
-1. Open your ${walletName} app
-2. Go to the browser/dApp section  
-3. Visit this page from within the app
-4. Try connecting again
-
-Make sure you have ${walletName} installed from your app store.`)
-    }
-
-    try {
-      // Request account access
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      })
-
-      if (!accounts || accounts.length === 0) {
-        throw new Error("No accounts returned from wallet")
-      }
-
-      // Get chain ID
-      const chainId = await window.ethereum.request({
-        method: "eth_chainId",
-      })
-
-      console.log(`✅ Mobile connection successful: ${accounts[0]} on chain ${chainId}`)
-
-      return {
-        accounts,
-        chainId,
-        provider: window.ethereum,
-      }
-    } catch (error: any) {
-      console.error(`❌ Mobile connection failed:`, error)
-
-      // Provide more helpful error messages for mobile
-      if (error.code === 4001) {
-        throw new Error("Connection rejected. Please approve the connection in your wallet app.")
-      } else if (error.code === -32002) {
-        throw new Error("Connection request pending. Please check your wallet app and approve the connection.")
-      } else {
-        const wallet = SUPPORTED_WALLETS.find((w) => w.id === walletId)
-        const walletName = wallet?.name || "wallet"
-
-        throw new Error(`Connection failed. Please make sure you're browsing from within your ${walletName} app.`)
-      }
-    }
-  }
-
-  // Desktop logic with improved Coinbase handling
-  const provider = getWalletProvider(walletId)
-
-  if (!provider) {
-    throw new Error(`${walletId} wallet not found. Please install the ${walletId} extension or app.`)
+  if (typeof window === "undefined" || !window.ethereum) {
+    throw new Error("No Web3 wallet detected. Please install a wallet extension.")
   }
 
   try {
-    console.log(`🔍 Attempting connection with provider:`, provider)
-    
-    // For Coinbase, ensure we're using the right provider
-    if (walletId === "coinbase") {
-      console.log("🔵 Using Coinbase-specific connection logic")
-      
-      // Check if we have multiple providers and find Coinbase
-      if (window.ethereum?.providers) {
-        const coinbaseProvider = window.ethereum.providers.find((p: any) => 
-          p.isCoinbaseWallet || p.isCoinbase || p.isCoinbaseExtension
-        )
-        if (coinbaseProvider) {
-          console.log("✅ Found Coinbase provider in providers array")
-          const accounts = await coinbaseProvider.request({
-            method: "eth_requestAccounts",
-          })
-          
-          if (!accounts || accounts.length === 0) {
-            throw new Error("No accounts returned from Coinbase wallet")
-          }
-          
-          await ensureBaseNetwork(coinbaseProvider)
-          
-          const chainId = await coinbaseProvider.request({
-            method: "eth_chainId",
-          })
-          
-          return {
-            accounts,
-            chainId,
-            provider: coinbaseProvider,
-          }
-        }
-      }
-    }
-
     // Request account access
-    const accounts = await provider.request({
+    const accounts = await window.ethereum.request({
       method: "eth_requestAccounts",
     })
 
@@ -438,30 +239,18 @@ Make sure you have ${walletName} installed from your app store.`)
       throw new Error("No accounts returned from wallet")
     }
 
-    // Ensure we're on Base network for desktop
-    await ensureBaseNetwork(provider)
-
-    const chainId = await provider.request({
+    // Get chain ID
+    const chainId = await window.ethereum.request({
       method: "eth_chainId",
     })
 
     return {
       accounts,
       chainId,
-      provider,
+      provider: window.ethereum,
     }
   } catch (error: any) {
     console.error(`❌ ${walletId} connection failed:`, error)
-    
-    // Provide specific error messages for Coinbase
-    if (walletId === "coinbase") {
-      if (error.code === 4001) {
-        throw new Error("Coinbase connection rejected. Please approve the connection in your Coinbase Wallet extension.")
-      } else if (error.message?.includes("not found")) {
-        throw new Error("Coinbase Wallet extension not found. Please install Coinbase Wallet extension from the Chrome Web Store.")
-      }
-    }
-    
     throw error
   }
 }
@@ -489,17 +278,10 @@ export const openWalletInstallPage = (walletId: string): void => {
   }
 }
 
-// Check if wallet is installed (enhanced for mobile)
+// Check if wallet is installed (simplified)
 export const isWalletInstalled = (walletId: string): boolean => {
-  // On mobile, we can't reliably detect if apps are installed
-  // Always return true to allow connection attempts
-  if (isMobile()) {
-    return true
-  }
-
-  // Desktop detection (unchanged)
-  const provider = getWalletProvider(walletId)
-  return !!provider
+  // Just check if window.ethereum exists
+  return typeof window !== "undefined" && !!window.ethereum
 }
 
 // Get wallet display name
@@ -558,7 +340,7 @@ export const initMobileOptimizations = (): void => {
   }
 }
 
-// Ensure Base network is added/switched (enhanced for mobile)
+// Ensure Base network is added/switched (simplified)
 export const ensureBaseNetwork = async (provider?: any): Promise<void> => {
   const targetProvider = provider || window.ethereum
   if (typeof window === "undefined" || !targetProvider) return
@@ -601,49 +383,4 @@ export const ensureBaseNetwork = async (provider?: any): Promise<void> => {
       }
     }
   }
-}
-
-// Debug function to check available providers
-export const debugProviders = (): void => {
-  if (typeof window === "undefined") return
-
-  console.log("🔍 Debugging available providers...")
-  
-  if (window.ethereum) {
-    console.log("✅ window.ethereum found")
-    
-    if (window.ethereum.providers && Array.isArray(window.ethereum.providers)) {
-      console.log(`📦 Found ${window.ethereum.providers.length} providers:`)
-      window.ethereum.providers.forEach((provider: any, index: number) => {
-        console.log(`  ${index}:`, {
-          isMetaMask: provider.isMetaMask,
-          isCoinbaseWallet: provider.isCoinbaseWallet,
-          isCoinbase: provider.isCoinbase,
-          isRainbow: provider.isRainbow,
-          isPhantom: provider.isPhantom,
-        })
-      })
-    } else {
-      console.log("📦 Single provider detected")
-      console.log("Provider properties:", {
-        isMetaMask: window.ethereum.isMetaMask,
-        isCoinbaseWallet: window.ethereum.isCoinbaseWallet,
-        isCoinbase: window.ethereum.isCoinbase,
-        isRainbow: window.ethereum.isRainbow,
-        isPhantom: window.ethereum.isPhantom,
-      })
-    }
-  } else {
-    console.log("❌ No window.ethereum found")
-  }
-  
-  // Check for specific wallet extensions
-  const extensions = {
-    metamask: typeof window !== "undefined" && "ethereum" in window && (window as any).ethereum?.isMetaMask,
-    coinbase: typeof window !== "undefined" && "ethereum" in window && ((window as any).ethereum?.isCoinbaseWallet || (window as any).ethereum?.isCoinbase),
-    rainbow: typeof window !== "undefined" && "ethereum" in window && (window as any).ethereum?.isRainbow,
-    phantom: typeof window !== "undefined" && "ethereum" in window && (window as any).ethereum?.isPhantom,
-  }
-  
-  console.log("🔌 Detected extensions:", extensions)
 }
