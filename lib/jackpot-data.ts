@@ -55,7 +55,7 @@ export const getWeeklyJackpotInfo = () => {
   const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
   const seconds = Math.floor((difference % (1000 * 60)) / 1000)
 
-  // Count total toppings and players
+  // Calculate real toppings based on all earning methods
   let totalToppings = 0
   let totalPlayers = 0
 
@@ -63,7 +63,47 @@ export const getWeeklyJackpotInfo = () => {
     const keys = Object.keys(localStorage)
     const uniquePlayers = new Set()
 
+    // Count toppings from all earning methods
     keys.forEach((key) => {
+      // Daily play toppings (1 per day played)
+      if (key.startsWith("pizza_entry_")) {
+        const today = new Date().toDateString()
+        if (key.includes(today) && localStorage.getItem(key) === "true") {
+          totalToppings += 1 // 1 topping for daily play
+          const address = key.replace("pizza_entry_", "").replace(`_${today}`, "")
+          uniquePlayers.add(address)
+        }
+      }
+
+      // Referral toppings (2 per referral)
+      if (key.startsWith("pizza_referral_success_")) {
+        const address = key.replace("pizza_referral_success_", "")
+        const successRecord = JSON.parse(localStorage.getItem(key) || "[]")
+        const referralToppings = successRecord.length * 2 // 2 toppings per referral
+        totalToppings += referralToppings
+        uniquePlayers.add(address)
+      }
+
+      // VMF holdings toppings (1 per 10 VMF - simulated)
+      if (key.startsWith("pizza_vmf_holdings_")) {
+        const address = key.replace("pizza_vmf_holdings_", "")
+        const vmfAmount = Number.parseInt(localStorage.getItem(key) || "0")
+        const vmfToppings = Math.floor(vmfAmount / 10) // 1 topping per 10 VMF
+        totalToppings += vmfToppings
+        uniquePlayers.add(address)
+      }
+
+      // Streak bonus toppings (3 for 7-day streak)
+      if (key.startsWith("pizza_streak_")) {
+        const address = key.replace("pizza_streak_", "")
+        const streakDays = Number.parseInt(localStorage.getItem(key) || "0")
+        if (streakDays >= 7) {
+          totalToppings += 3 // 3 toppings for 7-day streak
+        }
+        uniquePlayers.add(address)
+      }
+
+      // Legacy toppings storage (for backward compatibility)
       if (key.startsWith("pizza_toppings_")) {
         const toppings = Number.parseInt(localStorage.getItem(key) || "0")
         if (toppings > 0) {
