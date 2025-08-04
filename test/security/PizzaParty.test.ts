@@ -25,9 +25,9 @@ describe("PizzaParty Security Tests", function () {
     await pizzaParty.deployed();
 
     // Setup initial balances
-    await vmfToken.mint(player1.address, ethers.utils.parseEther("10"));
-    await vmfToken.mint(player2.address, ethers.utils.parseEther("10"));
-    await vmfToken.mint(attacker.address, ethers.utils.parseEther("10"));
+    await vmfToken.mint(player1.address, ethers.parseEther("10"));
+    await vmfToken.mint(player2.address, ethers.parseEther("10"));
+    await vmfToken.mint(attacker.address, ethers.parseEther("10"));
   });
 
   describe("Reentrancy Protection", function () {

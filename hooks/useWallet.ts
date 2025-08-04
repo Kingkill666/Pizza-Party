@@ -176,13 +176,11 @@ export const useWallet = () => {
 
     console.log("✅ Wallet disconnected successfully")
 
-    // For mobile, we might want to reload to ensure clean state
-    if (isMobile()) {
-      setTimeout(() => {
-        console.log("🔄 Reloading page for clean mobile state")
-        window.location.reload()
-      }, 500)
-    }
+    // Always reload the page to ensure clean state
+    setTimeout(() => {
+      console.log("🔄 Reloading page for clean state")
+      window.location.reload()
+    }, 500)
   }, [])
 
   const getBalance = useCallback(async (): Promise<string> => {

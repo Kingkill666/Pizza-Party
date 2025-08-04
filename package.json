@@ -8,13 +8,17 @@
     "lint": "next lint",
     "start": "next start",
     "compile": "hardhat compile",
-    "test": "hardhat test",
+    "test": "TS_NODE_PROJECT=./tsconfig.hardhat.json hardhat test",
+    "test:coverage": "TS_NODE_PROJECT=./tsconfig.hardhat.json REPORT_GAS=true hardhat test --coverage",
+    "test:security": "TS_NODE_PROJECT=./tsconfig.hardhat.json hardhat test test/security/",
+    "test:integration": "TS_NODE_PROJECT=./tsconfig.hardhat.json hardhat test test/integration/",
     "deploy:testnet": "hardhat run scripts/deploy.ts --network baseSepolia",
     "deploy:mainnet": "hardhat run scripts/deploy.ts --network base",
     "verify": "hardhat verify --network base"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
+    "@openzeppelin/contracts": "^5.4.0",
     "@radix-ui/react-accordion": "latest",
     "@radix-ui/react-alert-dialog": "latest",
     "@radix-ui/react-aspect-ratio": "latest",
@@ -68,7 +72,6 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.0",
-    "@openzeppelin/contracts": "^5.4.0",
     "@tailwindcss/postcss": "^4.1.9",
     "@types/node": "^22",
     "@types/react": "^19",
@@ -76,6 +79,7 @@
     "dotenv": "^16.3.1",
     "hardhat": "^2.19.0",
     "postcss": "^8.5",
+    "solidity-coverage": "^0.8.16",
     "tailwindcss": "^4.1.9",
     "tw-animate-css": "1.3.3",
     "typescript": "^5"

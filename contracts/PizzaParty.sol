@@ -1,19 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
-
+import "@openzeppelin/contracts/utils/Pausable.sol";
 /**
  * @title PizzaParty
  * @dev A decentralized gaming platform on Base network where players compete for daily and weekly jackpots using VMF tokens.
  * Features a referral system, toppings rewards, and multi-platform wallet support.
  */
 contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
-    using Counters for Counters.Counter;
-
     // VMF Token contract
     IERC20 public immutable vmfToken;
     
@@ -27,7 +23,7 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     uint256 public constant STREAK_BONUS = 3; // 3 toppings for 7-day streak
     
     // Game state
-    Counters.Counter private _gameId;
+    uint256 private _gameId;
     uint256 public currentDailyJackpot;
     uint256 public currentWeeklyJackpot;
     uint256 public lastDailyDraw;
@@ -94,7 +90,7 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         _;
     }
     
-    constructor(address _vmfToken) {
+    constructor(address _vmfToken) Ownable(msg.sender) {
         require(_vmfToken != address(0), "Invalid VMF token address");
         vmfToken = IERC20(_vmfToken);
         
@@ -128,11 +124,11 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         }
         
         // Update current game
-        Game storage currentGame = games[_gameId.current()];
+        Game storage currentGame = games[_gameId];
         currentGame.totalEntries++;
         currentDailyJackpot += DAILY_ENTRY_FEE;
         
-        emit PlayerEntered(msg.sender, _gameId.current(), DAILY_ENTRY_FEE);
+        emit PlayerEntered(msg.sender, _gameId, DAILY_ENTRY_FEE);
         emit ToppingsAwarded(msg.sender, DAILY_PLAY_REWARD, "Daily play");
     }
     
@@ -159,7 +155,7 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
      * @dev Draw daily winners
      */
     function drawDailyWinners() external onlyOwner {
-        Game storage currentGame = games[_gameId.current()];
+        Game storage currentGame = games[_gameId];
         require(!currentGame.isCompleted, "Game already completed");
         require(block.timestamp >= currentGame.endTime, "Game not finished");
         
@@ -177,7 +173,7 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         currentGame.isCompleted = true;
         currentGame.jackpotAmount = currentDailyJackpot;
         
-        emit DailyWinnersSelected(_gameId.current(), winners, currentDailyJackpot);
+        emit DailyWinnersSelected(_gameId, winners, currentDailyJackpot);
         
         // Start new game
         _startNewDailyGame();
@@ -199,7 +195,7 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
             }
         }
         
-        emit WeeklyWinnersSelected(_gameId.current(), winners, currentWeeklyJackpot);
+        emit WeeklyWinnersSelected(_gameId, winners, currentWeeklyJackpot);
         
         // Reset weekly jackpot and toppings
         _resetWeeklyGame();
@@ -274,7 +270,7 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
      * @dev Get current game info
      */
     function getCurrentGame() external view returns (Game memory) {
-        return games[_gameId.current()];
+        return games[_gameId];
     }
     
     /**
@@ -288,8 +284,8 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
      * @dev Internal function to start new daily game
      */
     function _startNewDailyGame() internal {
-        _gameId.increment();
-        uint256 gameId = _gameId.current();
+        _gameId++;
+        uint256 gameId = _gameId;
         
         games[gameId] = Game({
             gameId: gameId,

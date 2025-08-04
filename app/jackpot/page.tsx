@@ -217,7 +217,7 @@ export default function JackpotPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="space-y-4">
+            <div style={{ gap: "20px", display: "flex", flexDirection: "column" }}>
               <Link href="/game">
                 <Button
                   className="w-full bg-green-600 hover:bg-green-700 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-green-800 shadow-lg transform hover:scale-105 transition-all"
@@ -227,7 +227,7 @@ export default function JackpotPage() {
                     fontSize: "1.25rem",
                   }}
                 >
-                  🎮 Play Daily Game 🎮
+                  🍕 START PLAYING 🍕
                 </Button>
               </Link>
 
