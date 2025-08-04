@@ -14,7 +14,7 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     IERC20 public immutable vmfToken;
     
     // Game constants
-    uint256 public constant DAILY_ENTRY_FEE = 1 * 10**18; // 1 VMF token
+    uint256 public constant DAILY_ENTRY_FEE = 1 * 10**18; // $1 worth of VMF token
     uint256 public constant DAILY_WINNERS_COUNT = 8;
     uint256 public constant WEEKLY_WINNERS_COUNT = 10;
     uint256 public constant REFERRAL_REWARD = 2; // 2 toppings per referral

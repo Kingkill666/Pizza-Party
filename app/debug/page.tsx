@@ -169,8 +169,8 @@ export default function DebugPage() {
                     <p className="text-lg font-bold text-green-800" style={customFontStyle}>
                       {formattedBalance} VMF
                     </p>
-                    <p className="text-xs text-green-600 mt-1" style={customFontStyle}>
-                      {balance >= 1 ? "✅ Sufficient for game entry" : "❌ Need at least 1 VMF to play"}
+                    <p className="text-sm text-gray-600">
+                      {balance >= 1 ? "✅ Sufficient for game entry" : "❌ Need at least $1 worth of VMF to play"}
                     </p>
                   </div>
                 )}

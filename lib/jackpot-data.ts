@@ -4,7 +4,7 @@
 export const calculateCommunityJackpot = (): number => {
   if (typeof window === "undefined") return 0 // Default for SSR
 
-  // Count today's players (each player pays 1 VMF)
+  // Count today's players (each player pays $1 worth of VMF)
   const today = new Date().toDateString()
   const keys = Object.keys(localStorage)
   let todaysPlayers = 0
@@ -15,7 +15,7 @@ export const calculateCommunityJackpot = (): number => {
     }
   })
 
-  // Each player pays 1 VMF, so jackpot = number of players
+  // Each player pays $1 worth of VMF, so jackpot = number of players
   return todaysPlayers
 }
 

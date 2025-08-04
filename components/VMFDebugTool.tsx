@@ -130,9 +130,9 @@ export function VMFDebugTool() {
           <p className="text-sm text-orange-800 mb-2" style={customFontStyle}>
             <strong>Current Balance:</strong> {currentBalance.toLocaleString()} VMF
           </p>
-          <p className="text-xs text-orange-600" style={customFontStyle}>
-            {currentBalance >= 1 ? "✅ Can enter games" : "❌ Need at least 1 VMF"}
-          </p>
+          <div className="text-sm text-gray-600">
+            {currentBalance >= 1 ? "✅ Can enter games" : "❌ Need at least $1 worth of VMF"}
+          </div>
         </div>
 
         <div className="space-y-2">
