@@ -116,9 +116,6 @@ export default function JackpotPage() {
               <p className="text-white text-4xl font-black" style={customFontStyle}>
                 {formatJackpotAmount(communityJackpot)} VMF
               </p>
-              <p className="text-white text-sm" style={customFontStyle}>
-                ({dailyPlayers} players × 1 VMF each)
-              </p>
             </div>
 
             {/* Claim Toppings Button */}
