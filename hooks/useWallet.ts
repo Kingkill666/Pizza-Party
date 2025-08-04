@@ -1,16 +1,17 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
-  type WalletConnection,
+  WalletConnection,
   formatAddress,
+  isMobile,
+  isWalletInstalled,
+  openWalletInstallPage,
+  getWalletDisplayName,
   connectMobileWallet,
   requestWalletConnection,
-  openWalletInstallPage,
-  isWalletInstalled,
-  getWalletDisplayName,
-  isMobile,
-} from "@/lib/wallet-config"
+  debugProviders,
+} from "../lib/wallet-config"
 
 export const useWallet = () => {
   const [connection, setConnection] = useState<WalletConnection | null>(null)
@@ -110,6 +111,9 @@ export const useWallet = () => {
 
     console.log(`🎯 Attempting to connect to ${walletId}`)
     console.log(`📱 Mobile device: ${isMobile()}`)
+    
+    // Debug available providers
+    debugProviders()
 
     try {
       let result

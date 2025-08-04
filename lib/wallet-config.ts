@@ -289,7 +289,15 @@ export const getWalletProvider = (walletId: string): any => {
         window.ethereum
       )
     case "coinbase":
-      return allProviders.find((provider) => provider.isCoinbaseWallet || provider.isCoinbase) || window.ethereum
+      // Improved Coinbase detection
+      const coinbaseProvider = allProviders.find((provider) => 
+        provider.isCoinbaseWallet || 
+        provider.isCoinbase || 
+        provider.isCoinbaseExtension ||
+        (provider.providers && provider.providers.some((p: any) => p.isCoinbaseWallet || p.isCoinbase))
+      )
+      console.log("🔍 Coinbase provider found:", !!coinbaseProvider)
+      return coinbaseProvider || window.ethereum
     case "rainbow":
       return allProviders.find((provider) => provider.isRainbow) || window.ethereum
     case "farcaster":
@@ -377,7 +385,7 @@ Make sure you have ${walletName} installed from your app store.`)
     }
   }
 
-  // Desktop logic (unchanged)
+  // Desktop logic with improved Coinbase handling
   const provider = getWalletProvider(walletId)
 
   if (!provider) {
@@ -385,6 +393,42 @@ Make sure you have ${walletName} installed from your app store.`)
   }
 
   try {
+    console.log(`🔍 Attempting connection with provider:`, provider)
+    
+    // For Coinbase, ensure we're using the right provider
+    if (walletId === "coinbase") {
+      console.log("🔵 Using Coinbase-specific connection logic")
+      
+      // Check if we have multiple providers and find Coinbase
+      if (window.ethereum?.providers) {
+        const coinbaseProvider = window.ethereum.providers.find((p: any) => 
+          p.isCoinbaseWallet || p.isCoinbase || p.isCoinbaseExtension
+        )
+        if (coinbaseProvider) {
+          console.log("✅ Found Coinbase provider in providers array")
+          const accounts = await coinbaseProvider.request({
+            method: "eth_requestAccounts",
+          })
+          
+          if (!accounts || accounts.length === 0) {
+            throw new Error("No accounts returned from Coinbase wallet")
+          }
+          
+          await ensureBaseNetwork(coinbaseProvider)
+          
+          const chainId = await coinbaseProvider.request({
+            method: "eth_chainId",
+          })
+          
+          return {
+            accounts,
+            chainId,
+            provider: coinbaseProvider,
+          }
+        }
+      }
+    }
+
     // Request account access
     const accounts = await provider.request({
       method: "eth_requestAccounts",
@@ -408,6 +452,16 @@ Make sure you have ${walletName} installed from your app store.`)
     }
   } catch (error: any) {
     console.error(`❌ ${walletId} connection failed:`, error)
+    
+    // Provide specific error messages for Coinbase
+    if (walletId === "coinbase") {
+      if (error.code === 4001) {
+        throw new Error("Coinbase connection rejected. Please approve the connection in your Coinbase Wallet extension.")
+      } else if (error.message?.includes("not found")) {
+        throw new Error("Coinbase Wallet extension not found. Please install Coinbase Wallet extension from the Chrome Web Store.")
+      }
+    }
+    
     throw error
   }
 }
@@ -547,4 +601,49 @@ export const ensureBaseNetwork = async (provider?: any): Promise<void> => {
       }
     }
   }
+}
+
+// Debug function to check available providers
+export const debugProviders = (): void => {
+  if (typeof window === "undefined") return
+
+  console.log("🔍 Debugging available providers...")
+  
+  if (window.ethereum) {
+    console.log("✅ window.ethereum found")
+    
+    if (window.ethereum.providers && Array.isArray(window.ethereum.providers)) {
+      console.log(`📦 Found ${window.ethereum.providers.length} providers:`)
+      window.ethereum.providers.forEach((provider: any, index: number) => {
+        console.log(`  ${index}:`, {
+          isMetaMask: provider.isMetaMask,
+          isCoinbaseWallet: provider.isCoinbaseWallet,
+          isCoinbase: provider.isCoinbase,
+          isRainbow: provider.isRainbow,
+          isPhantom: provider.isPhantom,
+        })
+      })
+    } else {
+      console.log("📦 Single provider detected")
+      console.log("Provider properties:", {
+        isMetaMask: window.ethereum.isMetaMask,
+        isCoinbaseWallet: window.ethereum.isCoinbaseWallet,
+        isCoinbase: window.ethereum.isCoinbase,
+        isRainbow: window.ethereum.isRainbow,
+        isPhantom: window.ethereum.isPhantom,
+      })
+    }
+  } else {
+    console.log("❌ No window.ethereum found")
+  }
+  
+  // Check for specific wallet extensions
+  const extensions = {
+    metamask: typeof window !== "undefined" && "ethereum" in window && (window as any).ethereum?.isMetaMask,
+    coinbase: typeof window !== "undefined" && "ethereum" in window && ((window as any).ethereum?.isCoinbaseWallet || (window as any).ethereum?.isCoinbase),
+    rainbow: typeof window !== "undefined" && "ethereum" in window && (window as any).ethereum?.isRainbow,
+    phantom: typeof window !== "undefined" && "ethereum" in window && (window as any).ethereum?.isPhantom,
+  }
+  
+  console.log("🔌 Detected extensions:", extensions)
 }
