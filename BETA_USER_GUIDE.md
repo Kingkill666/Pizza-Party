@@ -14,10 +14,10 @@ Thank you for being part of our beta testing program! This guide will help you u
 ### 2. Get VMF Tokens
 - **Purchase**: Buy VMF tokens on supported exchanges
 - **Transfer**: Send VMF to your wallet on Base network
-- **Minimum**: 1 VMF token required to play
+- **Minimum**: $1 VMF token required to play
 
 ### 3. Start Playing
-- **Daily Game**: Enter once per day for 1 VMF
+- **Daily Game**: Enter once per day for $1 VMF token
 - **Weekly Jackpot**: Earn toppings to participate
 - **Referrals**: Invite friends to earn bonus toppings
 

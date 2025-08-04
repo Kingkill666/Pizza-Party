@@ -61,7 +61,7 @@ The PizzaParty smart contract is a decentralized gaming platform on the Base net
 function enterDailyGame(string memory referralCode) external
 ```
 - Enter the daily game with optional referral code
-- Requires 1 VMF token balance
+- Requires $1 VMF token balance
 - Awards 1 topping for daily play
 - Updates player streak
 
