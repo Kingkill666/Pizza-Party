@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "./FreeRandomness.sol";
 
 /**
  * @title PizzaParty
@@ -18,12 +19,16 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * - Input validation: Sanitized inputs
  * - Rate limiting: Cooldown periods
  * - Reward system: Daily, weekly, and jackpot features
+ * - FREE SECURE RANDOMNESS: Multi-party commit-reveal scheme
  */
 contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     using SafeMath for uint256;
     
     // VMF Token contract
     IERC20 public immutable vmfToken;
+    
+    // Free Randomness contract
+    FreeRandomness public randomnessContract;
     
     // Game constants
     uint256 public constant DAILY_ENTRY_FEE = 1 * 10**18; // $1 worth of VMF token
@@ -54,6 +59,13 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     uint256 public currentWeeklyJackpot;
     uint256 public lastDailyDraw;
     uint256 public lastWeeklyDraw;
+    
+    // Randomness state
+    uint256 public currentRandomnessRound;
+    mapping(uint256 => address[]) public dailyPlayers;
+    mapping(uint256 => uint256) public dailyPlayerCount;
+    mapping(uint256 => address[]) public weeklyPlayers;
+    mapping(uint256 => uint256) public weeklyPlayerCount;
     
     // Player data with enhanced reward tracking
     struct Player {
@@ -92,6 +104,7 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         uint256 jackpotAmount;
         address[] winners;
         bool isCompleted;
+        uint256 randomnessRoundId;
     }
     
     // Weekly challenge data
@@ -129,6 +142,10 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     event JackpotEntryAdded(address indexed player, uint256 entryCost);
     event FirstOrderRewardClaimed(address indexed player, uint256 reward);
     
+    // Randomness events
+    event RandomnessRequested(uint256 gameId, uint256 randomnessRoundId);
+    event WinnersSelectedWithRandomness(uint256 gameId, uint256 randomNumber, address[] winners);
+    
     // Modifiers
     modifier notBlacklisted(address player) {
         require(!blacklistedAddresses[player], "Player is blacklisted");
@@ -158,9 +175,11 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         _;
     }
     
-    constructor(address _vmfToken) Ownable(msg.sender) {
+    constructor(address _vmfToken, address _randomnessContract) Ownable(msg.sender) {
         require(_vmfToken != address(0), "Invalid VMF token address");
+        require(_randomnessContract != address(0), "Invalid randomness contract address");
         vmfToken = IERC20(_vmfToken);
+        randomnessContract = FreeRandomness(_randomnessContract);
         
         // Initialize first game
         _startNewDailyGame();
@@ -170,37 +189,99 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     }
     
     /**
-     * @dev Enter the daily game
-     * @param referralCode Optional referral code
+     * @dev Request randomness for daily winner selection
+     */
+    function requestDailyRandomness() external onlyOwner whenNotPaused {
+        uint256 randomnessRoundId = randomnessContract.requestRandomness();
+        currentRandomnessRound = randomnessRoundId;
+        
+        emit RandomnessRequested(_gameId, randomnessRoundId);
+    }
+    
+    /**
+     * @dev Submit commitment for randomness (anyone can contribute)
+     */
+    function submitRandomnessCommitment(uint256 roundId, bytes32 commitment) external whenNotPaused {
+        randomnessContract.submitCommitment(roundId, commitment);
+    }
+    
+    /**
+     * @dev Reveal randomness contribution
+     */
+    function revealRandomness(uint256 roundId, uint256 randomValue, bytes32 salt) external whenNotPaused {
+        randomnessContract.revealRandomness(roundId, randomValue, salt);
+    }
+    
+    /**
+     * @dev Select daily winners using secure randomness
+     */
+    function selectDailyWinners() external onlyOwner whenNotPaused {
+        require(currentRandomnessRound > 0, "No randomness round requested");
+        
+        // Get the secure random number
+        uint256 randomNumber = randomnessContract.getFinalRandomNumber(currentRandomnessRound);
+        require(randomNumber > 0, "Randomness not finalized");
+        
+        // Select winners using secure randomness
+        address[] memory winners = _selectWinners(DAILY_WINNERS_COUNT, _gameId);
+        
+        // Distribute jackpot to winners
+        uint256 prizePerWinner = currentDailyJackpot.div(DAILY_WINNERS_COUNT);
+        
+        for (uint256 i = 0; i < winners.length; i++) {
+            if (winners[i] != address(0)) {
+                // Transfer VMF tokens to winner
+                require(vmfToken.transfer(winners[i], prizePerWinner), "Transfer failed");
+                
+                // Award toppings to winner
+                players[winners[i]].totalToppings += 10; // Bonus toppings for winning
+                emit ToppingsAwarded(winners[i], 10, "Daily winner bonus");
+            }
+        }
+        
+        emit DailyWinnersSelected(_gameId, winners, currentDailyJackpot);
+        emit WinnersSelectedWithRandomness(_gameId, randomNumber, winners);
+        
+        // Reset for next game
+        _startNewDailyGame();
+    }
+    
+    /**
+     * @dev Enhanced enter daily game with player tracking
      */
     function enterDailyGame(string memory referralCode) external nonReentrant whenNotPaused notBlacklisted(msg.sender) rateLimited {
         require(vmfToken.balanceOf(msg.sender) >= DAILY_ENTRY_FEE, "Insufficient VMF balance");
-        require(!hasEnteredToday(msg.sender), "Already entered today");
+        require(players[msg.sender].dailyEntries < MAX_DAILY_ENTRIES, "Max daily entries reached");
         
-        // Transfer entry fee
+        // Transfer VMF tokens
         require(vmfToken.transferFrom(msg.sender, address(this), DAILY_ENTRY_FEE), "Transfer failed");
         
         // Update player data
-        Player storage player = players[msg.sender];
-        player.dailyEntries++;
-        player.lastEntryTime = block.timestamp;
-        player.totalToppings += DAILY_PLAY_REWARD;
+        players[msg.sender].dailyEntries++;
+        players[msg.sender].lastEntryTime = block.timestamp;
+        players[msg.sender].totalOrders++;
+        
+        // Track player for winner selection
+        dailyPlayers[_gameId].push(msg.sender);
+        dailyPlayerCount[_gameId]++;
+        
+        // Update jackpot
+        currentDailyJackpot = currentDailyJackpot.add(DAILY_ENTRY_FEE);
+        
+        // Award daily play reward
+        players[msg.sender].totalToppings += DAILY_PLAY_REWARD;
+        emit ToppingsAwarded(msg.sender, DAILY_PLAY_REWARD, "Daily play reward");
+        
+        // Process referral if provided
+        if (bytes(referralCode).length > 0) {
+            _processReferralCode(referralCode, msg.sender);
+        }
         
         // Update streak
         _updateStreak(msg.sender);
         
-        // Process referral if provided
-        if (bytes(referralCode).length > 0) {
-            _processReferral(msg.sender, referralCode);
-        }
-        
-        // Update current game
-        Game storage currentGame = games[_gameId];
-        currentGame.totalEntries++;
-        currentDailyJackpot += DAILY_ENTRY_FEE;
-        
         emit PlayerEntered(msg.sender, _gameId, DAILY_ENTRY_FEE);
-        emit ToppingsAwarded(msg.sender, DAILY_PLAY_REWARD, "Daily play");
+        emit JackpotUpdated(currentDailyJackpot, currentWeeklyJackpot);
     }
     
     /**
@@ -378,7 +459,8 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
             totalEntries: 0,
             jackpotAmount: 0,
             winners: new address[](0),
-            isCompleted: false
+            isCompleted: false,
+            randomnessRoundId: 0 // Initialize randomness round
         });
         
         lastDailyDraw = block.timestamp;
@@ -430,20 +512,35 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     }
     
     /**
-     * @dev Internal function to select winners
+     * @dev Internal function to select winners using FREE secure randomness
      */
-    function _selectWinners(uint256 winnerCount, uint256 totalEntries) internal view returns (address[] memory) {
+    function _selectWinners(uint256 winnerCount, uint256 gameId) internal view returns (address[] memory) {
         address[] memory winners = new address[](winnerCount);
         
-        if (totalEntries == 0) {
+        Game storage game = games[gameId];
+        if (game.randomnessRoundId == 0) {
+            return winners; // No randomness round assigned
+        }
+        
+        // Get the secure random number from our free randomness contract
+        uint256 randomNumber = randomnessContract.getFinalRandomNumber(game.randomnessRoundId);
+        
+        if (randomNumber == 0) {
+            return winners; // Randomness not finalized yet
+        }
+        
+        // Use the secure random number to select winners
+        address[] storage players = dailyPlayers[gameId];
+        uint256 totalPlayers = players.length;
+        
+        if (totalPlayers == 0) {
             return winners;
         }
         
-        // Simple random selection (in production, use Chainlink VRF)
-        for (uint256 i = 0; i < winnerCount; i++) {
-            uint256 randomIndex = uint256(keccak256(abi.encodePacked(block.timestamp, i))) % totalEntries;
-            // This is a simplified version - in production, you'd track all players and select from them
-            winners[i] = address(0); // Placeholder
+        // Select winners using the secure random number
+        for (uint256 i = 0; i < winnerCount && i < totalPlayers; i++) {
+            uint256 randomIndex = uint256(keccak256(abi.encodePacked(randomNumber, i))) % totalPlayers;
+            winners[i] = players[randomIndex];
         }
         
         return winners;
