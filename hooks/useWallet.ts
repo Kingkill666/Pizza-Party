@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import {
   type WalletConnection,
   formatAddress,
@@ -16,14 +16,14 @@ export const useWallet = () => {
   const [connection, setConnection] = useState<WalletConnection | null>(null)
   const [isConnecting, setIsConnecting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [hasDisconnected, setHasDisconnected] = useState(false)
+  const hasDisconnectedRef = useRef(false)
 
   // Check for existing connection on mount (only if not recently disconnected)
   useEffect(() => {
-    if (!hasDisconnected) {
+    if (!hasDisconnectedRef.current) {
       checkExistingConnection()
     }
-  }, [hasDisconnected])
+  }, [])
 
   // Listen for account changes
   useEffect(() => {
@@ -71,6 +71,12 @@ export const useWallet = () => {
   }, [connection])
 
   const checkExistingConnection = async () => {
+    // Don't check if user has recently disconnected
+    if (hasDisconnectedRef.current) {
+      console.log("🔌 Skipping connection check - user recently disconnected")
+      return
+    }
+
     try {
       if (typeof window !== "undefined" && window.ethereum) {
         console.log("🔍 Checking for existing wallet connection...")
@@ -99,7 +105,7 @@ export const useWallet = () => {
   const connectWallet = useCallback(async (walletId: string) => {
     setIsConnecting(walletId)
     setError(null)
-    setHasDisconnected(false) // Reset disconnect flag when connecting
+    hasDisconnectedRef.current = false // Reset disconnect flag when connecting
 
     console.log(`🎯 Attempting to connect to ${walletId}`)
     console.log(`📱 Mobile device: ${isMobile()}`)
@@ -174,20 +180,27 @@ export const useWallet = () => {
     console.log("🔌 Starting wallet disconnect process...")
 
     // Set disconnect flag to prevent auto-reconnection
-    setHasDisconnected(true)
+    hasDisconnectedRef.current = true
 
     // Clear all connection state immediately
     setConnection(null)
     setError(null)
 
-    // Clear localStorage wallet data
-    localStorage.removeItem("wallet_connection")
-
-    // Clear any stored wallet connection data
+    // Clear ALL localStorage wallet data
     if (typeof window !== "undefined") {
       // Clear any wallet-specific storage
       localStorage.removeItem("wallet_connection")
       sessionStorage.removeItem("wallet_connection")
+      
+      // Clear any other wallet-related data
+      const keysToRemove = []
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key && (key.includes('wallet') || key.includes('ethereum') || key.includes('web3'))) {
+          keysToRemove.push(key)
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key))
       
       // Clear any wallet provider data
       if (window.ethereum) {
