@@ -4,12 +4,24 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+
 /**
  * @title PizzaParty
  * @dev A decentralized gaming platform on Base network where players compete for daily and weekly jackpots using VMF tokens.
  * Features a referral system, toppings rewards, and multi-platform wallet support.
+ * 
+ * SECURITY FEATURES:
+ * - ReentrancyGuard: Prevents reentrancy attacks
+ * - Ownable: Access control for admin functions
+ * - Pausable: Emergency pause functionality
+ * - SafeMath: Overflow protection
+ * - Input validation: Sanitized inputs
+ * - Rate limiting: Cooldown periods
  */
 contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
+    using SafeMath for uint256;
+    
     // VMF Token contract
     IERC20 public immutable vmfToken;
     
@@ -21,6 +33,11 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     uint256 public constant DAILY_PLAY_REWARD = 1; // 1 topping per day
     uint256 public constant VMF_HOLDING_REWARD = 2; // 2 toppings per 10 VMF
     uint256 public constant STREAK_BONUS = 3; // 3 toppings for 7-day streak
+    
+    // Security constants
+    uint256 public constant MAX_DAILY_ENTRIES = 10;
+    uint256 public constant ENTRY_COOLDOWN = 1 hours;
+    uint256 public constant MIN_VMF_HOLDING = 10 * 10**18; // 10 VMF minimum
     
     // Game state
     uint256 private _gameId;
@@ -38,6 +55,7 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         uint256 streakDays;
         uint256 lastStreakUpdate;
         bool isBlacklisted;
+        uint256 lastVMFHoldingsCheck;
     }
     
     // Referral data
@@ -86,7 +104,18 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     
     modifier validReferralCode(string memory code) {
         require(bytes(code).length > 0, "Invalid referral code");
+        require(bytes(code).length <= 50, "Referral code too long");
         require(referralCodes[code] != address(0), "Referral code not found");
+        _;
+    }
+    
+    modifier validAddress(address addr) {
+        require(addr != address(0), "Invalid address");
+        _;
+    }
+    
+    modifier rateLimited() {
+        require(block.timestamp >= players[msg.sender].lastEntryTime.add(ENTRY_COOLDOWN), "Rate limit exceeded");
         _;
     }
     
@@ -102,7 +131,7 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
      * @dev Enter the daily game
      * @param referralCode Optional referral code
      */
-    function enterDailyGame(string memory referralCode) external nonReentrant whenNotPaused notBlacklisted(msg.sender) {
+    function enterDailyGame(string memory referralCode) external nonReentrant whenNotPaused notBlacklisted(msg.sender) rateLimited {
         require(vmfToken.balanceOf(msg.sender) >= DAILY_ENTRY_FEE, "Insufficient VMF balance");
         require(!hasEnteredToday(msg.sender), "Already entered today");
         
@@ -203,15 +232,28 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     
     /**
      * @dev Award toppings based on VMF holdings
+     * SECURITY: Input validation, overflow protection, rate limiting
      */
     function awardVMFHoldingsToppings() external nonReentrant whenNotPaused notBlacklisted(msg.sender) {
-        uint256 balance = vmfToken.balanceOf(msg.sender);
-        uint256 holdingsReward = (balance / (10 * 10**18)) * VMF_HOLDING_REWARD; // 2 toppings per 10 VMF
+        // Input validation
+        require(block.timestamp >= players[msg.sender].lastVMFHoldingsCheck.add(1 days), "Already checked today");
         
-        if (holdingsReward > 0) {
-            players[msg.sender].totalToppings += holdingsReward;
-            emit ToppingsAwarded(msg.sender, holdingsReward, "VMF holdings");
-        }
+        // Get balance with validation
+        uint256 balance = vmfToken.balanceOf(msg.sender);
+        require(balance >= MIN_VMF_HOLDING, "Insufficient VMF holdings");
+        
+        // Safe arithmetic with overflow protection
+        uint256 holdingsReward = balance.div(MIN_VMF_HOLDING).mul(VMF_HOLDING_REWARD);
+        
+        // Validate reward amount
+        require(holdingsReward > 0, "No reward available");
+        require(holdingsReward <= 1000, "Reward amount too high"); // Sanity check
+        
+        // Update player data
+        players[msg.sender].totalToppings = players[msg.sender].totalToppings.add(holdingsReward);
+        players[msg.sender].lastVMFHoldingsCheck = block.timestamp;
+        
+        emit ToppingsAwarded(msg.sender, holdingsReward, "VMF holdings");
     }
     
     /**
