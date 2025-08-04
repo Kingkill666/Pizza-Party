@@ -39,7 +39,7 @@
 - ✅ Return current game info
 
 ### **Game Constants Tests** ✅ 100%
-- ✅ Correct daily entry fee (1 VMF)
+- ✅ Correct daily entry fee ($1 VMF)
 - ✅ Correct winner counts (8 daily, 10 weekly)
 - ✅ Correct reward amounts (1 daily, 2 referral, 2 VMF holding, 3 streak bonus)
 
