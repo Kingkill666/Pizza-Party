@@ -25,7 +25,8 @@ export const WALLETS: WalletInfo[] = [
   {
     id: "coinbase",
     name: "Coinbase Wallet",
-    icon: "🔷",
+    icon: "", // Will use iconImage instead
+    iconImage: "/images/coinbase-logo.png",
     color: "bg-blue-500 hover:bg-blue-600",
     mobile: true,
     deepLink: "coinbasewallet://",

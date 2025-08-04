@@ -162,7 +162,7 @@ export const useWallet = () => {
     // Clear ALL localStorage wallet data
     if (typeof window !== "undefined") {
       // Clear any wallet-specific storage
-      localStorage.removeItem("wallet_connection")
+    localStorage.removeItem("wallet_connection")
       sessionStorage.removeItem("wallet_connection")
       
       // Clear any other wallet-related data
@@ -192,7 +192,7 @@ export const useWallet = () => {
 
     // Force page reload immediately for clean state
     console.log("🔄 Reloading page for clean state")
-    window.location.reload()
+        window.location.reload()
   }, [])
 
   const getBalance = useCallback(async (): Promise<string> => {
