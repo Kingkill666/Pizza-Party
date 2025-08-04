@@ -107,6 +107,16 @@ export default function JackpotPage() {
               </p>
             </div>
 
+            {/* Claim Toppings Button */}
+            <div className="text-center">
+              <Button
+                className="w-full bg-green-600 hover:bg-green-700 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-green-800 shadow-lg transform hover:scale-105 transition-all"
+                style={customFontStyle}
+              >
+                🍕 Claim Toppings 🍕
+              </Button>
+            </div>
+
             {/* Countdown Timer */}
             <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
               <div className="flex items-center justify-center gap-2 mb-3">
