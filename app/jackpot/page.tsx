@@ -111,7 +111,7 @@ export default function JackpotPage() {
             {/* Jackpot Amount */}
             <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-3 rounded-xl border-4 border-yellow-600 text-center">
               <p className="text-white text-lg mb-2" style={customFontStyle}>
-                Today's Jackpot
+                Weekly Jackpot
               </p>
               <p className="text-white text-4xl font-black" style={customFontStyle}>
                 {formatJackpotAmount(communityJackpot)} VMF
