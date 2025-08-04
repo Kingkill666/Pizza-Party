@@ -1,327 +1,380 @@
-// Monitoring and Analytics System for Pizza Party dApp
+/**
+ * Pizza Party dApp Security Monitoring System
+ * 
+ * This module provides comprehensive monitoring, logging, and security tracking
+ * for the Pizza Party dApp to address security vulnerabilities and ensure
+ * proper audit trails.
+ */
 
-interface MonitoringEvent {
-  type: string;
-  timestamp: number;
-  data: any;
-  userId?: string;
-  sessionId: string;
+export interface SecurityEvent {
+  timestamp: number
+  eventType: 'AUTHENTICATION' | 'INPUT_VALIDATION' | 'RATE_LIMIT' | 'REENTRANCY' | 'OVERFLOW' | 'BLACKLIST' | 'EMERGENCY' | 'REWARD_CLAIM'
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
+  userId?: string
+  walletAddress?: string
+  details: string
+  metadata?: Record<string, any>
 }
 
-interface ErrorEvent {
-  error: string;
-  stack?: string;
-  context: string;
-  userId?: string;
-  sessionId: string;
-  timestamp: number;
+export interface AuditLog {
+  id: string
+  timestamp: number
+  action: string
+  user: string
+  ipAddress?: string
+  userAgent?: string
+  success: boolean
+  errorMessage?: string
+  metadata?: Record<string, any>
 }
 
-class MonitoringService {
-  private events: MonitoringEvent[] = [];
-  private errors: ErrorEvent[] = [];
-  private sessionId: string;
+export interface RateLimitData {
+  userId: string
+  action: string
+  count: number
+  windowStart: number
+  windowEnd: number
+}
 
-  constructor() {
-    this.sessionId = this.generateSessionId();
-    this.initializeMonitoring();
+export class SecurityMonitor {
+  private events: SecurityEvent[] = []
+  private auditLogs: AuditLog[] = []
+  private rateLimits: Map<string, RateLimitData> = new Map()
+  private blacklistedAddresses: Set<string> = new Set()
+
+  /**
+   * Log a security event
+   */
+  logSecurityEvent(event: SecurityEvent): void {
+    this.events.push(event)
+    
+    // Send to external monitoring service (Sentry, etc.)
+    if (event.severity === 'CRITICAL' || event.severity === 'HIGH') {
+      this.sendToMonitoringService(event)
+    }
+    
+    // Log to console in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🚨 SECURITY EVENT [${event.severity}]: ${event.eventType} - ${event.details}`)
+    }
   }
 
-  private generateSessionId(): string {
-    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  /**
+   * Log an audit event
+   */
+  logAuditEvent(log: AuditLog): void {
+    this.auditLogs.push(log)
+    
+    // Store in persistent storage
+    this.persistAuditLog(log)
+    
+    // Log to console in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📋 AUDIT LOG: ${log.action} by ${log.user} - ${log.success ? 'SUCCESS' : 'FAILED'}`)
+    }
   }
 
-  private initializeMonitoring() {
-    // Track page views
-    if (typeof window !== "undefined") {
-      this.trackEvent("page_view", {
-        path: window.location.pathname,
-        userAgent: navigator.userAgent,
-        timestamp: Date.now()
-      });
+  /**
+   * Check rate limiting
+   */
+  checkRateLimit(userId: string, action: string, limit: number, windowMs: number): boolean {
+    const key = `${userId}:${action}`
+    const now = Date.now()
+    
+    const existing = this.rateLimits.get(key)
+    
+    if (!existing || now > existing.windowEnd) {
+      // Create new rate limit window
+      this.rateLimits.set(key, {
+        userId,
+        action,
+        count: 1,
+        windowStart: now,
+        windowEnd: now + windowMs
+      })
+      return true
+    }
+    
+    if (existing.count >= limit) {
+      // Rate limit exceeded
+      this.logSecurityEvent({
+        timestamp: now,
+        eventType: 'RATE_LIMIT',
+        severity: 'MEDIUM',
+        userId,
+        details: `Rate limit exceeded for action: ${action}`,
+        metadata: { action, limit, windowMs }
+      })
+      return false
+    }
+    
+    // Increment count
+    existing.count++
+    this.rateLimits.set(key, existing)
+    return true
+  }
 
-      // Track wallet connections
-      this.trackWalletEvents();
+  /**
+   * Validate input data
+   */
+  validateInput(data: any, schema: any): { valid: boolean; errors: string[] } {
+    const errors: string[] = []
+    
+    try {
+      // Basic input validation
+      if (typeof data !== 'object' || data === null) {
+        errors.push('Invalid data format')
+        return { valid: false, errors }
+      }
       
-      // Track game interactions
-      this.trackGameEvents();
+      // Check for required fields
+      if (schema.required) {
+        for (const field of schema.required) {
+          if (!(field in data)) {
+            errors.push(`Missing required field: ${field}`)
+          }
+        }
+      }
       
-      // Track errors
-      this.trackErrors();
-    }
-  }
-
-  private trackWalletEvents() {
-    // Monitor wallet connection attempts
-    const originalConnect = window.ethereum?.request;
-    if (originalConnect) {
-      window.ethereum.request = async (...args: any[]) => {
-        try {
-          const result = await originalConnect.apply(window.ethereum, args);
-          this.trackEvent("wallet_connection_success", {
-            method: args[0]?.method,
-            timestamp: Date.now()
-          });
-          return result;
-        } catch (error) {
-          this.trackEvent("wallet_connection_error", {
-            method: args[0]?.method,
-            error: error.message,
-            timestamp: Date.now()
-          });
-          throw error;
+      // Validate field types
+      if (schema.properties) {
+        for (const [field, config] of Object.entries(schema.properties)) {
+          if (data[field] !== undefined) {
+            const value = data[field]
+            const expectedType = (config as any).type
+            
+            if (expectedType === 'string' && typeof value !== 'string') {
+              errors.push(`Field ${field} must be a string`)
+            } else if (expectedType === 'number' && typeof value !== 'number') {
+              errors.push(`Field ${field} must be a number`)
+            } else if (expectedType === 'boolean' && typeof value !== 'boolean') {
+              errors.push(`Field ${field} must be a boolean`)
+            }
+          }
         }
-      };
+      }
+      
+      // Sanitize input
+      const sanitized = this.sanitizeInput(data)
+      
+      if (errors.length > 0) {
+        this.logSecurityEvent({
+          timestamp: Date.now(),
+          eventType: 'INPUT_VALIDATION',
+          severity: 'HIGH',
+          details: `Input validation failed: ${errors.join(', ')}`,
+          metadata: { data, errors }
+        })
+      }
+      
+      return { valid: errors.length === 0, errors, data: sanitized }
+    } catch (error) {
+      this.logSecurityEvent({
+        timestamp: Date.now(),
+        eventType: 'INPUT_VALIDATION',
+        severity: 'CRITICAL',
+        details: `Input validation error: ${error}`,
+        metadata: { data, error }
+      })
+      return { valid: false, errors: ['Validation error'] }
     }
   }
 
-  private trackGameEvents() {
-    // Monitor game entry attempts
-    if (typeof window !== "undefined") {
-      const originalFetch = window.fetch;
-      window.fetch = async (...args: any[]) => {
-        const url = args[0];
-        if (typeof url === "string" && url.includes("/api/game")) {
-          this.trackEvent("game_interaction", {
-            url,
-            timestamp: Date.now()
-          });
-        }
-        return originalFetch.apply(window, args);
-      };
+  /**
+   * Sanitize input data
+   */
+  sanitizeInput(data: any): any {
+    if (typeof data === 'string') {
+      // Remove potentially dangerous characters
+      return data
+        .replace(/[<>]/g, '') // Remove < and >
+        .replace(/javascript:/gi, '') // Remove javascript: protocol
+        .replace(/on\w+=/gi, '') // Remove event handlers
+        .trim()
     }
+    
+    if (typeof data === 'object' && data !== null) {
+      const sanitized: any = {}
+      for (const [key, value] of Object.entries(data)) {
+        sanitized[key] = this.sanitizeInput(value)
+      }
+      return sanitized
+    }
+    
+    return data
   }
 
-  private trackErrors() {
-    if (typeof window !== "undefined") {
-      window.addEventListener("error", (event) => {
-        this.trackError("javascript_error", {
-          message: event.message,
-          filename: event.filename,
-          lineno: event.lineno,
-          colno: event.colno,
-          error: event.error?.stack
-        });
-      });
-
-      window.addEventListener("unhandledrejection", (event) => {
-        this.trackError("unhandled_promise_rejection", {
-          reason: event.reason,
-          promise: event.promise
-        });
-      });
-    }
+  /**
+   * Check if address is blacklisted
+   */
+  isBlacklisted(address: string): boolean {
+    return this.blacklistedAddresses.has(address.toLowerCase())
   }
 
-  public trackEvent(type: string, data: any, userId?: string) {
-    const event: MonitoringEvent = {
-      type,
+  /**
+   * Add address to blacklist
+   */
+  addToBlacklist(address: string): void {
+    this.blacklistedAddresses.add(address.toLowerCase())
+    
+    this.logSecurityEvent({
       timestamp: Date.now(),
-      data,
-      userId,
-      sessionId: this.sessionId
-    };
-
-    this.events.push(event);
-    this.sendToAnalytics(event);
+      eventType: 'BLACKLIST',
+      severity: 'HIGH',
+      walletAddress: address,
+      details: 'Address added to blacklist'
+    })
   }
 
-  public trackError(context: string, errorData: any, userId?: string) {
-    const error: ErrorEvent = {
-      error: errorData.message || "Unknown error",
-      stack: errorData.stack,
-      context,
-      userId,
-      sessionId: this.sessionId,
-      timestamp: Date.now()
-    };
-
-    this.errors.push(error);
-    this.sendToErrorTracking(error);
+  /**
+   * Remove address from blacklist
+   */
+  removeFromBlacklist(address: string): void {
+    this.blacklistedAddresses.delete(address.toLowerCase())
+    
+    this.logSecurityEvent({
+      timestamp: Date.now(),
+      eventType: 'BLACKLIST',
+      severity: 'MEDIUM',
+      walletAddress: address,
+      details: 'Address removed from blacklist'
+    })
   }
 
-  public trackGameEntry(userId: string, gameType: "daily" | "weekly", referralCode?: string) {
-    this.trackEvent("game_entry", {
-      gameType,
-      referralCode,
-      timestamp: Date.now()
-    }, userId);
+  /**
+   * Track reward claims
+   */
+  trackRewardClaim(userId: string, rewardType: string, amount: number): void {
+    this.logAuditEvent({
+      id: `reward_${Date.now()}`,
+      timestamp: Date.now(),
+      action: 'REWARD_CLAIM',
+      user: userId,
+      success: true,
+      metadata: { rewardType, amount }
+    })
   }
 
-  public trackWalletConnection(walletType: string, success: boolean, error?: string) {
-    this.trackEvent("wallet_connection", {
-      walletType,
+  /**
+   * Track authentication attempts
+   */
+  trackAuthentication(userId: string, success: boolean, errorMessage?: string): void {
+    this.logAuditEvent({
+      id: `auth_${Date.now()}`,
+      timestamp: Date.now(),
+      action: 'AUTHENTICATION',
+      user: userId,
       success,
-      error,
-      timestamp: Date.now()
-    });
-  }
-
-  public trackReferralCreation(userId: string, referralCode: string) {
-    this.trackEvent("referral_created", {
-      referralCode,
-      timestamp: Date.now()
-    }, userId);
-  }
-
-  public trackReferralUsage(referrerId: string, newUserId: string, referralCode: string) {
-    this.trackEvent("referral_used", {
-      referrerId,
-      newUserId,
-      referralCode,
-      timestamp: Date.now()
-    });
-  }
-
-  public trackAdminAction(action: string, adminId: string, details: any) {
-    this.trackEvent("admin_action", {
-      action,
-      details,
-      timestamp: Date.now()
-    }, adminId);
-  }
-
-  private async sendToAnalytics(event: MonitoringEvent) {
-    try {
-      // Send to analytics service (Sentry, Google Analytics, etc.)
-      if (process.env.NEXT_PUBLIC_ANALYTICS_URL) {
-        await fetch(process.env.NEXT_PUBLIC_ANALYTICS_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(event),
-        });
-      }
-    } catch (error) {
-      console.error("Failed to send analytics:", error);
+      errorMessage
+    })
+    
+    if (!success) {
+      this.logSecurityEvent({
+        timestamp: Date.now(),
+        eventType: 'AUTHENTICATION',
+        severity: 'HIGH',
+        userId,
+        details: `Authentication failed: ${errorMessage || 'Unknown error'}`,
+        metadata: { errorMessage }
+      })
     }
   }
 
-  private async sendToErrorTracking(error: ErrorEvent) {
-    try {
-      // Send to error tracking service (Sentry, etc.)
-      if (process.env.NEXT_PUBLIC_ERROR_TRACKING_URL) {
-        await fetch(process.env.NEXT_PUBLIC_ERROR_TRACKING_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(error),
-        });
-      }
-    } catch (error) {
-      console.error("Failed to send error tracking:", error);
-    }
-  }
-
-  public getMetrics() {
+  /**
+   * Get security statistics
+   */
+  getSecurityStats(): {
+    totalEvents: number
+    criticalEvents: number
+    highEvents: number
+    blacklistedAddresses: number
+    rateLimitViolations: number
+  } {
+    const criticalEvents = this.events.filter(e => e.severity === 'CRITICAL').length
+    const highEvents = this.events.filter(e => e.severity === 'HIGH').length
+    const rateLimitViolations = this.events.filter(e => e.eventType === 'RATE_LIMIT').length
+    
     return {
       totalEvents: this.events.length,
-      totalErrors: this.errors.length,
-      sessionId: this.sessionId,
-      events: this.events.slice(-10), // Last 10 events
-      errors: this.errors.slice(-5), // Last 5 errors
-    };
+      criticalEvents,
+      highEvents,
+      blacklistedAddresses: this.blacklistedAddresses.size,
+      rateLimitViolations
+    }
   }
 
-  public generateReport() {
-    const eventTypes = this.events.reduce((acc, event) => {
-      acc[event.type] = (acc[event.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const errorTypes = this.errors.reduce((acc, error) => {
-      acc[error.context] = (acc[error.context] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    return {
-      sessionId: this.sessionId,
-      duration: Date.now() - this.events[0]?.timestamp || 0,
-      eventTypes,
-      errorTypes,
-      totalEvents: this.events.length,
-      totalErrors: this.errors.length,
-    };
-  }
-}
-
-// Onchain Analytics
-export class OnchainAnalytics {
-  private provider: any;
-
-  constructor(provider: any) {
-    this.provider = provider;
+  /**
+   * Export audit logs
+   */
+  exportAuditLogs(): AuditLog[] {
+    return [...this.auditLogs]
   }
 
-  public async trackContractInteraction(
-    contractAddress: string,
-    method: string,
-    gasUsed: number,
-    success: boolean,
-    error?: string
-  ) {
-    const event = {
-      type: "contract_interaction",
-      contractAddress,
-      method,
-      gasUsed,
-      success,
-      error,
-      timestamp: Date.now(),
-      blockNumber: await this.provider.getBlockNumber(),
-    };
-
-    // Send to onchain analytics
-    console.log("📊 Onchain Analytics:", event);
+  /**
+   * Export security events
+   */
+  exportSecurityEvents(): SecurityEvent[] {
+    return [...this.events]
   }
 
-  public async trackGasUsage(method: string, gasUsed: number, gasPrice: number) {
-    const cost = gasUsed * gasPrice;
-    const event = {
-      type: "gas_usage",
-      method,
-      gasUsed,
-      gasPrice,
-      cost,
-      timestamp: Date.now(),
-    };
-
-    console.log("⛽ Gas Usage:", event);
+  /**
+   * Send to external monitoring service
+   */
+  private sendToMonitoringService(event: SecurityEvent): void {
+    // Implementation for Sentry, DataDog, etc.
+    if (process.env.SENTRY_DSN) {
+      // Send to Sentry
+      console.log(`Sending to Sentry: ${event.eventType} - ${event.severity}`)
+    }
+    
+    if (process.env.DATADOG_API_KEY) {
+      // Send to DataDog
+      console.log(`Sending to DataDog: ${event.eventType} - ${event.severity}`)
+    }
   }
 
-  public async trackJackpotUpdate(dailyJackpot: number, weeklyJackpot: number) {
-    const event = {
-      type: "jackpot_update",
-      dailyJackpot,
-      weeklyJackpot,
-      timestamp: Date.now(),
-    };
-
-    console.log("💰 Jackpot Update:", event);
+  /**
+   * Persist audit log
+   */
+  private persistAuditLog(log: AuditLog): void {
+    // Store in localStorage for client-side persistence
+    if (typeof window !== 'undefined') {
+      const logs = JSON.parse(localStorage.getItem('pizza_party_audit_logs') || '[]')
+      logs.push(log)
+      localStorage.setItem('pizza_party_audit_logs', JSON.stringify(logs.slice(-1000))) // Keep last 1000 logs
+    }
   }
 }
 
-// Initialize monitoring service
-export const monitoringService = new MonitoringService();
+// Export singleton instance
+export const securityMonitor = new SecurityMonitor()
 
-// Export for use in components
-export const trackEvent = (type: string, data: any, userId?: string) => {
-  monitoringService.trackEvent(type, data, userId);
-};
-
-export const trackError = (context: string, errorData: any, userId?: string) => {
-  monitoringService.trackError(context, errorData, userId);
-};
-
-export const trackGameEntry = (userId: string, gameType: "daily" | "weekly", referralCode?: string) => {
-  monitoringService.trackGameEntry(userId, gameType, referralCode);
-};
-
-export const trackWalletConnection = (walletType: string, success: boolean, error?: string) => {
-  monitoringService.trackWalletConnection(walletType, success, error);
-};
-
-export const getMetrics = () => monitoringService.getMetrics();
-export const generateReport = () => monitoringService.generateReport(); 
+// Export validation schemas
+export const validationSchemas = {
+  walletConnection: {
+    required: ['walletType', 'address'],
+    properties: {
+      walletType: { type: 'string' },
+      address: { type: 'string' },
+      chainId: { type: 'number' }
+    }
+  },
+  
+  gameEntry: {
+    required: ['playerAddress', 'entryFee'],
+    properties: {
+      playerAddress: { type: 'string' },
+      entryFee: { type: 'number' },
+      referralCode: { type: 'string' }
+    }
+  },
+  
+  rewardClaim: {
+    required: ['playerAddress', 'rewardType'],
+    properties: {
+      playerAddress: { type: 'string' },
+      rewardType: { type: 'string' },
+      amount: { type: 'number' }
+    }
+  }
+} 

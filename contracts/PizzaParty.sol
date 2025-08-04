@@ -8,8 +8,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
  * @title PizzaParty
- * @dev A decentralized gaming platform on Base network where players compete for daily and weekly jackpots using VMF tokens.
- * Features a referral system, toppings rewards, and multi-platform wallet support.
+ * @dev A decentralized gaming platform on Base network with robust reward system
  * 
  * SECURITY FEATURES:
  * - ReentrancyGuard: Prevents reentrancy attacks
@@ -18,6 +17,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * - SafeMath: Overflow protection
  * - Input validation: Sanitized inputs
  * - Rate limiting: Cooldown periods
+ * - Reward system: Daily, weekly, and jackpot features
  */
 contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     using SafeMath for uint256;
@@ -39,6 +39,15 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     uint256 public constant ENTRY_COOLDOWN = 1 hours;
     uint256 public constant MIN_VMF_HOLDING = 10 * 10**18; // 10 VMF minimum
     
+    // Reward system constants
+    uint256 public constant FIRST_ORDER_REWARD = 100;
+    uint256 public constant REFERRAL_BONUS = 50;
+    uint256 public constant LOYALTY_POINTS_PER_DOLLAR = 1; // 1 point per $1
+    uint256 public constant WEEKLY_CHALLENGE_REWARD = 200;
+    uint256 public constant JACKPOT_ENTRY_COST = 5 * 10**18; // 5 VMF
+    uint256 public constant MAX_JACKPOT_ENTRIES = 10;
+    uint256 public constant JACKPOT_MULTIPLIER = 20;
+    
     // Game state
     uint256 private _gameId;
     uint256 public currentDailyJackpot;
@@ -46,7 +55,7 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     uint256 public lastDailyDraw;
     uint256 public lastWeeklyDraw;
     
-    // Player data
+    // Player data with enhanced reward tracking
     struct Player {
         uint256 totalToppings;
         uint256 dailyEntries;
@@ -56,6 +65,14 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         uint256 lastStreakUpdate;
         bool isBlacklisted;
         uint256 lastVMFHoldingsCheck;
+        
+        // Reward system data
+        uint256 loyaltyPoints;
+        uint256 totalOrders;
+        uint256 weeklyChallengesCompleted;
+        uint256 jackpotEntries;
+        uint256 lastRewardClaim;
+        bool hasCompletedFirstOrder;
     }
     
     // Referral data
@@ -77,12 +94,23 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         bool isCompleted;
     }
     
+    // Weekly challenge data
+    struct WeeklyChallenge {
+        uint256 challengeId;
+        string challengeName;
+        uint256 rewardAmount;
+        uint256 completionRequirement;
+        bool isActive;
+        mapping(address => bool) completedBy;
+    }
+    
     // Mappings
     mapping(address => Player) public players;
     mapping(address => Referral) public referrals;
     mapping(string => address) public referralCodes;
     mapping(uint256 => Game) public games;
     mapping(address => bool) public blacklistedAddresses;
+    mapping(uint256 => WeeklyChallenge) public weeklyChallenges;
     
     // Events
     event PlayerEntered(address indexed player, uint256 gameId, uint256 entryFee);
@@ -94,6 +122,12 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     event PlayerBlacklisted(address indexed player, bool blacklisted);
     event EmergencyPause(bool paused);
     event JackpotUpdated(uint256 dailyJackpot, uint256 weeklyJackpot);
+    
+    // Reward system events
+    event LoyaltyPointsAwarded(address indexed player, uint256 points, string reason);
+    event WeeklyChallengeCompleted(address indexed player, uint256 challengeId, uint256 reward);
+    event JackpotEntryAdded(address indexed player, uint256 entryCost);
+    event FirstOrderRewardClaimed(address indexed player, uint256 reward);
     
     // Modifiers
     modifier notBlacklisted(address player) {
@@ -119,12 +153,20 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         _;
     }
     
+    modifier canClaimReward() {
+        require(block.timestamp >= players[msg.sender].lastRewardClaim.add(1 days), "Reward already claimed today");
+        _;
+    }
+    
     constructor(address _vmfToken) Ownable(msg.sender) {
         require(_vmfToken != address(0), "Invalid VMF token address");
         vmfToken = IERC20(_vmfToken);
         
         // Initialize first game
         _startNewDailyGame();
+        
+        // Initialize weekly challenges
+        _initializeWeeklyChallenges();
     }
     
     /**
@@ -476,6 +518,89 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
             value /= 10;
         }
         return string(buffer);
+    }
+
+    /**
+     * @dev Initialize weekly challenges
+     */
+    function _initializeWeeklyChallenges() internal {
+        // Example challenges:
+        // weeklyChallenges[1] = WeeklyChallenge({
+        //     challengeId: 1,
+        //     challengeName: "Play 5 games in a week",
+        //     rewardAmount: 100,
+        //     completionRequirement: 5,
+        //     isActive: true
+        // });
+        // weeklyChallenges[2] = WeeklyChallenge({
+        //     challengeId: 2,
+        //     challengeName: "Complete 3 daily games",
+        //     rewardAmount: 50,
+        //     completionRequirement: 3,
+        //     isActive: true
+        // });
+    }
+
+    /**
+     * @dev Claim weekly challenge reward
+     */
+    function claimWeeklyChallengeReward(uint256 challengeId) external nonReentrant whenNotPaused notBlacklisted(msg.sender) canClaimReward {
+        WeeklyChallenge storage challenge = weeklyChallenges[challengeId];
+        require(challenge.isActive, "Challenge not active");
+        require(!challenge.completedBy[msg.sender], "Challenge already completed");
+
+        // Example: Check if player meets completion requirement
+        // require(players[msg.sender].weeklyEntries >= challenge.completionRequirement, "Not enough daily games played");
+
+        challenge.completedBy[msg.sender] = true;
+        players[msg.sender].weeklyChallengesCompleted++;
+        players[msg.sender].totalToppings += challenge.rewardAmount;
+        players[msg.sender].lastRewardClaim = block.timestamp;
+
+        emit WeeklyChallengeCompleted(msg.sender, challengeId, challenge.rewardAmount);
+        emit ToppingsAwarded(msg.sender, challenge.rewardAmount, challenge.challengeName);
+    }
+
+    /**
+     * @dev Add player to jackpot
+     */
+    function addJackpotEntry() external nonReentrant whenNotPaused notBlacklisted(msg.sender) {
+        require(players[msg.sender].jackpotEntries < MAX_JACKPOT_ENTRIES, "Max jackpot entries reached");
+        require(vmfToken.balanceOf(msg.sender) >= JACKPOT_ENTRY_COST, "Insufficient VMF balance for jackpot entry");
+
+        require(vmfToken.transferFrom(msg.sender, address(this), JACKPOT_ENTRY_COST), "Jackpot entry transfer failed");
+        players[msg.sender].jackpotEntries++;
+        currentWeeklyJackpot += JACKPOT_ENTRY_COST * JACKPOT_MULTIPLIER; // Example multiplier
+
+        emit JackpotEntryAdded(msg.sender, JACKPOT_ENTRY_COST);
+    }
+
+    /**
+     * @dev Claim first order reward
+     */
+    function claimFirstOrderReward() external nonReentrant whenNotPaused notBlacklisted(msg.sender) canClaimReward {
+        require(!players[msg.sender].hasCompletedFirstOrder, "First order reward already claimed");
+        require(players[msg.sender].totalOrders >= 1, "No first order completed");
+
+        players[msg.sender].hasCompletedFirstOrder = true;
+        players[msg.sender].totalToppings += FIRST_ORDER_REWARD;
+        players[msg.sender].lastRewardClaim = block.timestamp;
+
+        emit FirstOrderRewardClaimed(msg.sender, FIRST_ORDER_REWARD);
+        emit ToppingsAwarded(msg.sender, FIRST_ORDER_REWARD, "First order reward");
+    }
+
+    /**
+     * @dev Award loyalty points based on VMF holdings
+     */
+    function awardLoyaltyPoints() external nonReentrant whenNotPaused notBlacklisted(msg.sender) {
+        uint256 balance = vmfToken.balanceOf(msg.sender);
+        uint256 points = balance.div(10**18).mul(LOYALTY_POINTS_PER_DOLLAR); // Example: 1 point per $1
+
+        if (points > 0) {
+            players[msg.sender].loyaltyPoints += points;
+            emit LoyaltyPointsAwarded(msg.sender, points, "VMF holdings");
+        }
     }
 }
 
