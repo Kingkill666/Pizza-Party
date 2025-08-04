@@ -41,614 +41,858 @@ localStorage ← UI Update ← Event Emission ← Balance Check ← Entry Valida
 Jackpot Calc ← Toppings Award ← Referral Process ← Daily/Weekly Logic
 ```
 
+## Component Architecture
+
+### Frontend Layer (Next.js)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Frontend Layer                          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐        │
+│  │    Pages    │    │ Components  │    │    Hooks    │        │
+│  │             │    │             │    │             │        │
+│  │ • /         │    │ • Wallet    │    │ • useWallet │        │
+│  │ • /game     │    │ • Jackpot   │    │ • useVMF    │        │
+│  │ • /jackpot  │    │ • Game      │    │ • useMobile │        │
+│  │ • /admin    │    │ • UI        │    │             │        │
+│  └─────────────┘    └─────────────┘    └─────────────┘        │
+│         │                   │                   │               │
+│         ▼                   ▼                   ▼               │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐        │
+│  │    Lib      │    │   Utils     │    │   Config    │        │
+│  │             │    │             │    │             │        │
+│  │ • wallet-   │    │ • validation│    │ • constants │        │
+│  │   config.ts │    │ • formatting│    │ • networks  │        │
+│  │ • jackpot-  │    │ • helpers   │    │ • wallets   │        │
+│  │   data.ts   │    │             │    │             │        │
+│  └─────────────┘    └─────────────┘    └─────────────┘        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ## Smart Contract API
 
 ### PizzaParty Contract
 
 #### Core Functions
 
-##### `enterDailyGame(string memory referralCode)`
-Enter the daily game with optional referral code.
+##### `enterDailyGame()`
+Enter the daily game by paying 1 VMF.
 
-**Parameters:**
-- `referralCode` (string): Optional referral code
-
-**Requirements:**
-- User must have at least $1 worth of VMF token
-- User must not have entered today
-- User must not be blacklisted
-
-**Events:**
-- `PlayerEntered(address indexed player, uint256 gameId, uint256 entryFee)`
-- `ToppingsAwarded(address indexed player, uint256 amount, string reason)`
-
-**Example Usage:**
 ```solidity
-// Enter without referral
-await pizzaParty.enterDailyGame("");
-
-// Enter with referral code
-await pizzaParty.enterDailyGame("FRIEND123");
+function enterDailyGame() external payable {
+    require(msg.value == DAILY_ENTRY_FEE, "Incorrect entry fee");
+    require(!paused, "Contract is paused");
+    require(!blacklisted[msg.sender], "Address is blacklisted");
+    
+    // Transfer VMF tokens
+    vmfToken.transferFrom(msg.sender, address(this), DAILY_ENTRY_FEE);
+    
+    // Record entry
+    dailyEntries[msg.sender][block.timestamp] = true;
+    
+    emit DailyGameEntered(msg.sender, DAILY_ENTRY_FEE);
+}
 ```
 
-##### `createReferralCode()`
-Create a unique referral code for the player.
+**Parameters:** None
+**Returns:** None
+**Events:** `DailyGameEntered(address player, uint256 amount)`
 
-**Requirements:**
-- Player must not already have a referral code
-- Player must not be blacklisted
+##### `processDailyPayout()`
+Process daily payout and select winners (owner only).
 
-**Events:**
-- `ReferralCreated(address indexed referrer, string referralCode)`
-
-**Example Usage:**
 ```solidity
-// Create referral code
-await pizzaParty.createReferralCode();
-// Returns: "ABC123" (example referral code)
+function processDailyPayout() external onlyOwner {
+    require(!paused, "Contract is paused");
+    
+    // Select 8 winners
+    address[] memory winners = selectDailyWinners();
+    
+    // Calculate prize per winner
+    uint256 prizePerWinner = address(this).balance / DAILY_WINNERS_COUNT;
+    
+    // Distribute prizes
+    for (uint i = 0; i < winners.length; i++) {
+        payable(winners[i]).transfer(prizePerWinner);
+    }
+    
+    emit DailyPayoutProcessed(winners, prizePerWinner);
+}
 ```
 
-##### `awardVMFHoldingsToppings()`
-Award toppings based on VMF token holdings.
-
-**Requirements:**
-- Player must not be blacklisted
-
-**Events:**
-- `ToppingsAwarded(address indexed player, uint256 amount, string reason)`
-
-**Example Usage:**
-```solidity
-// Award toppings based on VMF holdings
-await pizzaParty.awardVMFHoldingsToppings();
-// 1 topping per 10 VMF held
-```
-
-#### Admin Functions
-
-##### `drawDailyWinners()`
-Draw 8 random winners for daily game.
-
-**Requirements:**
-- Only owner can call
-- Game must be completed
-
-**Events:**
-- `DailyWinnersSelected(uint256 gameId, address[] winners, uint256 jackpotAmount)`
-
-**Example Usage:**
-```solidity
-// Draw daily winners (admin only)
-await pizzaParty.drawDailyWinners();
-// Returns: Array of 8 winner addresses
-```
-
-##### `drawWeeklyWinners()`
-Draw 10 random winners for weekly game.
-
-**Requirements:**
-- Only owner can call
-- Weekly draw must be ready
-
-**Events:**
-- `WeeklyWinnersSelected(uint256 gameId, address[] winners, uint256 jackpotAmount)`
-
-**Example Usage:**
-```solidity
-// Draw weekly winners (admin only)
-await pizzaParty.drawWeeklyWinners();
-// Returns: Array of 10 winner addresses
-```
-
-##### `emergencyPause(bool pause)`
-Pause/unpause contract in emergency.
-
-**Requirements:**
-- Only owner can call
-
-**Events:**
-- `EmergencyPause(bool paused)`
-
-**Example Usage:**
-```solidity
-// Pause contract
-await pizzaParty.emergencyPause(true);
-
-// Unpause contract
-await pizzaParty.emergencyPause(false);
-```
-
-##### `setPlayerBlacklist(address player, bool blacklisted)`
-Blacklist/unblacklist specific players.
-
-**Requirements:**
-- Only owner can call
-
-**Events:**
-- `PlayerBlacklisted(address indexed player, bool blacklisted)`
-
-**Example Usage:**
-```solidity
-// Blacklist player
-await pizzaParty.setPlayerBlacklist("0x123...", true);
-
-// Remove from blacklist
-await pizzaParty.setPlayerBlacklist("0x123...", false);
-```
-
-##### `emergencyWithdraw()`
-Withdraw accumulated VMF (emergency only).
-
-**Requirements:**
-- Only owner can call
-- Contract must have balance
-
-**Example Usage:**
-```solidity
-// Emergency withdraw (admin only)
-await pizzaParty.emergencyWithdraw();
-```
+**Parameters:** None
+**Returns:** None
+**Events:** `DailyPayoutProcessed(address[] winners, uint256 prizePerWinner)`
 
 #### View Functions
 
-##### `hasEnteredToday(address player)`
-Check if player has entered today's game.
+##### `getDailyEntries(address player, uint256 timestamp)`
+Check if a player entered on a specific day.
 
-**Returns:**
-- `bool`: True if player has entered today
-
-**Example Usage:**
 ```solidity
-// Check if player has entered today
-const hasEntered = await pizzaParty.hasEnteredToday("0x123...");
-// Returns: true/false
-```
-
-##### `getPlayerInfo(address player)`
-Get complete player information.
-
-**Returns:**
-```solidity
-struct Player {
-    uint256 totalToppings;
-    uint256 dailyEntries;
-    uint256 weeklyEntries;
-    uint256 lastEntryTime;
-    uint256 streakDays;
-    uint256 lastStreakUpdate;
-    bool isBlacklisted;
+function getDailyEntries(address player, uint256 timestamp) 
+    external view returns (bool) {
+    return dailyEntries[player][timestamp];
 }
 ```
 
-**Example Usage:**
+**Parameters:**
+- `player`: Player's address
+- `timestamp`: Day timestamp
+**Returns:** `bool` - Whether player entered on that day
+
+##### `getPlayerToppings(address player)`
+Get player's total toppings.
+
 ```solidity
-// Get player info
-const playerInfo = await pizzaParty.getPlayerInfo("0x123...");
-console.log("Total toppings:", playerInfo.totalToppings);
-console.log("Daily entries:", playerInfo.dailyEntries);
-console.log("Streak days:", playerInfo.streakDays);
+function getPlayerToppings(address player) 
+    external view returns (uint256) {
+    return playerToppings[player];
+}
 ```
 
-## Frontend Component APIs
+**Parameters:**
+- `player`: Player's address
+**Returns:** `uint256` - Total toppings for player
 
-### Wallet Configuration (`lib/wallet-config.ts`)
+## Frontend Component API
 
-The wallet configuration system provides multi-platform wallet support with automatic detection and connection management.
+### Wallet Configuration (`wallet-config.ts`)
 
-#### Architecture
+#### Wallet Interface
 
+```typescript
+export interface WalletInfo {
+  name: string
+  icon: string
+  color: string
+  id: string
+  mobile?: boolean
+  deepLink?: string
+  downloadUrl?: string
+  universalLink?: string
+  iconImage?: string
+}
 ```
-Wallet Detection → Platform Check → Connection Method → Error Handling
-     ↓                ↓                ↓                ↓
-Mobile Wallet    Desktop Wallet   Connection State   User Feedback
-     ↓                ↓                ↓                ↓
-Deep Linking     Extension API    localStorage       Toast Messages
+
+#### Wallet Connection
+
+```typescript
+export interface WalletConnection {
+  address: string
+  chainId: number
+  walletName: string
+  balance?: string
+}
 ```
+
+#### Usage Examples
+
+**Basic Wallet Connection:**
+```typescript
+import { requestWalletConnection, WALLETS } from '@/lib/wallet-config';
+
+const handleWalletConnect = async (walletId: string) => {
+  try {
+    const connection = await requestWalletConnection(walletId);
+    console.log('Connected:', connection.address);
+  } catch (error) {
+    console.error('Connection failed:', error.message);
+  }
+};
+
+// Connect to MetaMask
+const metamaskConnection = await requestWalletConnection('metamask');
+```
+
+**Mobile Wallet Detection:**
+```typescript
+import { isMobile, isInWalletBrowser } from '@/lib/wallet-config';
+
+if (isMobile()) {
+  const walletBrowser = isInWalletBrowser();
+  if (walletBrowser) {
+    console.log('User is in', walletBrowser, 'browser');
+  }
+}
+```
+
+**Multi-Wallet Support:**
+```typescript
+import { WALLETS, getWalletProvider } from '@/lib/wallet-config';
+
+// Get all available wallets
+const availableWallets = WALLETS.filter(wallet => {
+  return getWalletProvider(wallet.id) !== null;
+});
+
+// Connect to first available wallet
+for (const wallet of availableWallets) {
+  try {
+    const connection = await requestWalletConnection(wallet.id);
+    break; // Successfully connected
+  } catch (error) {
+    continue; // Try next wallet
+  }
+}
+```
+
+### Jackpot Data (`jackpot-data.ts`)
 
 #### Core Functions
 
-##### `detectPlatform()`
-Detect the current platform (mobile/desktop) and available wallets.
+##### `calculateCommunityJackpot()`
+Calculate current community jackpot based on player activity.
 
-**Returns:**
 ```typescript
-interface PlatformInfo {
-  isMobile: boolean;
-  isDesktop: boolean;
-  availableWallets: string[];
-  recommendedWallet: string;
+export const calculateCommunityJackpot = (): number => {
+  if (typeof window === "undefined") return 0;
+
+  const today = new Date().toDateString();
+  const keys = Object.keys(localStorage);
+  let todaysPlayers = 0;
+
+  keys.forEach((key) => {
+    if (key.startsWith("pizza_entry_") && 
+        key.includes(today) && 
+        localStorage.getItem(key) === "true") {
+      todaysPlayers++;
+    }
+  });
+
+  return todaysPlayers; // Each player pays 1 VMF
+};
+```
+
+**Returns:** `number` - Current jackpot amount in VMF
+
+##### `getWeeklyJackpotInfo()`
+Get comprehensive weekly jackpot information.
+
+```typescript
+export const getWeeklyJackpotInfo = () => {
+  // Calculate time until next Sunday at 12pm PST
+  const now = new Date();
+  const pstOffset = -8 * 60; // PST is UTC-8
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const pstTime = new Date(utc + pstOffset * 60000);
+
+  // Find next Sunday at 12pm PST
+  const nextSunday = new Date(pstTime);
+  const daysUntilSunday = (7 - pstTime.getDay()) % 7;
+  
+  if (daysUntilSunday === 0 && pstTime.getHours() >= 12) {
+    nextSunday.setDate(nextSunday.getDate() + 7);
+  } else {
+    nextSunday.setDate(nextSunday.getDate() + daysUntilSunday);
+  }
+  
+  nextSunday.setHours(12, 0, 0, 0);
+
+  const difference = nextSunday.getTime() - now.getTime();
+  const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+  // Calculate real toppings and players
+  let totalToppings = 0;
+  let totalPlayers = 0;
+
+  if (typeof window !== "undefined") {
+    const keys = Object.keys(localStorage);
+    const uniquePlayers = new Set();
+
+    keys.forEach((key) => {
+      // Daily play entries (1 topping per day played)
+      if (key.startsWith("pizza_entry_")) {
+        const today = new Date().toDateString();
+        if (key.includes(today) && localStorage.getItem(key) === "true") {
+          totalToppings += 1;
+          const address = key.replace("pizza_entry_", "").replace(`_${today}`, "");
+          uniquePlayers.add(address);
+        }
+      }
+
+      // Referral success records (2 toppings per referral)
+      if (key.startsWith("pizza_referral_success_")) {
+        const address = key.replace("pizza_referral_success_", "");
+        const successRecord = JSON.parse(localStorage.getItem(key) || "[]");
+        const referralToppings = successRecord.length * 2;
+        totalToppings += referralToppings;
+        uniquePlayers.add(address);
+      }
+
+      // VMF holdings (1 topping per 10 VMF)
+      if (key.startsWith("pizza_vmf_holdings_")) {
+        const address = key.replace("pizza_vmf_holdings_", "");
+        const vmfAmount = Number.parseInt(localStorage.getItem(key) || "0");
+        const vmfToppings = Math.floor(vmfAmount / 10);
+        totalToppings += vmfToppings;
+        uniquePlayers.add(address);
+      }
+
+      // Streak bonuses (3 toppings for 7-day streak)
+      if (key.startsWith("pizza_streak_")) {
+        const address = key.replace("pizza_streak_", "");
+        const streakDays = Number.parseInt(localStorage.getItem(key) || "0");
+        if (streakDays >= 7) {
+          totalToppings += 3;
+        }
+        uniquePlayers.add(address);
+      }
+
+      // Legacy toppings storage
+      if (key.startsWith("pizza_toppings_")) {
+        const toppings = Number.parseInt(localStorage.getItem(key) || "0");
+        if (toppings > 0) {
+          totalToppings += toppings;
+          const address = key.replace("pizza_toppings_", "");
+          uniquePlayers.add(address);
+        }
+      }
+    });
+
+    totalPlayers = uniquePlayers.size;
+  }
+
+  return {
+    timeUntilDraw: { days, hours, minutes, seconds },
+    totalToppings,
+    totalPlayers,
+  };
+};
+```
+
+**Returns:** `object` - Weekly jackpot information with countdown and stats
+
+#### Usage Examples
+
+**Display Jackpot Information:**
+```typescript
+import { calculateCommunityJackpot, getWeeklyJackpotInfo } from '@/lib/jackpot-data';
+
+// Get current daily jackpot
+const dailyJackpot = calculateCommunityJackpot();
+console.log('Daily Jackpot:', dailyJackpot, 'VMF');
+
+// Get weekly information
+const weeklyInfo = getWeeklyJackpotInfo();
+console.log('Time until draw:', weeklyInfo.timeUntilDraw);
+console.log('Total toppings:', weeklyInfo.totalToppings);
+console.log('Total players:', weeklyInfo.totalPlayers);
+```
+
+**Real-time Jackpot Updates:**
+```typescript
+import { useEffect, useState } from 'react';
+import { calculateCommunityJackpot } from '@/lib/jackpot-data';
+
+function JackpotDisplay() {
+  const [jackpot, setJackpot] = useState(0);
+
+  useEffect(() => {
+    const updateJackpot = () => {
+      const currentJackpot = calculateCommunityJackpot();
+      setJackpot(currentJackpot);
+    };
+
+    updateJackpot();
+    const interval = setInterval(updateJackpot, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return <div>Current Jackpot: {jackpot} VMF</div>;
 }
 ```
 
-**Example Usage:**
+### Payout System (`payout-utils.ts`)
+
+#### Core Interfaces
+
 ```typescript
-import { detectPlatform } from '@/lib/wallet-config';
-
-const platform = detectPlatform();
-console.log('Platform:', platform.isMobile ? 'Mobile' : 'Desktop');
-console.log('Available wallets:', platform.availableWallets);
-```
-
-##### `requestWalletConnection(walletId: string)`
-Request connection to a specific wallet.
-
-**Parameters:**
-- `walletId` (string): Wallet identifier (e.g., 'metamask', 'coinbase', 'trust')
-
-**Returns:**
-```typescript
-interface WalletConnection {
-  address: string;
-  walletId: string;
-  isConnected: boolean;
-  chainId: number;
+export interface PayoutRecord {
+  id: number
+  type: 'daily' | 'weekly'
+  timestamp: number
+  winners: string[]
+  jackpotAmount: number
+  prizePerWinner: number
+  totalEntries?: number
+  totalToppings?: number
+  totalPlayers?: number
+  processed: boolean
 }
-```
 
-**Example Usage:**
-```typescript
-import { requestWalletConnection } from '@/lib/wallet-config';
-
-try {
-  const connection = await requestWalletConnection('metamask');
-  console.log('Connected to:', connection.address);
-} catch (error) {
-  console.error('Connection failed:', error.message);
+export interface GameData {
+  totalEntries: number
+  jackpotAmount: number
 }
-```
 
-##### `connectMobileWallet(walletId: string)`
-Connect to mobile wallet with deep linking support.
+export interface WeeklyData {
+  totalToppings: number
+  totalPlayers: number
+  players: PlayerData[]
+  jackpotAmount: number
+}
 
-**Parameters:**
-- `walletId` (string): Mobile wallet identifier
-
-**Example Usage:**
-```typescript
-import { connectMobileWallet } from '@/lib/wallet-config';
-
-const mobileConnection = await connectMobileWallet('trust');
-// Opens Trust Wallet app via deep link
+export interface PlayerData {
+  address: string
+  toppings: number
+}
 ```
 
 #### Error Handling
 
 ```typescript
-// Comprehensive error handling example
-try {
-  const connection = await requestWalletConnection('metamask');
-} catch (error) {
-  if (error.code === 'WALLET_NOT_FOUND') {
-    // Handle missing wallet
-    showInstallPrompt('metamask');
-  } else if (error.code === 'USER_REJECTED') {
-    // Handle user rejection
-    showToast('Connection cancelled by user');
-  } else if (error.code === 'NETWORK_MISMATCH') {
-    // Handle wrong network
-    showNetworkSwitchPrompt();
+export class PayoutError extends Error {
+  constructor(message: string, public code: string) {
+    super(message);
+    this.name = 'PayoutError';
   }
 }
-```
-
-### Jackpot Data System (`lib/jackpot-data.ts`)
-
-The jackpot data system manages real-time calculations for daily and weekly jackpots, player statistics, and topping rewards.
-
-#### Architecture
-
-```
-localStorage Data → Real-time Calculation → UI Updates → Persistence
-     ↓                    ↓                    ↓            ↓
-Player Entries      Jackpot Amounts      React State   Data Sync
-     ↓                    ↓                    ↓            ↓
-Referral Records    Player Counts       Auto-refresh   Backup
 ```
 
 #### Core Functions
 
-##### `calculateCommunityJackpot()`
-Calculate the current daily jackpot based on real player activity.
-
-**Returns:**
-- `number`: Jackpot amount in VMF (equals number of players × $1 VMF each)
-
-**Data Sources:**
-- `pizza_entry_[address]_[date]`: Daily game entries
-- Each entry = $1 worth of VMF contribution
-
-**Example Usage:**
-```typescript
-import { calculateCommunityJackpot } from '@/lib/jackpot-data';
-
-const jackpot = calculateCommunityJackpot();
-console.log('Current jackpot:', jackpot, 'VMF');
-// Returns: 5 (if 5 players entered today)
-```
-
-##### `getWeeklyJackpotInfo()`
-Get comprehensive weekly jackpot information including countdown and player stats.
-
-**Returns:**
-```typescript
-interface WeeklyJackpotInfo {
-  totalToppings: number;
-  totalPlayers: number;
-  timeUntilDraw: {
-    days: number;
-    hours: number;
-    minutes: number;
-    seconds: number;
-  };
-}
-```
-
-**Example Usage:**
-```typescript
-import { getWeeklyJackpotInfo } from '@/lib/jackpot-data';
-
-const weeklyInfo = getWeeklyJackpotInfo();
-console.log('Total toppings:', weeklyInfo.totalToppings);
-console.log('Time until draw:', weeklyInfo.timeUntilDraw);
-```
-
-##### `getDailyPlayerCount()`
-Get the number of players who entered today's game.
-
-**Returns:**
-- `number`: Count of unique players who entered today
-
-**Example Usage:**
-```typescript
-import { getDailyPlayerCount } from '@/lib/jackpot-data';
-
-const todayPlayers = getDailyPlayerCount();
-console.log('Players today:', todayPlayers);
-```
-
-##### `getWeeklyPlayerCount()`
-Get the number of unique players who played this week.
-
-**Returns:**
-- `number`: Count of unique players who played this week
-
-**Example Usage:**
-```typescript
-import { getWeeklyPlayerCount } from '@/lib/jackpot-data';
-
-const weeklyPlayers = getWeeklyPlayerCount();
-console.log('Weekly players:', weeklyPlayers);
-```
-
-##### `getToppingsAvailableToClaim()`
-Get the total toppings available to claim.
-
-**Returns:**
-- `number`: Total toppings earned but not yet claimed
-
-**Example Usage:**
-```typescript
-import { getToppingsAvailableToClaim } from '@/lib/jackpot-data';
-
-const availableToppings = getToppingsAvailableToClaim();
-console.log('Toppings available:', availableToppings);
-```
-
-#### Topping Calculation Logic
-
-The system calculates toppings from multiple sources:
+##### `getCurrentGameData()`
+Get current daily game data with error handling.
 
 ```typescript
-// Daily play toppings (1 per day played)
-if (key.startsWith("pizza_entry_")) {
-  totalToppings += 1; // 1 topping for daily play
-}
+export const getCurrentGameData = (): GameData => {
+  try {
+    if (typeof window === "undefined") {
+      return { totalEntries: 0, jackpotAmount: 0 };
+    }
 
-// Referral toppings (2 per referral)
-if (key.startsWith("pizza_referral_success_")) {
-  const successRecord = JSON.parse(localStorage.getItem(key) || "[]");
-  totalToppings += successRecord.length * 2; // 2 toppings per referral
-}
+    const today = new Date().toDateString();
+    let totalEntries = 0;
+    let jackpotAmount = 0;
 
-// VMF holdings toppings (1 per 10 VMF)
-if (key.startsWith("pizza_vmf_holdings_")) {
-  const vmfAmount = Number.parseInt(localStorage.getItem(key) || "0");
-  totalToppings += Math.floor(vmfAmount / 10); // 1 topping per 10 VMF
-}
+    const keys = Object.keys(localStorage);
+    keys.forEach((key) => {
+      if (key.startsWith("pizza_entry_") && key.endsWith(`_${today}`)) {
+        if (localStorage.getItem(key) === "true") {
+          totalEntries++;
+          jackpotAmount += 50; // 50 VMF per entry
+        }
+      }
+    });
 
-// Streak bonus toppings (3 for 7-day streak)
-if (key.startsWith("pizza_streak_")) {
-  const streakDays = Number.parseInt(localStorage.getItem(key) || "0");
-  if (streakDays >= 7) {
-    totalToppings += 3; // 3 toppings for 7-day streak
+    return { totalEntries, jackpotAmount };
+  } catch (error) {
+    console.error("Error getting current game data:", error);
+    throw new PayoutError("Failed to get current game data", "GAME_DATA_ERROR");
   }
-}
+};
 ```
 
-#### Real-time Updates
+##### `selectDailyWinners(totalEntries: number)`
+Select daily winners with weighted randomness.
 
 ```typescript
-// Example: Real-time jackpot updates
-useEffect(() => {
-  const updateJackpot = () => {
-    const jackpot = calculateCommunityJackpot();
-    setCommunityJackpot(jackpot);
-  };
+export const selectDailyWinners = (totalEntries: number): string[] => {
+  try {
+    const winners: string[] = [];
+    const addresses = getPlayerAddresses();
+    
+    if (addresses.length === 0) {
+      return winners;
+    }
+    
+    // Use weighted selection based on entry count
+    const entryCounts = new Map<string, number>();
+    addresses.forEach(address => {
+      const count = getPlayerEntryCount(address);
+      entryCounts.set(address, count);
+    });
+    
+    const totalWeight = Array.from(entryCounts.values())
+      .reduce((sum, count) => sum + count, 0);
+    
+    for (let i = 0; i < 8 && i < addresses.length; i++) {
+      const random = Math.random() * totalWeight;
+      let currentWeight = 0;
+      
+      for (const [address, count] of entryCounts) {
+        currentWeight += count;
+        if (random <= currentWeight && !winners.includes(address)) {
+          winners.push(address);
+          break;
+        }
+      }
+    }
+    
+    return winners;
+  } catch (error) {
+    console.error("Error selecting daily winners:", error);
+    throw new PayoutError("Failed to select daily winners", "WINNER_SELECTION_ERROR");
+  }
+};
+```
 
-  // Update every second
-  const interval = setInterval(updateJackpot, 1000);
-  return () => clearInterval(interval);
-}, []);
+#### Usage Examples
+
+**Process Daily Payout:**
+```typescript
+import { 
+  getCurrentGameData, 
+  selectDailyWinners, 
+  savePayoutRecord,
+  PayoutError 
+} from '@/lib/payout-utils';
+
+const processDailyPayout = async () => {
+  try {
+    // Get current game data
+    const currentGame = getCurrentGameData();
+    
+    if (currentGame.totalEntries === 0) {
+      throw new PayoutError("No entries found for today", "NO_ENTRIES");
+    }
+    
+    // Select winners
+    const winners = selectDailyWinners(currentGame.totalEntries);
+    
+    if (winners.length === 0) {
+      throw new PayoutError("No winners selected", "NO_WINNERS");
+    }
+    
+    // Calculate prize per winner
+    const prizePerWinner = currentGame.jackpotAmount / 8; // 8 winners
+    
+    // Record payout
+    const payoutRecord: PayoutRecord = {
+      id: Date.now(),
+      type: "daily",
+      timestamp: Date.now(),
+      winners: winners,
+      jackpotAmount: currentGame.jackpotAmount,
+      prizePerWinner: prizePerWinner,
+      totalEntries: currentGame.totalEntries,
+      processed: true,
+    };
+
+    // Save payout record
+    savePayoutRecord(payoutRecord);
+    
+    console.log("✅ Daily payout processed successfully");
+  } catch (error) {
+    if (error instanceof PayoutError) {
+      console.error("Payout error:", error.message);
+    } else {
+      console.error("Unexpected error:", error);
+    }
+  }
+};
+```
+
+**Get Payout History:**
+```typescript
+import { getPayoutHistory, formatTimestamp } from '@/lib/payout-utils';
+
+const displayPayoutHistory = () => {
+  const history = getPayoutHistory();
+  
+  return history.map(payout => (
+    <div key={payout.id}>
+      <h3>{payout.type === "daily" ? "🎯 Daily" : "🏆 Weekly"} Payout</h3>
+      <p>Time: {formatTimestamp(payout.timestamp)}</p>
+      <p>Jackpot: {payout.jackpotAmount} VMF</p>
+      <p>Winners: {payout.winners.length}</p>
+    </div>
+  ));
+};
 ```
 
 ## Integration Examples
 
-### Complete Game Entry Flow
+### Wallet Connection Flow
 
 ```typescript
-// 1. Detect platform and available wallets
-const platform = detectPlatform();
+import { useState } from 'react';
+import { requestWalletConnection, WALLETS } from '@/lib/wallet-config';
+import { useWallet } from '@/hooks/useWallet';
 
-// 2. Request wallet connection
-const connection = await requestWalletConnection('metamask');
+function WalletConnect() {
+  const { isConnected, connection, connect, disconnect } = useWallet();
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-// 3. Validate VMF balance
-const vmfBalance = await vmfToken.balanceOf(connection.address);
-if (vmfBalance < DAILY_ENTRY_FEE) {
-  throw new Error('Insufficient VMF balance');
-}
+  const handleWalletConnect = async (walletId: string) => {
+    setIsConnecting(true);
+    setError(null);
 
-// 4. Enter game
-await pizzaParty.enterDailyGame(referralCode);
-
-// 5. Update local storage
-const today = new Date().toDateString();
-const entryKey = `pizza_entry_${connection.address}_${today}`;
-localStorage.setItem(entryKey, "true");
-
-// 6. Update UI
-setHasEntered(true);
-setPlayerCount(prev => prev + 1);
-```
-
-### Referral System Integration
-
-```typescript
-// 1. Generate referral code
-const referralCode = await pizzaParty.createReferralCode();
-
-// 2. Share referral link
-const referralLink = `${window.location.origin}/game?ref=${referralCode}`;
-
-// 3. Process referral when new user enters
-if (incomingReferralCode) {
-  const referrerAddress = findReferrerByCode(incomingReferralCode);
-  if (referrerAddress) {
-    // Award 2 toppings to referrer
-    awardToppingsToReferrer(referrerAddress, 2, incomingReferralCode);
-  }
-}
-```
-
-### Jackpot Monitoring
-
-```typescript
-// Real-time jackpot monitoring
-const JackpotMonitor = () => {
-  const [jackpot, setJackpot] = useState(0);
-  const [players, setPlayers] = useState(0);
-
-  useEffect(() => {
-    const updateStats = () => {
-      setJackpot(calculateCommunityJackpot());
-      setPlayers(getDailyPlayerCount());
-    };
-
-    updateStats();
-    const interval = setInterval(updateStats, 1000);
-    return () => clearInterval(interval);
-  }, []);
+    try {
+      const result = await requestWalletConnection(walletId);
+      await connect(walletId, result);
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setIsConnecting(false);
+    }
+  };
 
   return (
     <div>
-      <h3>Current Jackpot: {jackpot} VMF</h3>
-      <p>Players Today: {players}</p>
+      {!isConnected ? (
+        <div className="grid grid-cols-2 gap-4">
+          {WALLETS.map((wallet) => (
+            <button
+              key={wallet.id}
+              onClick={() => handleWalletConnect(wallet.id)}
+              disabled={isConnecting}
+              className={`p-4 rounded-lg ${wallet.color}`}
+            >
+              <span className="text-2xl">{wallet.icon}</span>
+              <p className="font-bold">{wallet.name}</p>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div>
+          <p>Connected: {connection?.address}</p>
+          <button onClick={disconnect}>Disconnect</button>
+        </div>
+      )}
+      
+      {error && <p className="text-red-600">{error}</p>}
     </div>
   );
-};
+}
 ```
 
-## Error Handling Patterns
-
-### Wallet Connection Errors
+### Game Entry with Validation
 
 ```typescript
-const handleWalletConnection = async (walletId: string) => {
-  try {
-    const connection = await requestWalletConnection(walletId);
-    setConnection(connection);
-  } catch (error) {
-    switch (error.code) {
-      case 'WALLET_NOT_FOUND':
-        showInstallPrompt(walletId);
-        break;
-      case 'USER_REJECTED':
-        showToast('Connection cancelled');
-        break;
-      case 'NETWORK_MISMATCH':
-        showNetworkSwitchPrompt();
-        break;
-      default:
-        showToast('Connection failed: ' + error.message);
+import { useState } from 'react';
+import { useWallet } from '@/hooks/useWallet';
+import { useVMFBalance } from '@/hooks/useVMFBalance';
+import { validateWalletAddress, validateVMFAmount } from '@/lib/validation';
+
+function GameEntry() {
+  const { isConnected, connection } = useWallet();
+  const { balance, hasMinimum } = useVMFBalance();
+  const [referralCode, setReferralCode] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleEnterGame = async () => {
+    if (!isConnected || !connection) {
+      setError('Wallet not connected');
+      return;
     }
-  }
-};
-```
 
-### Smart Contract Errors
-
-```typescript
-const handleGameEntry = async () => {
-  try {
-    await pizzaParty.enterDailyGame(referralCode);
-    showToast('Successfully entered game!');
-  } catch (error) {
-    if (error.message.includes('Insufficient VMF balance')) {
-      showToast('Need at least $1 worth of VMF to play');
-    } else if (error.message.includes('Already entered today')) {
-      showToast('You have already entered today\'s game');
-    } else if (error.message.includes('Player is blacklisted')) {
-      showToast('Account is blacklisted');
-    } else {
-      showToast('Entry failed: ' + error.message);
+    // Validate wallet address
+    if (!validateWalletAddress(connection.address)) {
+      setError('Invalid wallet address');
+      return;
     }
+
+    // Validate VMF balance
+    if (!hasMinimum) {
+      setError('Insufficient VMF balance');
+      return;
+    }
+
+    // Validate referral code if provided
+    if (referralCode && !validateReferralCode(referralCode)) {
+      setError('Invalid referral code');
+      return;
+    }
+
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      // Process game entry
+      const entryData = {
+        player: connection.address,
+        amount: 1, // 1 VMF
+        referralCode: referralCode || null,
+        timestamp: Date.now(),
+      };
+
+      // Store entry in localStorage
+      const today = new Date().toDateString();
+      const entryKey = `pizza_entry_${connection.address}_${today}`;
+      localStorage.setItem(entryKey, 'true');
+
+      // Process referral if applicable
+      if (referralCode) {
+        processReferralCode(referralCode, connection.address);
+      }
+
+      console.log('✅ Game entry successful');
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <div>
+      <h2>Enter Daily Game</h2>
+      <p>Cost: 1 VMF</p>
+      <p>Balance: {balance} VMF</p>
+      
+      <input
+        type="text"
+        placeholder="Referral code (optional)"
+        value={referralCode}
+        onChange={(e) => setReferralCode(e.target.value)}
+      />
+      
+      <button
+        onClick={handleEnterGame}
+        disabled={!isConnected || !hasMinimum || isProcessing}
+      >
+        {isProcessing ? 'Processing...' : 'Enter Game'}
+      </button>
+      
+      {error && <p className="text-red-600">{error}</p>}
+    </div>
+  );
+}
+```
+
+## Error Handling
+
+### Common Error Types
+
+```typescript
+// Wallet Connection Errors
+class WalletConnectionError extends Error {
+  constructor(message: string, public walletId: string) {
+    super(message);
+    this.name = 'WalletConnectionError';
   }
+}
+
+// Game Entry Errors
+class GameEntryError extends Error {
+  constructor(message: string, public playerAddress: string) {
+    super(message);
+    this.name = 'GameEntryError';
+  }
+}
+
+// Payout Processing Errors
+class PayoutError extends Error {
+  constructor(message: string, public code: string) {
+    super(message);
+    this.name = 'PayoutError';
+  }
+}
+```
+
+### Error Handling Patterns
+
+```typescript
+// Try-catch with specific error types
+try {
+  const connection = await requestWalletConnection('metamask');
+  // Process connection
+} catch (error) {
+  if (error instanceof WalletConnectionError) {
+    console.error('Wallet connection failed:', error.message);
+    // Handle wallet-specific error
+  } else if (error instanceof PayoutError) {
+    console.error('Payout error:', error.code, error.message);
+    // Handle payout error
+  } else {
+    console.error('Unexpected error:', error);
+    // Handle generic error
+  }
+}
+
+// Error boundary pattern
+const handleError = (error: Error, context: string) => {
+  console.error(`Error in ${context}:`, error);
+  
+  // Log to monitoring service
+  if (typeof window !== 'undefined') {
+    // Send to Sentry or similar
+    console.log('Sending error to monitoring service');
+  }
+  
+  // Show user-friendly message
+  return `Something went wrong. Please try again.`;
 };
 ```
 
-## Performance Considerations
+## Performance Optimization
 
-### localStorage Optimization
+### Memoization Examples
 
 ```typescript
-// Batch localStorage operations
-const batchUpdate = (updates: Record<string, string>) => {
-  Object.entries(updates).forEach(([key, value]) => {
-    localStorage.setItem(key, value);
-  });
-};
+import { useMemo, useCallback } from 'react';
+import { calculateCommunityJackpot } from '@/lib/jackpot-data';
 
-// Efficient data retrieval
-const getPlayerData = (address: string) => {
-  const keys = Object.keys(localStorage);
-  return keys
-    .filter(key => key.includes(address))
-    .reduce((data, key) => {
-      data[key] = localStorage.getItem(key);
-      return data;
-    }, {} as Record<string, string>);
-};
+// Memoize expensive calculations
+function JackpotDisplay() {
+  const jackpot = useMemo(() => {
+    return calculateCommunityJackpot();
+  }, []); // Recalculate only when dependencies change
+
+  const formattedJackpot = useMemo(() => {
+    return formatJackpotAmount(jackpot);
+  }, [jackpot]);
+
+  return <div>Jackpot: {formattedJackpot} VMF</div>;
+}
+
+// Memoize callback functions
+function WalletButtons() {
+  const handleWalletConnect = useCallback(async (walletId: string) => {
+    try {
+      const connection = await requestWalletConnection(walletId);
+      // Handle connection
+    } catch (error) {
+      // Handle error
+    }
+  }, []); // Empty dependency array since function doesn't depend on props/state
+
+  return (
+    <div>
+      {WALLETS.map(wallet => (
+        <button
+          key={wallet.id}
+          onClick={() => handleWalletConnect(wallet.id)}
+        >
+          {wallet.name}
+        </button>
+      ))}
+    </div>
+  );
+}
 ```
 
-### Real-time Updates
+### Lazy Loading
 
 ```typescript
-// Debounced updates to prevent excessive re-renders
-const useDebouncedValue = (value: any, delay: number) => {
-  const [debouncedValue, setDebouncedValue] = useState(value);
+import { lazy, Suspense } from 'react';
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
+// Lazy load heavy components
+const PayoutSystem = lazy(() => import('@/components/PayoutSystem'));
+const AdminPanel = lazy(() => import('@/components/AdminPanel'));
 
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-};
+function App() {
+  return (
+    <div>
+      <Suspense fallback={<div>Loading...</div>}>
+        <PayoutSystem />
+      </Suspense>
+      
+      <Suspense fallback={<div>Loading admin...</div>}>
+        <AdminPanel />
+      </Suspense>
+    </div>
+  );
+}
 ```
 
 ## Security Considerations
@@ -657,34 +901,137 @@ const useDebouncedValue = (value: any, delay: number) => {
 
 ```typescript
 // Validate wallet addresses
-const validateWalletAddress = (address: string): boolean => {
-  return /^0x[a-fA-F0-9]{40}$/.test(address);
-};
-
-// Sanitize user inputs
-const sanitizeInput = (input: string): string => {
-  return input.replace(/[<>]/g, '').trim();
+export const validateWalletAddress = (address: string): boolean => {
+  if (!address || typeof address !== 'string') {
+    return false;
+  }
+  
+  // Check length and format
+  if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+    return false;
+  }
+  
+  // Additional checks can be added here
+  return true;
 };
 
 // Validate referral codes
-const validateReferralCode = (code: string): boolean => {
-  return /^[A-Z0-9]{6,12}$/.test(code);
+export const validateReferralCode = (code: string): boolean => {
+  if (!code || typeof code !== 'string') {
+    return false;
+  }
+  
+  // Check format (alphanumeric, 6-12 characters)
+  if (!/^[a-zA-Z0-9]{6,12}$/.test(code)) {
+    return false;
+  }
+  
+  return true;
+};
+
+// Sanitize user inputs
+export const sanitizeInput = (input: string): string => {
+  return input
+    .trim()
+    .replace(/[<>]/g, '') // Remove potential HTML tags
+    .slice(0, 100); // Limit length
 };
 ```
 
-### Data Integrity
+### Rate Limiting
 
 ```typescript
-// Verify localStorage data integrity
-const verifyDataIntegrity = () => {
-  const keys = Object.keys(localStorage);
-  const pizzaKeys = keys.filter(key => key.startsWith('pizza_'));
+// Simple rate limiting for game entries
+const rateLimiter = new Map<string, number>();
+
+export const checkRateLimit = (address: string, limitMs: number = 60000): boolean => {
+  const now = Date.now();
+  const lastEntry = rateLimiter.get(address);
   
-  return pizzaKeys.every(key => {
-    const value = localStorage.getItem(key);
-    return value !== null && value !== undefined;
-  });
+  if (lastEntry && (now - lastEntry) < limitMs) {
+    return false; // Rate limited
+  }
+  
+  rateLimiter.set(address, now);
+  return true; // Allowed
+};
+
+// Usage in game entry
+const handleEnterGame = async () => {
+  if (!checkRateLimit(connection.address)) {
+    throw new Error('Please wait before entering again');
+  }
+  
+  // Process game entry
 };
 ```
 
-This comprehensive API documentation provides developers with detailed examples, architectural insights, and best practices for integrating with the Pizza Party dApp ecosystem. 
+## Testing Examples
+
+### Unit Tests
+
+```typescript
+import { describe, it, expect } from 'vitest';
+import { calculateCommunityJackpot, getWeeklyJackpotInfo } from '@/lib/jackpot-data';
+
+describe('Jackpot Calculations', () => {
+  it('should calculate community jackpot correctly', () => {
+    // Mock localStorage
+    const mockLocalStorage = {
+      'pizza_entry_0x123_2024-01-15': 'true',
+      'pizza_entry_0x456_2024-01-15': 'true',
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true,
+    });
+    
+    const jackpot = calculateCommunityJackpot();
+    expect(jackpot).toBe(2); // 2 players = 2 VMF
+  });
+  
+  it('should return 0 when no entries exist', () => {
+    Object.defineProperty(window, 'localStorage', {
+      value: {},
+      writable: true,
+    });
+    
+    const jackpot = calculateCommunityJackpot();
+    expect(jackpot).toBe(0);
+  });
+});
+```
+
+### Integration Tests
+
+```typescript
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { useWallet } from '@/hooks/useWallet';
+import GameEntry from '@/components/GameEntry';
+
+// Mock hooks
+jest.mock('@/hooks/useWallet');
+jest.mock('@/hooks/useVMFBalance');
+
+describe('GameEntry Integration', () => {
+  it('should allow game entry when wallet is connected and has sufficient balance', async () => {
+    // Mock wallet connection
+    (useWallet as jest.Mock).mockReturnValue({
+      isConnected: true,
+      connection: { address: '0x123...' },
+    });
+    
+    render(<GameEntry />);
+    
+    const enterButton = screen.getByText('Enter Game');
+    fireEvent.click(enterButton);
+    
+    await waitFor(() => {
+      expect(screen.getByText('✅ Game entry successful')).toBeInTheDocument();
+    });
+  });
+});
+```
+
+This enhanced API reference provides comprehensive documentation with practical examples, error handling patterns, and security considerations for the Pizza Party dApp. 

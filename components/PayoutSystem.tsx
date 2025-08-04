@@ -8,8 +8,22 @@ import { Trophy, Users, Clock, Gift, Star, AlertCircle, Check } from "lucide-rea
 import { useWallet } from "@/hooks/useWallet"
 import { useVMFBalance } from "@/hooks/useVMFBalance"
 import { calculateCommunityJackpot, formatJackpotAmount, getWeeklyJackpotInfo } from "@/lib/jackpot-data"
+import {
+  PayoutRecord,
+  PayoutError,
+  getCurrentGameData,
+  getWeeklyData,
+  selectDailyWinners,
+  selectWeeklyWinners,
+  savePayoutRecord,
+  getPayoutHistory,
+  resetDailyGame,
+  resetWeeklyGame,
+  formatTimestamp,
+  formatAddress,
+} from "@/lib/payout-utils"
 
-// Enhanced payout system with smart contract integration
+// Enhanced payout system with improved error handling
 export default function PayoutSystem() {
   const customFontStyle = {
     fontFamily: '"Comic Sans MS", "Marker Felt", "Chalkduster", "Kalam", "Caveat", cursive',
@@ -17,7 +31,7 @@ export default function PayoutSystem() {
   }
 
   const [showPayoutModal, setShowPayoutModal] = useState(false)
-  const [payoutHistory, setPayoutHistory] = useState<any[]>([])
+  const [payoutHistory, setPayoutHistory] = useState<PayoutRecord[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [payoutError, setPayoutError] = useState<string | null>(null)
   const [communityJackpot, setCommunityJackpot] = useState(0)
@@ -43,22 +57,25 @@ export default function PayoutSystem() {
   }, [])
 
   const loadPayoutData = () => {
-    // Load community jackpot
-    const jackpot = calculateCommunityJackpot()
-    setCommunityJackpot(jackpot)
+    try {
+      // Load community jackpot
+      const jackpot = calculateCommunityJackpot()
+      setCommunityJackpot(jackpot)
 
-    // Load weekly info
-    const info = getWeeklyJackpotInfo()
-    setWeeklyInfo(info)
+      // Load weekly info
+      const info = getWeeklyJackpotInfo()
+      setWeeklyInfo(info)
 
-    // Load payout history from localStorage
-    if (typeof window !== "undefined") {
-      const history = JSON.parse(localStorage.getItem("pizza_payout_history") || "[]")
+      // Load payout history
+      const history = getPayoutHistory()
       setPayoutHistory(history)
+    } catch (error) {
+      console.error("Error loading payout data:", error)
+      setPayoutError("Failed to load payout data")
     }
   }
 
-  // Process daily payout (simulated smart contract call)
+  // Process daily payout with improved error handling
   const processDailyPayout = async () => {
     if (!isConnected) {
       setPayoutError("Wallet not connected")
@@ -69,20 +86,27 @@ export default function PayoutSystem() {
     setPayoutError(null)
 
     try {
-      // Simulate smart contract interaction
       console.log("🎯 Processing daily payout...")
       
       // Get current game data
       const currentGame = getCurrentGameData()
       
-      // Select winners (simulated)
+      if (currentGame.totalEntries === 0) {
+        throw new PayoutError("No entries found for today", "NO_ENTRIES")
+      }
+      
+      // Select winners
       const winners = selectDailyWinners(currentGame.totalEntries)
+      
+      if (winners.length === 0) {
+        throw new PayoutError("No winners selected", "NO_WINNERS")
+      }
       
       // Calculate prize per winner
       const prizePerWinner = currentGame.jackpotAmount / 8 // 8 winners
       
       // Record payout
-      const payoutRecord = {
+      const payoutRecord: PayoutRecord = {
         id: Date.now(),
         type: "daily",
         timestamp: Date.now(),
@@ -93,10 +117,11 @@ export default function PayoutSystem() {
         processed: true,
       }
 
-      // Store payout history
-      const history = JSON.parse(localStorage.getItem("pizza_payout_history") || "[]")
-      history.unshift(payoutRecord)
-      localStorage.setItem("pizza_payout_history", JSON.stringify(history))
+      // Save payout record
+      savePayoutRecord(payoutRecord)
+      
+      // Update local state
+      const history = getPayoutHistory()
       setPayoutHistory(history)
 
       // Reset daily game
@@ -105,13 +130,17 @@ export default function PayoutSystem() {
       console.log("✅ Daily payout processed successfully")
     } catch (error) {
       console.error("❌ Daily payout failed:", error)
-      setPayoutError("Failed to process daily payout")
+      if (error instanceof PayoutError) {
+        setPayoutError(error.message)
+      } else {
+        setPayoutError("Failed to process daily payout")
+      }
     } finally {
       setIsProcessing(false)
     }
   }
 
-  // Process weekly payout (simulated smart contract call)
+  // Process weekly payout with improved error handling
   const processWeeklyPayout = async () => {
     if (!isConnected) {
       setPayoutError("Wallet not connected")
@@ -122,20 +151,27 @@ export default function PayoutSystem() {
     setPayoutError(null)
 
     try {
-      // Simulate smart contract interaction
       console.log("🏆 Processing weekly payout...")
       
       // Get weekly data
       const weeklyData = getWeeklyData()
       
+      if (weeklyData.totalPlayers === 0) {
+        throw new PayoutError("No players found for weekly payout", "NO_PLAYERS")
+      }
+      
       // Select winners based on toppings (weighted)
       const winners = selectWeeklyWinners(weeklyData.players)
+      
+      if (winners.length === 0) {
+        throw new PayoutError("No winners selected for weekly payout", "NO_WINNERS")
+      }
       
       // Calculate prize per winner
       const prizePerWinner = weeklyData.jackpotAmount / 10 // 10 winners
       
       // Record payout
-      const payoutRecord = {
+      const payoutRecord: PayoutRecord = {
         id: Date.now(),
         type: "weekly",
         timestamp: Date.now(),
@@ -147,10 +183,11 @@ export default function PayoutSystem() {
         processed: true,
       }
 
-      // Store payout history
-      const history = JSON.parse(localStorage.getItem("pizza_payout_history") || "[]")
-      history.unshift(payoutRecord)
-      localStorage.setItem("pizza_payout_history", JSON.stringify(history))
+      // Save payout record
+      savePayoutRecord(payoutRecord)
+      
+      // Update local state
+      const history = getPayoutHistory()
       setPayoutHistory(history)
 
       // Reset weekly game
@@ -159,158 +196,14 @@ export default function PayoutSystem() {
       console.log("✅ Weekly payout processed successfully")
     } catch (error) {
       console.error("❌ Weekly payout failed:", error)
-      setPayoutError("Failed to process weekly payout")
+      if (error instanceof PayoutError) {
+        setPayoutError(error.message)
+      } else {
+        setPayoutError("Failed to process weekly payout")
+      }
     } finally {
       setIsProcessing(false)
     }
-  }
-
-  // Get current game data
-  const getCurrentGameData = () => {
-    const today = new Date().toDateString()
-    let totalEntries = 0
-    let jackpotAmount = 0
-
-    if (typeof window !== "undefined") {
-      const keys = Object.keys(localStorage)
-      keys.forEach((key) => {
-        if (key.startsWith("pizza_entry_") && key.endsWith(`_${today}`)) {
-          if (localStorage.getItem(key) === "true") {
-            totalEntries++
-            jackpotAmount += 50 // 50 VMF per entry
-          }
-        }
-      })
-    }
-
-    return {
-      totalEntries,
-      jackpotAmount,
-    }
-  }
-
-  // Get weekly data
-  const getWeeklyData = () => {
-    let totalToppings = 0
-    let totalPlayers = 0
-    const players: any[] = []
-
-    if (typeof window !== "undefined") {
-      const keys = Object.keys(localStorage)
-      keys.forEach((key) => {
-        if (key.startsWith("pizza_toppings_")) {
-          const toppings = Number.parseInt(localStorage.getItem(key) || "0")
-          if (toppings > 0) {
-            const address = key.replace("pizza_toppings_", "")
-            totalToppings += toppings
-            totalPlayers++
-            players.push({ address, toppings })
-          }
-        }
-      })
-    }
-
-    return {
-      totalToppings,
-      totalPlayers,
-      players,
-      jackpotAmount: totalToppings * 25, // 25 VMF per topping
-    }
-  }
-
-  // Select daily winners (simulated)
-  const selectDailyWinners = (totalEntries: number): string[] => {
-    const winners: string[] = []
-    const addresses = getPlayerAddresses()
-    
-    for (let i = 0; i < 8 && i < addresses.length; i++) {
-      const randomIndex = Math.floor(Math.random() * addresses.length)
-      winners.push(addresses[randomIndex])
-      addresses.splice(randomIndex, 1)
-    }
-    
-    return winners
-  }
-
-  // Select weekly winners based on toppings (weighted)
-  const selectWeeklyWinners = (players: any[]): string[] => {
-    const winners: string[] = []
-    
-    if (players.length === 0) return winners
-    
-    // Create weighted selection
-    const totalWeight = players.reduce((sum, player) => sum + player.toppings, 0)
-    
-    for (let i = 0; i < 10 && i < players.length; i++) {
-      const random = Math.random() * totalWeight
-      let currentWeight = 0
-      
-      for (const player of players) {
-        currentWeight += player.toppings
-        if (random <= currentWeight && !winners.includes(player.address)) {
-          winners.push(player.address)
-          break
-        }
-      }
-    }
-    
-    return winners
-  }
-
-  // Get player addresses
-  const getPlayerAddresses = (): string[] => {
-    const addresses: string[] = []
-    
-    if (typeof window !== "undefined") {
-      const keys = Object.keys(localStorage)
-      keys.forEach((key) => {
-        if (key.startsWith("pizza_entry_")) {
-          const address = key.replace("pizza_entry_", "").split("_")[0]
-          if (!addresses.includes(address)) {
-            addresses.push(address)
-          }
-        }
-      })
-    }
-    
-    return addresses
-  }
-
-  // Reset daily game
-  const resetDailyGame = () => {
-    if (typeof window !== "undefined") {
-      const today = new Date().toDateString()
-      const keys = Object.keys(localStorage)
-      
-      keys.forEach((key) => {
-        if (key.startsWith("pizza_entry_") && key.endsWith(`_${today}`)) {
-          localStorage.removeItem(key)
-        }
-      })
-    }
-  }
-
-  // Reset weekly game
-  const resetWeeklyGame = () => {
-    if (typeof window !== "undefined") {
-      const keys = Object.keys(localStorage)
-      
-      keys.forEach((key) => {
-        if (key.startsWith("pizza_toppings_")) {
-          localStorage.removeItem(key)
-        }
-      })
-    }
-  }
-
-  // Format timestamp
-  const formatTimestamp = (timestamp: number) => {
-    return new Date(timestamp).toLocaleString()
-  }
-
-  // Format address
-  const formatAddress = (address: string) => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
   return (
