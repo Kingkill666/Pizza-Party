@@ -1,54 +1,67 @@
 ---
-name: Security report
-about: Report a security vulnerability
+name: 🔒 Security Report
+about: Report a security vulnerability in Pizza Party dApp
 title: '[SECURITY] '
-labels: 'security'
+labels: ['security', 'needs-triage']
 assignees: ''
-
 ---
 
-**Describe the security issue**
+## 🔒 Security Vulnerability Description
 A clear and concise description of the security vulnerability.
 
-**Severity**
-- [ ] Critical (Immediate action required)
-- [ ] High (Action required within 24 hours)
-- [ ] Medium (Action required within 72 hours)
-- [ ] Low (Action required within 1 week)
+## 🎯 Vulnerability Type
+- [ ] **Smart Contract** - Vulnerability in smart contract code
+- [ ] **Frontend** - Client-side security issue
+- [ ] **Wallet Integration** - Wallet connection vulnerability
+- [ ] **Data Validation** - Input validation bypass
+- [ ] **Authentication** - Authentication/authorization issue
+- [ ] **Data Exposure** - Sensitive data exposure
+- [ ] **DoS** - Denial of service vulnerability
+- [ ] **Other** - Please specify
 
-**Steps to reproduce**
-Detailed steps to reproduce the vulnerability:
+## 🔄 Steps to Reproduce
 1. Go to '...'
 2. Click on '....'
 3. Perform action '....'
 4. See vulnerability
 
-**Expected behavior**
-A clear and concise description of what should happen.
+## 🎯 Impact Assessment
+- [ ] **Critical** - Can lead to fund loss or complete compromise
+- [ ] **High** - Can lead to significant security breach
+- [ ] **Medium** - Can lead to data exposure or minor breach
+- [ ] **Low** - Minor security concern
 
-**Actual behavior**
-A clear and concise description of what actually happens.
+## 🛡️ Expected Behavior
+A clear and concise description of what should happen from a security perspective.
 
-**Proof of concept**
-If applicable, provide a proof of concept or exploit code.
+## ❌ Actual Behavior
+A clear and concise description of what actually happens that creates the vulnerability.
 
-**Environment**
-- OS: [e.g. iOS, Windows, Linux]
-- Browser: [e.g. chrome, safari, firefox]
-- Version: [e.g. 22]
-- Wallet: [e.g. MetaMask, Coinbase Wallet]
-- Network: [e.g. Base Mainnet, Base Sepolia]
+## 🔧 Environment
+- **Network:** [e.g. Base Mainnet, Base Sepolia, Local]
+- **Wallet:** [e.g. MetaMask, Coinbase Wallet]
+- **Browser:** [e.g. Chrome 120, Safari 17]
+- **OS:** [e.g. Windows 11, macOS 14, iOS 17]
 
-**Additional context**
-Add any other context about the security issue here.
+## 📸 Proof of Concept
+If applicable, provide a proof of concept or detailed steps to demonstrate the vulnerability.
 
-**Responsible disclosure**
-- [ ] I will not publicly disclose this issue until it is fixed
-- [ ] I understand the responsible disclosure timeline
+## 🔗 Additional Context
+Add any other context about the vulnerability here, such as:
+- Related smart contract functions
+- Affected user data
+- Potential attack vectors
+- Suggested mitigation strategies
+
+## 📞 Responsible Disclosure
+- [ ] I will not publicly disclose this vulnerability until it's fixed
+- [ ] I understand this is a security-sensitive issue
 - [ ] I have provided all necessary information for reproduction
 
-**Contact information**
-Please provide your contact information for follow-up questions:
-- Email: [your email]
-- Discord: [your discord username]
-- GitHub: [your github username] 
+## 🏷️ Labels
+- [ ] **Smart Contract** - Blockchain-related vulnerability
+- [ ] **Frontend** - Client-side security issue
+- [ ] **Wallet** - Wallet integration vulnerability
+- [ ] **Data** - Data handling security issue
+- [ ] **Authentication** - Auth-related vulnerability
+- [ ] **DoS** - Denial of service vulnerability 
