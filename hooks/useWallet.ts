@@ -176,7 +176,7 @@ export const useWallet = () => {
     // Set disconnect flag to prevent auto-reconnection
     setHasDisconnected(true)
 
-    // Clear all connection state
+    // Clear all connection state immediately
     setConnection(null)
     setError(null)
 
@@ -204,11 +204,9 @@ export const useWallet = () => {
 
     console.log("✅ Wallet disconnected successfully")
 
-    // Always reload the page to ensure clean state
-    setTimeout(() => {
-      console.log("🔄 Reloading page for clean state")
-      window.location.reload()
-    }, 500)
+    // Force page reload immediately for clean state
+    console.log("🔄 Reloading page for clean state")
+    window.location.reload()
   }, [])
 
   const getBalance = useCallback(async (): Promise<string> => {

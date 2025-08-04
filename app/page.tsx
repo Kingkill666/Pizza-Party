@@ -58,7 +58,10 @@ export default function HomePage() {
   }
 
   const handleDisconnect = () => {
+    console.log("🔌 handleDisconnect called")
+    console.log("🔌 Calling disconnect function")
     disconnect()
+    console.log("🔌 disconnect function called")
   }
 
   return (

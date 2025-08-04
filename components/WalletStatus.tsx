@@ -58,8 +58,10 @@ export function WalletStatus({
         className="w-full border-2 border-gray-400 text-gray-600 hover:bg-gray-50 bg-transparent font-bold py-1 text-sm"
         style={customFontStyle}
         onClick={() => {
-          console.log("🔌 User clicked disconnect")
+          console.log("🔌 User clicked disconnect button")
+          console.log("🔌 Calling onDisconnect function")
           onDisconnect()
+          console.log("🔌 onDisconnect function called")
         }}
       >
         Disconnect & Refresh
