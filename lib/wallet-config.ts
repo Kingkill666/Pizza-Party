@@ -26,7 +26,7 @@ export const WALLETS: WalletInfo[] = [
     id: "coinbase",
     name: "Coinbase Wallet",
     icon: "🪙", // Fallback emoji if image fails to load
-    iconImage: "/images/coinbase-logo.png",
+    iconImage: "/images/coinbase-logo.svg",
     color: "bg-blue-500 hover:bg-blue-600",
     mobile: true,
     deepLink: "coinbasewallet://",
