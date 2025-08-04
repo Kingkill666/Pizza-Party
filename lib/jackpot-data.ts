@@ -2,37 +2,21 @@
 
 // Calculate community jackpot based on player activity
 export const calculateCommunityJackpot = (): number => {
-  if (typeof window === "undefined") return 1000 // Default for SSR
+  if (typeof window === "undefined") return 0 // Default for SSR
 
-  // Base jackpot amount
-  let jackpot = 1000
-
-  // Add to jackpot based on total entries across all days
+  // Count today's players (each player pays 1 VMF)
+  const today = new Date().toDateString()
   const keys = Object.keys(localStorage)
-  let totalEntries = 0
+  let todaysPlayers = 0
 
   keys.forEach((key) => {
-    if (key.startsWith("pizza_entry_") && localStorage.getItem(key) === "true") {
-      totalEntries++
+    if (key.startsWith("pizza_entry_") && key.includes(today) && localStorage.getItem(key) === "true") {
+      todaysPlayers++
     }
   })
 
-  // Each entry adds 50 VMF to the jackpot
-  jackpot += totalEntries * 50
-
-  // Add bonus based on referral activity
-  let totalToppings = 0
-  keys.forEach((key) => {
-    if (key.startsWith("pizza_toppings_")) {
-      const toppings = Number.parseInt(localStorage.getItem(key) || "0")
-      totalToppings += toppings
-    }
-  })
-
-  // Each topping adds 25 VMF to the jackpot
-  jackpot += totalToppings * 25
-
-  return jackpot
+  // Each player pays 1 VMF, so jackpot = number of players
+  return todaysPlayers
 }
 
 // Format jackpot amount for display
