@@ -46,27 +46,28 @@ Since we're testing on Sepolia testnet, you'll need Sepolia ETH for gas fees. He
 - **Faucets may require social media verification** - this is normal
 
 ### 3. Start Playing (Beta Version)
-- **Daily Game**: Enter once per day (no real tokens needed)
-- **Weekly Jackpot**: Earn toppings to participate
+- **Daily Game**: Enter once per day for 0.001 Sepolia ETH
+- **Weekly Jackpot**: Enter for 0.001 Sepolia ETH to participate
 - **Referrals**: Invite friends to earn bonus toppings
-- **All gameplay is simulated** for beta testing
+- **All gameplay uses real Sepolia ETH for jackpots**
 
 ## 🎯 Game Mechanics (Beta Version)
 
 ### Daily Game
-- **Entry Fee**: Free (simulated for beta)
+- **Entry Fee**: 0.001 Sepolia ETH (cheapest transferable amount)
 - **Winners**: 8 random winners per day
-- **Prize**: Simulated rewards (no real tokens)
+- **Prize**: Equal split of daily jackpot (all entry fees collected)
 - **Timing**: New game starts daily at 12pm PST
 
 ### Weekly Jackpot
-- **Prize Pool**: Simulated toppings from all players
+- **Entry Fee**: 0.001 Sepolia ETH (cheapest transferable amount)
+- **Prize Pool**: Total Sepolia ETH from all weekly entries
 - **Winners**: 10 random winners
 - **Timing**: Draw every Sunday at 12pm PST
-- **Weighting**: More toppings = higher chance to win
+- **Weighting**: More entries = higher chance to win
 
 ### Toppings System (Simulated)
-- **Daily Play**: 1 topping per day
+- **Daily Play**: 1 topping per day (earned by playing)
 - **VMF Holdings**: 2 toppings per 10 VMF held (simulated)
 - **Referrals**: 2 toppings per successful referral
 - **Streak Bonus**: 3 toppings for 7-day streak
@@ -208,13 +209,23 @@ Solution:
 4. Try transaction again
 ```
 
+#### Entry Fee Issues
+```
+Issue: "Insufficient balance for entry fee"
+Solution:
+1. Ensure you have at least 0.001 Sepolia ETH
+2. Account for gas fees (~0.0001-0.001 Sepolia ETH)
+3. Get more Sepolia ETH from faucets if needed
+4. Try entry again
+```
+
 #### Beta Testing Notes
 ```
 Important: This is beta testing on Sepolia testnet
-- No real tokens or money involved
-- All gameplay is simulated
-- Sepolia ETH has no real value
-- Perfect for testing without risk
+- Entry fees are 0.001 Sepolia ETH per game
+- Sepolia ETH has no real value but is used for jackpots
+- All gameplay is simulated except for entry fees
+- Perfect for testing without real money risk
 ```
 
 #### UI Problems
@@ -330,3 +341,25 @@ Solution:
 **Thank you for being part of our beta testing program! Your feedback is invaluable in making Pizza Party the best decentralized gaming platform on Base network.**
 
 🍕 **Happy Pizza Partying!** 🍕 
+
+## 💰 Jackpot Mechanics
+
+### Daily Jackpot
+- **Entry Fee**: 0.001 Sepolia ETH per player
+- **Prize Pool**: 100% of all daily entry fees
+- **Distribution**: Equal split among 8 winners
+- **Example**: If 100 players enter, jackpot = 0.1 Sepolia ETH
+- **Winner Prize**: 0.0125 Sepolia ETH each (0.1 ÷ 8)
+
+### Weekly Jackpot
+- **Entry Fee**: 0.001 Sepolia ETH per entry
+- **Prize Pool**: 100% of all weekly entry fees
+- **Distribution**: Equal split among 10 winners
+- **Example**: If 500 entries, jackpot = 0.5 Sepolia ETH
+- **Winner Prize**: 0.05 Sepolia ETH each (0.5 ÷ 10)
+
+### Important Notes
+- **Sepolia ETH has no real value** - it's only for testing
+- **Entry fees fund the jackpots** - no external funding
+- **More players = bigger jackpots** - community-driven
+- **Gas fees are separate** - ~0.0001-0.001 Sepolia ETH per transaction 
