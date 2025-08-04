@@ -176,7 +176,7 @@ export default function JackpotPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="bg-green-100 p-4 rounded-lg text-center">
                 <Gift className="h-6 w-6 mx-auto mb-2 text-green-600" />
                 <p className="text-sm text-green-600" style={customFontStyle}>
@@ -184,15 +184,6 @@ export default function JackpotPage() {
                 </p>
                 <p className="text-2xl font-bold text-green-800" style={customFontStyle}>
                   {weeklyInfo.totalToppings.toLocaleString()}
-                </p>
-              </div>
-              <div className="bg-blue-100 p-4 rounded-lg text-center">
-                <Users className="h-6 w-6 mx-auto mb-2 text-blue-600" />
-                <p className="text-sm text-blue-600" style={customFontStyle}>
-                  Today's Players
-                </p>
-                <p className="text-2xl font-bold text-blue-800" style={customFontStyle}>
-                  {dailyPlayers.toLocaleString()}
                 </p>
               </div>
               <div className="bg-purple-100 p-4 rounded-lg text-center">
