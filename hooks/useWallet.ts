@@ -28,6 +28,8 @@ export const useWallet = () => {
       const handleAccountsChanged = (accounts: string[]) => {
         console.log("👤 Accounts changed:", accounts)
         if (accounts.length === 0) {
+          // User disconnected their wallet
+          console.log("🔌 Wallet accounts cleared - user disconnected")
           disconnect()
         } else if (connection && accounts[0] !== connection.address) {
           setConnection((prev) => (prev ? { ...prev, address: accounts[0] } : null))
@@ -41,6 +43,12 @@ export const useWallet = () => {
 
       const handleConnect = (connectInfo: any) => {
         console.log("🔌 Wallet connected:", connectInfo)
+        // Only auto-connect if user hasn't explicitly disconnected
+        const isDisconnected = localStorage.getItem("wallet_disconnected")
+        if (isDisconnected === "true") {
+          console.log("ℹ️ Ignoring auto-connect due to explicit disconnect")
+          return
+        }
       }
 
       const handleDisconnect = (error: any) => {
@@ -63,10 +71,18 @@ export const useWallet = () => {
         }
       }
     }
-  }, [connection])
+  }, [connection, disconnect])
 
   const checkExistingConnection = async () => {
     try {
+      // Check if user has explicitly disconnected
+      const isDisconnected = localStorage.getItem("wallet_disconnected")
+      if (isDisconnected === "true") {
+        console.log("ℹ️ Wallet was explicitly disconnected, not auto-reconnecting")
+        localStorage.removeItem("wallet_disconnected") // Clear the flag
+        return
+      }
+
       if (typeof window !== "undefined" && window.ethereum) {
         console.log("🔍 Checking for existing wallet connection...")
 
@@ -173,14 +189,23 @@ export const useWallet = () => {
 
     // Clear localStorage wallet data
     localStorage.removeItem("wallet_connection")
+    
+    // Add a flag to prevent auto-reconnection
+    localStorage.setItem("wallet_disconnected", "true")
 
     console.log("✅ Wallet disconnected successfully")
 
-    // Always reload the page to ensure clean state
+    // Force a hard refresh to clear all state
     setTimeout(() => {
-      console.log("🔄 Reloading page for clean state")
-      window.location.reload()
-    }, 500)
+      console.log("🔄 Performing hard refresh for clean state")
+      // Clear any cached wallet state
+      if (typeof window !== "undefined" && window.ethereum) {
+        // Remove all event listeners temporarily
+        window.ethereum.removeAllListeners?.()
+      }
+      // Force a complete page reload
+      window.location.href = window.location.href
+    }, 100)
   }, [])
 
   const getBalance = useCallback(async (): Promise<string> => {
