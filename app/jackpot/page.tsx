@@ -194,19 +194,23 @@ export default function JackpotPage() {
               <ul className="space-y-2 text-sm text-gray-700" style={customFontStyle}>
                 <li className="flex items-start gap-2">
                   <Star className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                  <span>Invite friends using your referral link</span>
+                  <span><strong>Play Daily:</strong> 1 topping each day played</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Star className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                  <span>Earn 2 toppings for each successful referral</span>
+                  <span><strong>Hold 10 VMF:</strong> 1 topping per 10 VMF in wallet</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Star className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                  <span>More toppings = higher chance to win</span>
+                  <span><strong>Refer new players:</strong> 2 toppings per referral</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Star className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                  <span>Winner takes the entire jackpot!</span>
+                  <span><strong>7-day streak:</strong> 3 toppings for 7 days in a row</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Star className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                  <span>More toppings = higher chance to win!</span>
                 </li>
               </ul>
             </div>
