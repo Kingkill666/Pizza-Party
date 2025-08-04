@@ -17,9 +17,10 @@ export const useWallet = () => {
   const [isConnecting, setIsConnecting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // Check for existing connection on mount
+  // Check for existing connection on mount - DISABLED for fresh start
   useEffect(() => {
-    checkExistingConnection()
+    // Don't auto-connect on page load - start fresh
+    console.log("🚀 Starting fresh - no auto-connection")
   }, [])
 
   // Listen for account changes
@@ -43,12 +44,8 @@ export const useWallet = () => {
 
       const handleConnect = (connectInfo: any) => {
         console.log("🔌 Wallet connected:", connectInfo)
-        // Only auto-connect if user hasn't explicitly disconnected
-        const isDisconnected = localStorage.getItem("wallet_disconnected")
-        if (isDisconnected === "true") {
-          console.log("ℹ️ Ignoring auto-connect due to explicit disconnect")
-          return
-        }
+        // Don't auto-connect - let user manually connect
+        console.log("ℹ️ Ignoring auto-connect - manual connection only")
       }
 
       const handleDisconnect = (error: any) => {
@@ -150,6 +147,12 @@ export const useWallet = () => {
       // Store connection in localStorage for persistence
       localStorage.setItem("wallet_connection", JSON.stringify(walletConnection))
 
+      // Refresh to homepage after successful connection
+      setTimeout(() => {
+        console.log("🔄 Refreshing to homepage after successful connection")
+        window.location.href = "/"
+      }, 500)
+
       return walletConnection
     } catch (error: any) {
       console.error(`❌ Failed to connect to ${walletId}:`, error)
@@ -197,14 +200,14 @@ export const useWallet = () => {
 
     // Force a hard refresh to clear all state
     setTimeout(() => {
-      console.log("🔄 Performing hard refresh for clean state")
+      console.log("🔄 Performing hard refresh to homepage")
       // Clear any cached wallet state
       if (typeof window !== "undefined" && window.ethereum) {
         // Remove all event listeners temporarily
         window.ethereum.removeAllListeners?.()
       }
-      // Force a complete page reload
-      window.location.href = window.location.href
+      // Force a complete page reload to homepage
+      window.location.href = "/"
     }, 100)
   }, [])
 
