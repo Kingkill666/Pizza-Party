@@ -281,7 +281,7 @@ REPORT_GAS=true npx hardhat test
 - **Low**: $500 USD
 
 #### Security Contact
-- Email: security@pizzaparty.app
+- Email: vmf@vmfcoin.com
 - GitHub Issues: [SECURITY] tag
 - Discord: #security channel
 

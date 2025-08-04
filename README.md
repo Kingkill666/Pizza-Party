@@ -242,7 +242,7 @@ PRIVATE_KEY=your_private_key
 ## 🚨 Security
 
 ### Security Contact
-- **Email**: security@pizzaparty.app
+- **Email**: vmf@vmfcoin.com
 - **GitHub Issues**: [SECURITY] tag
 - **Discord**: #security channel
 

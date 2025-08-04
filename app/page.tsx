@@ -138,7 +138,7 @@ export default function HomePage() {
             {/* Call to Action */}
             <div className="bg-white border-4 border-black p-3 mb-6 transform rotate-1 rounded-2xl">
               <p
-                className="text-lg sm:text-xl font-bold text-red-800"
+                className="text-2xl sm:text-3xl lg:text-4xl font-bold text-red-800"
                 style={{
                   ...customFontStyle,
                   letterSpacing: "1px",

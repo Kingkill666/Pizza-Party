@@ -314,7 +314,7 @@ npx hardhat console --network base
 - **Documentation**: This repository
 - **Discord**: Pizza Party community
 - **GitHub Issues**: Bug reports
-- **Security**: security@pizzaparty.app
+- **Security**: vmf@vmfcoin.com
 
 ## 📞 Support
 

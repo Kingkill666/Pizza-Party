@@ -1,77 +1,68 @@
-## 🍕 Pull Request Description
-A clear and concise description of what this PR accomplishes.
+## 🔄 Pull Request
 
-## 🎯 Type of Change
-- [ ] **Bug fix** - Fixes an existing issue
-- [ ] **New feature** - Adds new functionality
-- [ ] **Breaking change** - Changes existing functionality
-- [ ] **Documentation** - Updates documentation
-- [ ] **Refactoring** - Code restructuring
-- [ ] **Performance** - Performance improvements
-- [ ] **Security** - Security enhancements
-- [ ] **Testing** - Adds or updates tests
+### **Type of Change**
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] Documentation update
+- [ ] Security improvement
+- [ ] Performance optimization
 
-## 🔗 Related Issues
-Closes #[issue number]
-Related to #[issue number]
+### **Security Considerations**
+- [ ] No security impact
+- [ ] Low security impact (documented)
+- [ ] Medium security impact (requires review)
+- [ ] High security impact (requires security team review)
 
-## 🧪 Testing
-- [ ] I have tested this change locally
-- [ ] I have tested on multiple browsers/devices
-- [ ] I have tested wallet connections
-- [ ] I have tested game functionality
-- [ ] I have tested jackpot calculations
-- [ ] I have added/updated tests
+**Security Impact Description:**
 
-## 📱 Environment Tested
-- **Browsers:** [e.g. Chrome, Safari, Firefox]
-- **Devices:** [e.g. Desktop, Mobile, Tablet]
-- **Wallets:** [e.g. MetaMask, Coinbase Wallet, Trust Wallet]
-- **Networks:** [e.g. Base Mainnet, Base Sepolia]
+### **Changes Made**
+Please provide a clear description of the changes:
 
-## 🔄 Changes Made
-- [ ] **Frontend** - UI/UX changes
-- [ ] **Smart Contract** - Contract modifications
-- [ ] **Wallet Integration** - Wallet-related changes
-- [ ] **Game Logic** - Game mechanics changes
-- [ ] **Jackpot System** - Payout system changes
-- [ ] **Documentation** - Documentation updates
-- [ ] **Configuration** - Config changes
-- [ ] **Dependencies** - Package updates
+### **Files Modified**
+- [ ] Smart contracts
+- [ ] Frontend components
+- [ ] Configuration files
+- [ ] Documentation
+- [ ] Tests
 
-## 📸 Screenshots/Videos
-If applicable, add screenshots or videos to show the changes.
+**List of files:**
 
-## 🚫 Breaking Changes
-- [ ] This PR includes breaking changes
-- [ ] This PR does not include breaking changes
+### **Testing Completed**
+- [ ] Unit tests added/updated
+- [ ] Integration tests added/updated
+- [ ] Security tests added/updated
+- [ ] Manual testing completed
+- [ ] Gas optimization verified
 
-If breaking changes, please describe:
-- What changed
-- How to migrate
-- Migration timeline
+**Test coverage:**
 
-## 📋 Checklist
-- [ ] My code follows the project's style guidelines
-- [ ] I have performed a self-review of my code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
-- [ ] Any dependent changes have been merged and published
+### **Documentation Updated**
+- [ ] README.md updated
+- [ ] API documentation updated
+- [ ] Security documentation updated
+- [ ] Code comments added/updated
 
-## 🎮 Game Impact
-- [ ] **No Impact** - Changes don't affect gameplay
-- [ ] **Minor Impact** - Small gameplay changes
-- [ ] **Major Impact** - Significant gameplay changes
-- [ ] **UI Only** - Visual changes only
+### **Breaking Changes**
+- [ ] No breaking changes
+- [ ] Breaking changes documented
+- [ ] Migration guide provided
 
-## 🔒 Security Considerations
-- [ ] I have considered the security implications of this change
-- [ ] I have tested for potential security vulnerabilities
-- [ ] I have followed security best practices
-- [ ] This change does not introduce security risks
+**Breaking changes description:**
 
-## 📝 Additional Notes
-Add any other context about the pull request here. 
+### **Additional Context**
+Any additional information that might be helpful:
+
+### **Screenshots**
+If applicable, add screenshots to help explain your changes:
+
+---
+
+**DO NOT CHANGE THE UI!!!** ✅ - This template is for code review only.
+
+**Security Checklist:**
+- [ ] Input validation implemented
+- [ ] Access control verified
+- [ ] Gas optimization checked
+- [ ] Reentrancy protection confirmed
+- [ ] State consistency maintained 

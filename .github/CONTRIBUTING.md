@@ -1,255 +1,224 @@
-# 🍕 Contributing to Pizza Party dApp
+# Contributing to Pizza Party dApp
 
-Thank you for your interest in contributing to Pizza Party dApp! This document provides guidelines and information for contributors.
+## 🍕 Welcome Contributors!
 
-## 🎯 How to Contribute
+Thank you for your interest in contributing to Pizza Party dApp! This document provides guidelines for contributing to our decentralized gaming platform.
 
-### 🐛 Reporting Bugs
-- Use the [Bug Report template](/.github/ISSUE_TEMPLATE/bug_report.md)
-- Provide detailed steps to reproduce
-- Include environment information (browser, wallet, network)
-- Add screenshots if applicable
+## 🎯 **DO NOT CHANGE THE UI!!!**
 
-### 💡 Suggesting Features
-- Use the [Feature Request template](/.github/ISSUE_TEMPLATE/feature_request.md)
-- Describe the problem and proposed solution
-- Consider the impact on existing functionality
-- Provide use cases and mockups if possible
+**IMPORTANT:** The UI is locked and should not be modified unless explicitly requested. All contributions should focus on:
+- Backend functionality
+- Smart contract improvements
+- Security enhancements
+- Documentation updates
+- Testing improvements
 
-### 🔒 Security Issues
-- Use the [Security Report template](/.github/ISSUE_TEMPLATE/security_report.md)
-- **DO NOT** publicly disclose vulnerabilities
-- Follow responsible disclosure practices
-- Provide detailed reproduction steps
+## 📋 **Contribution Guidelines**
 
-### 🛠️ Code Contributions
-- Fork the repository
-- Create a feature branch (`git checkout -b feature/amazing-feature`)
-- Make your changes
-- Test thoroughly
-- Commit your changes (`git commit -m 'Add amazing feature'`)
-- Push to the branch (`git push origin feature/amazing-feature`)
-- Open a Pull Request
+### **Before You Start**
+1. **Fork the repository**
+2. **Create a feature branch** from `main`
+3. **Read the security guidelines** below
+4. **Follow the coding standards**
 
-## 🏗️ Development Setup
+### **Security-First Development**
 
-### Prerequisites
-- Node.js 18+ 
-- npm or pnpm
-- Git
-- MetaMask or other Web3 wallet
+#### **Smart Contract Contributions**
+- ✅ **Security audit required** for all contract changes
+- ✅ **Test coverage** must be 90%+ for new functions
+- ✅ **Gas optimization** required for all new functions
+- ✅ **Input validation** must be comprehensive
+- ✅ **Access control** must be properly implemented
 
-### Installation
-```bash
-# Clone the repository
-git clone https://github.com/Kingkill666/Pizza-Party.git
-cd Pizza-Party
+#### **Frontend Contributions**
+- ✅ **Input sanitization** required for all user inputs
+- ✅ **Wallet security** must be maintained
+- ✅ **On-chain data** must be used for critical operations
+- ✅ **Error handling** must be comprehensive
 
-# Install dependencies
-npm install
+### **Code Standards**
 
-# Start development server
-npm run dev
+#### **Solidity Standards**
+```solidity
+// ✅ Good: Comprehensive input validation
+function enterGame(string memory referralCode) external {
+    require(bytes(referralCode).length <= MAX_LENGTH, "Code too long");
+    require(_isValidFormat(referralCode), "Invalid format");
+    // ... rest of function
+}
+
+// ❌ Bad: Missing validation
+function enterGame(string memory referralCode) external {
+    // No validation
+    // ... rest of function
+}
 ```
 
-### Environment Variables
-Create a `.env.local` file:
-```env
-NEXT_PUBLIC_VMF_CONTRACT_ADDRESS=0x2213414893259b0C48066Acd1763e7fbA97859E5
-NEXT_PUBLIC_BASE_RPC_URL=https://mainnet.base.org
-NEXT_PUBLIC_BLOCK_EXPLORER=https://basescan.org
+#### **TypeScript Standards**
+```typescript
+// ✅ Good: Proper error handling
+const handleWalletConnect = async (walletId: string) => {
+  try {
+    await connectWallet(walletId);
+  } catch (error) {
+    console.error('Wallet connection failed:', error);
+    // Handle error appropriately
+  }
+};
+
+// ❌ Bad: No error handling
+const handleWalletConnect = async (walletId: string) => {
+  await connectWallet(walletId); // No error handling
+};
 ```
 
-## 🧪 Testing
+### **Testing Requirements**
 
-### Running Tests
-```bash
-# Run all tests
-npm test
+#### **Smart Contract Tests**
+- **Unit tests** for all new functions
+- **Integration tests** for complex interactions
+- **Security tests** for vulnerability checks
+- **Gas tests** for optimization verification
 
-# Run specific test files
-npm test -- test/basic.test.ts
+#### **Frontend Tests**
+- **Component tests** for UI components
+- **Integration tests** for wallet connections
+- **Security tests** for input validation
+- **Performance tests** for optimization
 
-# Run with coverage
-npm run test:coverage
+### **Documentation Standards**
+
+#### **Code Documentation**
+```solidity
+/**
+ * @dev Enter the daily game with referral code
+ * @param referralCode Optional referral code for rewards
+ * @notice Requires sufficient VMF token balance
+ * @notice Rate limited to prevent abuse
+ */
+function enterDailyGame(string memory referralCode) external {
+    // Implementation
+}
 ```
 
-### Testing Checklist
-- [ ] Test on multiple browsers (Chrome, Safari, Firefox)
-- [ ] Test on mobile devices
-- [ ] Test wallet connections
-- [ ] Test game functionality
-- [ ] Test jackpot calculations
-- [ ] Test error scenarios
-
-## 📝 Code Style
-
-### TypeScript
-- Use TypeScript for all new code
-- Provide proper type definitions
-- Use interfaces for data structures
-- Avoid `any` types when possible
-
-### React/Next.js
-- Use functional components with hooks
-- Follow React best practices
-- Use proper error boundaries
-- Implement proper loading states
-
-### Smart Contracts
-- Follow Solidity best practices
-- Use OpenZeppelin contracts when possible
-- Implement proper access controls
-- Add comprehensive tests
-
-### File Structure
-```
-src/
-├── app/                 # Next.js app directory
-├── components/          # React components
-├── lib/                # Utility functions
-├── hooks/              # Custom React hooks
-├── contracts/          # Smart contracts
-└── test/               # Test files
+#### **API Documentation**
+```typescript
+/**
+ * @api {POST} /api/game/enter Enter Daily Game
+ * @apiName EnterGame
+ * @apiGroup Game
+ * @apiParam {string} referralCode Optional referral code
+ * @apiSuccess {object} result Game entry result
+ * @apiError {string} error Error message
+ */
 ```
 
-## 🎮 Game-Specific Guidelines
+## 🚀 **Development Workflow**
 
-### UI Changes
-- **DO NOT CHANGE THE UI** unless explicitly requested
-- UI is locked and should remain unchanged
-- Focus on functionality and logic improvements
+### **1. Issue Creation**
+- Use the appropriate issue template
+- Provide detailed description
+- Include reproduction steps
+- Specify security impact
 
-### Wallet Integration
-- Support multiple wallet providers
-- Handle connection errors gracefully
-- Provide clear user feedback
-- Test on mobile devices
+### **2. Branch Naming**
+```
+feature/security-enhancement
+bugfix/race-condition-fix
+docs/api-documentation
+test/coverage-improvement
+```
 
-### Game Logic
-- Implement proper validation
-- Handle edge cases
-- Provide clear error messages
-- Test with various scenarios
+### **3. Commit Messages**
+```
+feat: add enhanced randomness generation
+fix: resolve race condition in jackpot updates
+docs: update API documentation
+test: add security test coverage
+```
 
-### Jackpot System
-- Ensure accurate calculations
-- Handle edge cases (no players, etc.)
-- Implement proper winner selection
-- Test payout scenarios
+### **4. Pull Request Process**
+1. **Create PR** with detailed description
+2. **Add security checklist** completion
+3. **Include test coverage** report
+4. **Request review** from security team
+5. **Address feedback** promptly
 
-## 🔒 Security Guidelines
+## 🔐 **Security Guidelines**
 
-### Smart Contracts
-- Follow security best practices
-- Use established libraries (OpenZeppelin)
-- Implement proper access controls
-- Test for common vulnerabilities
+### **Critical Security Rules**
+1. **Never expose private keys** in code or logs
+2. **Always validate inputs** from external sources
+3. **Use secure randomness** for critical operations
+4. **Implement proper access control** for admin functions
+5. **Test for common vulnerabilities** (reentrancy, overflow, etc.)
 
-### Frontend Security
-- Validate all user inputs
-- Sanitize data before display
-- Implement proper error handling
-- Avoid exposing sensitive information
+### **Security Checklist**
+- [ ] Input validation implemented
+- [ ] Access control verified
+- [ ] Gas optimization checked
+- [ ] Reentrancy protection confirmed
+- [ ] State consistency maintained
+- [ ] Error handling comprehensive
+- [ ] Security tests added
+- [ ] Documentation updated
 
-### Wallet Security
-- Never request unnecessary permissions
-- Handle private keys securely
-- Validate wallet connections
-- Provide clear security warnings
+## 📊 **Quality Standards**
 
-## 📋 Pull Request Process
+### **Code Quality**
+- **Linting** must pass
+- **Type checking** must pass
+- **Test coverage** must be 90%+
+- **Documentation** must be comprehensive
 
-### Before Submitting
-- [ ] Code follows style guidelines
-- [ ] Tests pass locally
-- [ ] Documentation is updated
-- [ ] No breaking changes (unless necessary)
-- [ ] Security implications considered
+### **Security Quality**
+- **Vulnerability scan** must pass
+- **Security audit** required for major changes
+- **Gas optimization** verified
+- **Access control** properly implemented
 
-### PR Template
-Use the provided [Pull Request template](/.github/PULL_REQUEST_TEMPLATE.md) and fill out all relevant sections.
+### **Performance Quality**
+- **Gas usage** optimized
+- **Response time** acceptable
+- **Memory usage** efficient
+- **Scalability** considered
 
-### Review Process
-1. Automated checks must pass
-2. Code review by maintainers
-3. Testing on multiple environments
-4. Security review if applicable
-5. Final approval and merge
+## 🎯 **Community Goals**
 
-## 🏷️ Issue Labels
+### **GitHub Engagement Targets**
+- **Stars:** 50+ (from 0)
+- **Contributors:** 10+ (from 1)
+- **Security Reports:** 5+ per month
+- **Audit Coverage:** 95%+
 
-### Bug Reports
-- `bug` - General bug
-- `high-priority` - Critical issues
-- `wallet-connection` - Wallet-related bugs
-- `game-logic` - Game mechanics issues
-- `ui/ux` - Interface issues
-- `mobile` - Mobile-specific issues
+### **Security Score Targets**
+- **Current:** 47.25%
+- **Target:** 85%+ after external audits
+- **Production Ready:** 90%+
 
-### Feature Requests
-- `enhancement` - New features
-- `gameplay` - Game mechanics
-- `wallet-integration` - Wallet features
-- `social` - Social features
-- `performance` - Performance improvements
+## 🤝 **Getting Help**
 
-### Security
-- `security` - Security issues
-- `critical` - Critical security vulnerabilities
-- `smart-contract` - Contract security
-- `frontend-security` - Client-side security
-
-## 🤝 Community Guidelines
-
-### Be Respectful
-- Treat all contributors with respect
-- Provide constructive feedback
-- Avoid personal attacks
-- Help newcomers
-
-### Be Helpful
-- Answer questions when possible
-- Provide detailed explanations
-- Share knowledge and resources
-- Mentor new contributors
-
-### Be Professional
-- Use clear, professional language
-- Follow project conventions
-- Respond to issues and PRs promptly
-- Maintain high code quality
-
-## 📞 Getting Help
-
-### Questions & Discussions
+### **Discussions**
 - Use GitHub Discussions for questions
-- Search existing issues before posting
-- Provide context and details
-- Be patient with responses
+- Tag security team for security issues
+- Use appropriate labels for visibility
 
-### Discord Community
-- Join our Discord server (link TBD)
-- Ask questions in appropriate channels
-- Share your work and get feedback
-- Connect with other contributors
+### **Security Issues**
+- **Private disclosure:** security@pizzaparty.com
+- **Public issues:** Use security vulnerability template
+- **Emergency:** Contact security team directly
 
-## 🏆 Recognition
+### **Code Reviews**
+- **Security team** reviews all contract changes
+- **Frontend team** reviews UI-related changes
+- **Documentation team** reviews docs
 
-### Contributors
-- All contributors will be listed in the README
-- Significant contributions will be highlighted
-- Contributors will be mentioned in release notes
+## 📝 **License**
 
-### Hall of Fame
-- Top contributors will be featured
-- Special recognition for security researchers
-- Community awards for outstanding work
-
-## 📄 License
-
-By contributing to Pizza Party dApp, you agree that your contributions will be licensed under the same license as the project.
+By contributing to Pizza Party dApp, you agree that your contributions will be licensed under the MIT License.
 
 ---
 
-Thank you for contributing to Pizza Party dApp! 🍕🎮 
+**Remember: DO NOT CHANGE THE UI!!!** ✅
+
+Thank you for contributing to making Pizza Party dApp more secure and robust! 🍕 

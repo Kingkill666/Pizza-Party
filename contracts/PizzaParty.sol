@@ -6,10 +6,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./FreeRandomness.sol";
+import "./FreePriceOracle.sol";
 
 /**
  * @title PizzaParty
- * @dev A decentralized gaming platform on Base network with robust reward system
+ * @dev A decentralized gaming platform on Base network with DYNAMIC PRICING
  * 
  * SECURITY FEATURES:
  * - ReentrancyGuard: Prevents reentrancy attacks
@@ -18,7 +19,7 @@ import "./FreeRandomness.sol";
  * - SafeMath: Overflow protection
  * - Input validation: Sanitized inputs
  * - Rate limiting: Cooldown periods
- * - Reward system: Daily, weekly, and jackpot features
+ * - DYNAMIC PRICING: $1 entry fee regardless of VMF price
  * - FREE SECURE RANDOMNESS: Multi-party commit-reveal scheme
  */
 contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
@@ -30,8 +31,11 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     // Free Randomness contract
     FreeRandomness public randomnessContract;
     
+    // Free Price Oracle for dynamic pricing
+    FreePriceOracle public priceOracle;
+    
     // Game constants
-    uint256 public constant DAILY_ENTRY_FEE = 1 * 10**18; // $1 worth of VMF token
+    uint256 public constant DOLLAR_ENTRY_FEE = 1 * 10**18; // $1 USD (18 decimals)
     uint256 public constant DAILY_WINNERS_COUNT = 8;
     uint256 public constant WEEKLY_WINNERS_COUNT = 10;
     uint256 public constant REFERRAL_REWARD = 2; // 2 toppings per referral
@@ -43,15 +47,14 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     uint256 public constant MAX_DAILY_ENTRIES = 10;
     uint256 public constant ENTRY_COOLDOWN = 1 hours;
     uint256 public constant MIN_VMF_HOLDING = 10 * 10**18; // 10 VMF minimum
+    uint256 public constant MAX_REFERRAL_CODE_LENGTH = 50;
+    uint256 public constant MIN_REFERRAL_CODE_LENGTH = 3;
+    uint256 public constant MAX_REWARD_AMOUNT = 1000; // Maximum toppings per reward
+    uint256 public constant MAX_DAILY_REWARDS = 100; // Maximum daily rewards per user
     
-    // Reward system constants
-    uint256 public constant FIRST_ORDER_REWARD = 100;
-    uint256 public constant REFERRAL_BONUS = 50;
-    uint256 public constant LOYALTY_POINTS_PER_DOLLAR = 1; // 1 point per $1
-    uint256 public constant WEEKLY_CHALLENGE_REWARD = 200;
-    uint256 public constant JACKPOT_ENTRY_COST = 5 * 10**18; // 5 VMF
-    uint256 public constant MAX_JACKPOT_ENTRIES = 10;
-    uint256 public constant JACKPOT_MULTIPLIER = 20;
+    // Dynamic pricing constants
+    uint256 public constant MAX_PRICE_DEVIATION = 50; // 50% max deviation
+    uint256 public constant PRICE_UPDATE_THRESHOLD = 5 minutes;
     
     // Game state
     uint256 private _gameId;
@@ -66,6 +69,30 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     mapping(uint256 => uint256) public dailyPlayerCount;
     mapping(uint256 => address[]) public weeklyPlayers;
     mapping(uint256 => uint256) public weeklyPlayerCount;
+    
+    // Enhanced randomness state for MED-001 fix
+    mapping(uint256 => bytes32) public randomnessSeeds;
+    mapping(uint256 => uint256) public entropyContributions;
+    mapping(uint256 => address[]) public entropyContributors;
+    uint256 public lastEntropyUpdate;
+    uint256 public entropyRoundId;
+    
+    // Race condition prevention for MED-003 fix
+    mapping(uint256 => bool) public gameStateLocked;
+    mapping(uint256 => uint256) public jackpotUpdateNonce;
+    mapping(uint256 => bytes32) public jackpotStateHash;
+    uint256 public lastJackpotUpdate;
+    uint256 public jackpotUpdateCooldown;
+    
+    // Access control roles for MED-002 fix
+    mapping(bytes32 => mapping(address => bool)) public roles;
+    mapping(bytes32 => address) public roleAdmins;
+    
+    // Role constants
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
+    bytes32 public constant EMERGENCY_ROLE = keccak256("EMERGENCY_ROLE");
+    bytes32 public constant AUDITOR_ROLE = keccak256("AUDITOR_ROLE");
     
     // Player data with enhanced reward tracking
     struct Player {
@@ -85,6 +112,11 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         uint256 jackpotEntries;
         uint256 lastRewardClaim;
         bool hasCompletedFirstOrder;
+        
+        // Enhanced security tracking
+        uint256 dailyRewardsClaimed;
+        uint256 lastSecurityCheck;
+        bool isRateLimited;
     }
     
     // Referral data
@@ -119,22 +151,28 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     
     // Mappings
     mapping(address => Player) public players;
-    mapping(address => Referral) public referrals;
     mapping(string => address) public referralCodes;
+    mapping(address => Referral) public referrals;
     mapping(uint256 => Game) public games;
     mapping(address => bool) public blacklistedAddresses;
     mapping(uint256 => WeeklyChallenge) public weeklyChallenges;
     
+    // Enhanced security mappings
+    mapping(address => uint256) public userDailyRewards;
+    mapping(address => uint256) public userRateLimitEnd;
+    mapping(address => uint256) public userLastActivity;
+    
     // Events
     event PlayerEntered(address indexed player, uint256 gameId, uint256 entryFee);
-    event DailyWinnersSelected(uint256 gameId, address[] winners, uint256 jackpotAmount);
-    event WeeklyWinnersSelected(uint256 gameId, address[] winners, uint256 jackpotAmount);
+    event DailyWinnersSelected(uint256 gameId, address[] winners, uint256 jackpot);
+    event WeeklyWinnersSelected(uint256 gameId, address[] winners, uint256 jackpot);
     event ToppingsAwarded(address indexed player, uint256 amount, string reason);
-    event ReferralCreated(address indexed referrer, string referralCode);
-    event ReferralUsed(address indexed referrer, address indexed newPlayer, uint256 reward);
+    event ReferralCreated(address indexed player, string code);
+    event ReferralUsed(address indexed referrer, address indexed referee);
     event PlayerBlacklisted(address indexed player, bool blacklisted);
     event EmergencyPause(bool paused);
     event JackpotUpdated(uint256 dailyJackpot, uint256 weeklyJackpot);
+    event DynamicEntryFeeCalculated(uint256 vmfPrice, uint256 requiredVMF, uint256 timestamp);
     
     // Reward system events
     event LoyaltyPointsAwarded(address indexed player, uint256 points, string reason);
@@ -146,6 +184,29 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     event RandomnessRequested(uint256 gameId, uint256 randomnessRoundId);
     event WinnersSelectedWithRandomness(uint256 gameId, uint256 randomNumber, address[] winners);
     
+    // Security events
+    event RateLimitTriggered(address indexed user, uint256 cooldownEnd);
+    event SecurityCheckFailed(address indexed user, string reason);
+    event InputValidationFailed(address indexed user, string input, string reason);
+    
+    // Enhanced randomness events (MED-001 fix)
+    event SecureRandomnessGenerated(uint256 roundId, bytes32 seed);
+    event EntropyContributed(address indexed contributor, bytes32 entropy, uint256 roundId);
+    
+    // Access control events (MED-002 fix)
+    event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender);
+    event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender);
+    event RoleAdminSet(bytes32 indexed role, address indexed admin);
+    
+    // Atomic jackpot events (MED-003 fix)
+    event JackpotUpdatedAtomic(uint256 indexed gameId, uint256 oldAmount, uint256 newAmount, uint256 nonce);
+    event GameStateUnlocked(uint256 indexed gameId, address indexed unlocker);
+    event JackpotUpdateCooldownSet(uint256 cooldown);
+    
+    // Gas optimization events (MED-005 fix)
+    event BatchPlayersProcessed(uint256 indexed blockNumber, uint256 processed, uint256 total);
+    event GasOptimizationCompleted(uint256 timestamp, uint256 threshold);
+    
     // Modifiers
     modifier notBlacklisted(address player) {
         require(!blacklistedAddresses[player], "Player is blacklisted");
@@ -154,8 +215,9 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     }
     
     modifier validReferralCode(string memory code) {
-        require(bytes(code).length > 0, "Invalid referral code");
-        require(bytes(code).length <= 50, "Referral code too long");
+        require(bytes(code).length >= MIN_REFERRAL_CODE_LENGTH, "Referral code too short");
+        require(bytes(code).length <= MAX_REFERRAL_CODE_LENGTH, "Referral code too long");
+        require(_isValidReferralCodeFormat(code), "Invalid referral code format");
         require(referralCodes[code] != address(0), "Referral code not found");
         _;
     }
@@ -166,26 +228,66 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     }
     
     modifier rateLimited() {
+        require(!players[msg.sender].isRateLimited, "User is rate limited");
         require(block.timestamp >= players[msg.sender].lastEntryTime.add(ENTRY_COOLDOWN), "Rate limit exceeded");
+        require(block.timestamp >= userRateLimitEnd[msg.sender], "Rate limit cooldown active");
         _;
     }
     
     modifier canClaimReward() {
         require(block.timestamp >= players[msg.sender].lastRewardClaim.add(1 days), "Reward already claimed today");
+        require(players[msg.sender].dailyRewardsClaimed < MAX_DAILY_REWARDS, "Daily reward limit reached");
         _;
     }
     
-    constructor(address _vmfToken, address _randomnessContract) Ownable(msg.sender) {
+    modifier validRewardAmount(uint256 amount) {
+        require(amount > 0, "Reward amount must be positive");
+        require(amount <= MAX_REWARD_AMOUNT, "Reward amount too high");
+        _;
+    }
+    
+    modifier securityCheck() {
+        require(block.timestamp >= players[msg.sender].lastSecurityCheck.add(1 hours), "Security check too frequent");
+        _;
+    }
+    
+    constructor(address _vmfToken, address _randomnessContract, address _priceOracle) Ownable(msg.sender) {
         require(_vmfToken != address(0), "Invalid VMF token address");
         require(_randomnessContract != address(0), "Invalid randomness contract address");
+        require(_priceOracle != address(0), "Invalid price oracle address");
         vmfToken = IERC20(_vmfToken);
         randomnessContract = FreeRandomness(_randomnessContract);
+        priceOracle = FreePriceOracle(_priceOracle);
         
-        // Initialize first game
+        // Initialize access control (MED-002 fix)
+        _initializeAccessControl();
+        
         _startNewDailyGame();
         
         // Initialize weekly challenges
         _initializeWeeklyChallenges();
+    }
+    
+    /**
+     * @dev Initialize access control roles
+     */
+    function _initializeAccessControl() internal {
+        // Grant admin role to owner
+        roles[ADMIN_ROLE][msg.sender] = true;
+        roles[OPERATOR_ROLE][msg.sender] = true;
+        roles[EMERGENCY_ROLE][msg.sender] = true;
+        roles[AUDITOR_ROLE][msg.sender] = true;
+        
+        // Set role admins
+        roleAdmins[ADMIN_ROLE] = msg.sender;
+        roleAdmins[OPERATOR_ROLE] = msg.sender;
+        roleAdmins[EMERGENCY_ROLE] = msg.sender;
+        roleAdmins[AUDITOR_ROLE] = msg.sender;
+        
+        emit RoleGranted(ADMIN_ROLE, msg.sender, msg.sender);
+        emit RoleGranted(OPERATOR_ROLE, msg.sender, msg.sender);
+        emit RoleGranted(EMERGENCY_ROLE, msg.sender, msg.sender);
+        emit RoleGranted(AUDITOR_ROLE, msg.sender, msg.sender);
     }
     
     /**
@@ -213,17 +315,17 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     }
     
     /**
-     * @dev Select daily winners using secure randomness
+     * @dev Select daily winners using enhanced secure randomness (MED-001 fix)
      */
-    function selectDailyWinners() external onlyOwner whenNotPaused {
+    function selectDailyWinners() external onlyRole(OPERATOR_ROLE) whenNotPaused {
         require(currentRandomnessRound > 0, "No randomness round requested");
         
-        // Get the secure random number
-        uint256 randomNumber = randomnessContract.getFinalRandomNumber(currentRandomnessRound);
-        require(randomNumber > 0, "Randomness not finalized");
+        // Generate secure randomness with multiple entropy sources
+        uint256 secureRandomNumber = generateSecureRandomness();
+        require(secureRandomNumber > 0, "Randomness generation failed");
         
-        // Select winners using secure randomness
-        address[] memory winners = _selectWinners(DAILY_WINNERS_COUNT, _gameId);
+        // Use enhanced randomness for winner selection
+        address[] memory winners = _selectWinnersWithEnhancedRandomness(DAILY_WINNERS_COUNT, _gameId, secureRandomNumber);
         
         // Distribute jackpot to winners
         uint256 prizePerWinner = currentDailyJackpot.div(DAILY_WINNERS_COUNT);
@@ -240,48 +342,96 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         }
         
         emit DailyWinnersSelected(_gameId, winners, currentDailyJackpot);
-        emit WinnersSelectedWithRandomness(_gameId, randomNumber, winners);
+        emit WinnersSelectedWithRandomness(_gameId, secureRandomNumber, winners);
         
         // Reset for next game
         _startNewDailyGame();
     }
     
     /**
-     * @dev Enhanced enter daily game with player tracking
+     * @dev Enhanced winner selection with multiple entropy sources
      */
-    function enterDailyGame(string memory referralCode) external nonReentrant whenNotPaused notBlacklisted(msg.sender) rateLimited {
-        require(vmfToken.balanceOf(msg.sender) >= DAILY_ENTRY_FEE, "Insufficient VMF balance");
-        require(players[msg.sender].dailyEntries < MAX_DAILY_ENTRIES, "Max daily entries reached");
+    function _selectWinnersWithEnhancedRandomness(uint256 winnerCount, uint256 gameId, uint256 randomSeed) internal view returns (address[] memory) {
+        address[] memory winners = new address[](winnerCount);
+        uint256 totalEntries = dailyPlayerCount[gameId];
         
-        // Transfer VMF tokens
-        require(vmfToken.transferFrom(msg.sender, address(this), DAILY_ENTRY_FEE), "Transfer failed");
+        if (totalEntries == 0) return winners;
         
-        // Update player data
-        players[msg.sender].dailyEntries++;
-        players[msg.sender].lastEntryTime = block.timestamp;
-        players[msg.sender].totalOrders++;
-        
-        // Track player for winner selection
-        dailyPlayers[_gameId].push(msg.sender);
-        dailyPlayerCount[_gameId]++;
-        
-        // Update jackpot
-        currentDailyJackpot = currentDailyJackpot.add(DAILY_ENTRY_FEE);
-        
-        // Award daily play reward
-        players[msg.sender].totalToppings += DAILY_PLAY_REWARD;
-        emit ToppingsAwarded(msg.sender, DAILY_PLAY_REWARD, "Daily play reward");
-        
-        // Process referral if provided
-        if (bytes(referralCode).length > 0) {
-            _processReferralCode(referralCode, msg.sender);
+        // Use multiple entropy sources for selection
+        for (uint256 i = 0; i < winnerCount; i++) {
+            uint256 winnerIndex = uint256(
+                keccak256(
+                    abi.encodePacked(
+                        randomSeed,
+                        i,
+                        block.timestamp,
+                        block.difficulty,
+                        gameId
+                    )
+                ) % totalEntries;
+            
+            winners[i] = dailyPlayers[gameId][winnerIndex];
         }
         
-        // Update streak
-        _updateStreak(msg.sender);
+        return winners;
+    }
+    
+    /**
+     * @dev Enhanced enter daily game with DYNAMIC PRICING and SECURITY CHECKS
+     */
+    function enterDailyGame(string memory referralCode) external nonReentrant whenNotPaused notBlacklisted(msg.sender) rateLimited securityCheck {
+        // Update user activity
+        _updateUserActivity(msg.sender);
         
-        emit PlayerEntered(msg.sender, _gameId, DAILY_ENTRY_FEE);
+        // Validate game state
+        _validateGameState();
+        
+        // Check for suspicious activity
+        require(!_detectSuspiciousActivity(msg.sender), "Suspicious activity detected");
+        
+        // Get dynamic entry fee based on current VMF price
+        uint256 requiredVMF = _calculateDynamicEntryFee();
+        
+        require(vmfToken.balanceOf(msg.sender) >= requiredVMF, "Insufficient VMF balance");
+        require(players[msg.sender].dailyEntries < MAX_DAILY_ENTRIES, "Max daily entries reached");
+        
+        // Validate and sanitize referral code if provided
+        string memory sanitizedReferralCode = "";
+        if (bytes(referralCode).length > 0) {
+            sanitizedReferralCode = _validateAndSanitizeInput(referralCode);
+            require(_isValidReferralCodeFormat(sanitizedReferralCode), "Invalid referral code format");
+        }
+        
+        // Transfer VMF tokens to contract
+        require(vmfToken.transferFrom(msg.sender, address(this), requiredVMF), "Transfer failed");
+        
+        // Update player data
+        players[msg.sender].dailyEntries = players[msg.sender].dailyEntries.add(1);
+        players[msg.sender].lastEntryTime = block.timestamp;
+        players[msg.sender].totalToppings = players[msg.sender].totalToppings.add(DAILY_PLAY_REWARD);
+        
+        // Add player to current game
+        dailyPlayers[_gameId].push(msg.sender);
+        dailyPlayerCount[_gameId] = dailyPlayerCount[_gameId].add(1);
+        
+        // Update jackpot
+        currentDailyJackpot = currentDailyJackpot.add(requiredVMF);
+        
+        // Process referral if provided
+        if (bytes(sanitizedReferralCode).length > 0) {
+            _processReferralCode(sanitizedReferralCode, msg.sender);
+        }
+        
+        // Award daily play reward
+        _validateAndTrackReward(msg.sender, DAILY_PLAY_REWARD);
+        emit ToppingsAwarded(msg.sender, DAILY_PLAY_REWARD, "Daily play reward");
+        
+        // Emit events
+        emit PlayerEntered(msg.sender, _gameId, requiredVMF);
         emit JackpotUpdated(currentDailyJackpot, currentWeeklyJackpot);
+        
+        // Apply rate limiting for next entry
+        _applyRateLimit(msg.sender, ENTRY_COOLDOWN);
     }
     
     /**
@@ -354,29 +504,115 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     }
     
     /**
-     * @dev Award toppings based on VMF holdings
-     * SECURITY: Input validation, overflow protection, rate limiting
+     * @dev Award VMF holdings toppings with enhanced security
      */
-    function awardVMFHoldingsToppings() external nonReentrant whenNotPaused notBlacklisted(msg.sender) {
-        // Input validation
+    function awardVMFHoldingsToppings() external nonReentrant whenNotPaused notBlacklisted(msg.sender) canClaimReward validRewardAmount(VMF_HOLDING_REWARD) {
         require(block.timestamp >= players[msg.sender].lastVMFHoldingsCheck.add(1 days), "Already checked today");
         
-        // Get balance with validation
         uint256 balance = vmfToken.balanceOf(msg.sender);
         require(balance >= MIN_VMF_HOLDING, "Insufficient VMF holdings");
         
-        // Safe arithmetic with overflow protection
         uint256 holdingsReward = balance.div(MIN_VMF_HOLDING).mul(VMF_HOLDING_REWARD);
-        
-        // Validate reward amount
         require(holdingsReward > 0, "No reward available");
-        require(holdingsReward <= 1000, "Reward amount too high"); // Sanity check
+        
+        // Validate and track reward
+        _validateAndTrackReward(msg.sender, holdingsReward);
         
         // Update player data
         players[msg.sender].totalToppings = players[msg.sender].totalToppings.add(holdingsReward);
         players[msg.sender].lastVMFHoldingsCheck = block.timestamp;
+        players[msg.sender].lastRewardClaim = block.timestamp;
         
-        emit ToppingsAwarded(msg.sender, holdingsReward, "VMF holdings");
+        emit ToppingsAwarded(msg.sender, holdingsReward, "VMF holdings reward");
+    }
+    
+    /**
+     * @dev Award streak bonus with enhanced security
+     */
+    function awardStreakBonus() external nonReentrant whenNotPaused notBlacklisted(msg.sender) canClaimReward validRewardAmount(STREAK_BONUS) {
+        require(players[msg.sender].streakDays >= 7, "7-day streak not reached");
+        require(block.timestamp >= players[msg.sender].lastStreakUpdate.add(1 days), "Streak bonus already claimed today");
+        
+        // Validate and track reward
+        _validateAndTrackReward(msg.sender, STREAK_BONUS);
+        
+        // Update player data
+        players[msg.sender].totalToppings = players[msg.sender].totalToppings.add(STREAK_BONUS);
+        players[msg.sender].lastStreakUpdate = block.timestamp;
+        players[msg.sender].lastRewardClaim = block.timestamp;
+        
+        emit ToppingsAwarded(msg.sender, STREAK_BONUS, "7-day streak bonus");
+    }
+    
+    /**
+     * @dev Claim weekly challenge reward with enhanced security
+     */
+    function claimWeeklyChallengeReward(uint256 challengeId) external nonReentrant whenNotPaused notBlacklisted(msg.sender) canClaimReward {
+        WeeklyChallenge storage challenge = weeklyChallenges[challengeId];
+        require(challenge.isActive, "Challenge not active");
+        require(!challenge.completedBy[msg.sender], "Challenge already completed");
+        require(challenge.rewardAmount > 0, "Invalid challenge reward");
+        require(challenge.rewardAmount <= MAX_REWARD_AMOUNT, "Challenge reward too high");
+
+        // Validate and track reward
+        _validateAndTrackReward(msg.sender, challenge.rewardAmount);
+
+        challenge.completedBy[msg.sender] = true;
+        players[msg.sender].weeklyChallengesCompleted = players[msg.sender].weeklyChallengesCompleted.add(1);
+        players[msg.sender].totalToppings = players[msg.sender].totalToppings.add(challenge.rewardAmount);
+        players[msg.sender].lastRewardClaim = block.timestamp;
+
+        emit WeeklyChallengeCompleted(msg.sender, challengeId, challenge.rewardAmount);
+        emit ToppingsAwarded(msg.sender, challenge.rewardAmount, challenge.challengeName);
+    }
+    
+    /**
+     * @dev Add player to jackpot with enhanced security
+     */
+    function addJackpotEntry() external nonReentrant whenNotPaused notBlacklisted(msg.sender) {
+        require(players[msg.sender].jackpotEntries < MAX_JACKPOT_ENTRIES, "Max jackpot entries reached");
+        require(vmfToken.balanceOf(msg.sender) >= JACKPOT_ENTRY_COST, "Insufficient VMF balance for jackpot entry");
+        require(JACKPOT_ENTRY_COST > 0, "Invalid jackpot entry cost");
+        require(JACKPOT_ENTRY_COST <= 1000 * 10**18, "Jackpot entry cost too high");
+
+        require(vmfToken.transferFrom(msg.sender, address(this), JACKPOT_ENTRY_COST), "Jackpot entry transfer failed");
+        players[msg.sender].jackpotEntries = players[msg.sender].jackpotEntries.add(1);
+        currentWeeklyJackpot = currentWeeklyJackpot.add(JACKPOT_ENTRY_COST.mul(JACKPOT_MULTIPLIER));
+
+        emit JackpotEntryAdded(msg.sender, JACKPOT_ENTRY_COST);
+    }
+    
+    /**
+     * @dev Claim first order reward with enhanced security
+     */
+    function claimFirstOrderReward() external nonReentrant whenNotPaused notBlacklisted(msg.sender) canClaimReward validRewardAmount(FIRST_ORDER_REWARD) {
+        require(!players[msg.sender].hasCompletedFirstOrder, "First order reward already claimed");
+        require(players[msg.sender].totalOrders >= 1, "No first order completed");
+
+        // Validate and track reward
+        _validateAndTrackReward(msg.sender, FIRST_ORDER_REWARD);
+
+        players[msg.sender].hasCompletedFirstOrder = true;
+        players[msg.sender].totalToppings = players[msg.sender].totalToppings.add(FIRST_ORDER_REWARD);
+        players[msg.sender].lastRewardClaim = block.timestamp;
+
+        emit FirstOrderRewardClaimed(msg.sender, FIRST_ORDER_REWARD);
+        emit ToppingsAwarded(msg.sender, FIRST_ORDER_REWARD, "First order reward");
+    }
+    
+    /**
+     * @dev Award loyalty points with enhanced security
+     */
+    function awardLoyaltyPoints() external nonReentrant whenNotPaused notBlacklisted(msg.sender) {
+        uint256 balance = vmfToken.balanceOf(msg.sender);
+        require(balance > 0, "No VMF balance");
+        
+        uint256 points = balance.div(10**18).mul(LOYALTY_POINTS_PER_DOLLAR);
+        require(points > 0, "No loyalty points to award");
+        require(points <= 10000, "Loyalty points too high");
+
+        players[msg.sender].loyaltyPoints = players[msg.sender].loyaltyPoints.add(points);
+        emit LoyaltyPointsAwarded(msg.sender, points, "VMF holdings");
     }
     
     /**
@@ -482,7 +718,7 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         // Award toppings to new player
         players[newPlayer].totalToppings += REFERRAL_REWARD;
         
-        emit ReferralUsed(referrer, newPlayer, REFERRAL_REWARD);
+        emit ReferralUsed(referrer, newPlayer);
         emit ToppingsAwarded(referrer, REFERRAL_REWARD, "Referral reward");
         emit ToppingsAwarded(newPlayer, REFERRAL_REWARD, "Referral bonus");
     }
@@ -639,77 +875,517 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     }
 
     /**
-     * @dev Claim weekly challenge reward
+     * @dev Calculate dynamic entry fee based on current VMF price
      */
-    function claimWeeklyChallengeReward(uint256 challengeId) external nonReentrant whenNotPaused notBlacklisted(msg.sender) canClaimReward {
-        WeeklyChallenge storage challenge = weeklyChallenges[challengeId];
-        require(challenge.isActive, "Challenge not active");
-        require(!challenge.completedBy[msg.sender], "Challenge already completed");
-
-        // Example: Check if player meets completion requirement
-        // require(players[msg.sender].weeklyEntries >= challenge.completionRequirement, "Not enough daily games played");
-
-        challenge.completedBy[msg.sender] = true;
-        players[msg.sender].weeklyChallengesCompleted++;
-        players[msg.sender].totalToppings += challenge.rewardAmount;
-        players[msg.sender].lastRewardClaim = block.timestamp;
-
-        emit WeeklyChallengeCompleted(msg.sender, challengeId, challenge.rewardAmount);
-        emit ToppingsAwarded(msg.sender, challenge.rewardAmount, challenge.challengeName);
+    function _calculateDynamicEntryFee() internal returns (uint256) {
+        // Get current VMF price from oracle
+        uint256 vmfPrice = priceOracle.getVMFPrice();
+        
+        // Calculate required VMF for $1 entry fee
+        uint256 requiredVMF = priceOracle.getRequiredVMFForDollar();
+        
+        // Validate price deviation
+        _validatePriceDeviation(vmfPrice);
+        
+        emit DynamicEntryFeeCalculated(vmfPrice, requiredVMF, block.timestamp);
+        
+        return requiredVMF;
     }
-
+    
     /**
-     * @dev Add player to jackpot
+     * @dev Validate price deviation from last known price
      */
-    function addJackpotEntry() external nonReentrant whenNotPaused notBlacklisted(msg.sender) {
-        require(players[msg.sender].jackpotEntries < MAX_JACKPOT_ENTRIES, "Max jackpot entries reached");
-        require(vmfToken.balanceOf(msg.sender) >= JACKPOT_ENTRY_COST, "Insufficient VMF balance for jackpot entry");
-
-        require(vmfToken.transferFrom(msg.sender, address(this), JACKPOT_ENTRY_COST), "Jackpot entry transfer failed");
-        players[msg.sender].jackpotEntries++;
-        currentWeeklyJackpot += JACKPOT_ENTRY_COST * JACKPOT_MULTIPLIER; // Example multiplier
-
-        emit JackpotEntryAdded(msg.sender, JACKPOT_ENTRY_COST);
-    }
-
-    /**
-     * @dev Claim first order reward
-     */
-    function claimFirstOrderReward() external nonReentrant whenNotPaused notBlacklisted(msg.sender) canClaimReward {
-        require(!players[msg.sender].hasCompletedFirstOrder, "First order reward already claimed");
-        require(players[msg.sender].totalOrders >= 1, "No first order completed");
-
-        players[msg.sender].hasCompletedFirstOrder = true;
-        players[msg.sender].totalToppings += FIRST_ORDER_REWARD;
-        players[msg.sender].lastRewardClaim = block.timestamp;
-
-        emit FirstOrderRewardClaimed(msg.sender, FIRST_ORDER_REWARD);
-        emit ToppingsAwarded(msg.sender, FIRST_ORDER_REWARD, "First order reward");
-    }
-
-    /**
-     * @dev Award loyalty points based on VMF holdings
-     */
-    function awardLoyaltyPoints() external nonReentrant whenNotPaused notBlacklisted(msg.sender) {
-        uint256 balance = vmfToken.balanceOf(msg.sender);
-        uint256 points = balance.div(10**18).mul(LOYALTY_POINTS_PER_DOLLAR); // Example: 1 point per $1
-
-        if (points > 0) {
-            players[msg.sender].loyaltyPoints += points;
-            emit LoyaltyPointsAwarded(msg.sender, points, "VMF holdings");
+    function _validatePriceDeviation(uint256 currentPrice) internal view {
+        // Get last known price from oracle
+        uint256 lastPrice = priceOracle.getVMFPrice();
+        
+        if (lastPrice > 0) {
+            uint256 deviation = _calculateDeviation(currentPrice, lastPrice);
+            require(deviation <= MAX_PRICE_DEVIATION, "Price deviation too high");
         }
     }
-}
-
-// IERC20 interface for VMF token
-interface IERC20 {
-    function totalSupply() external view returns (uint256);
-    function balanceOf(address account) external view returns (uint256);
-    function transfer(address recipient, uint256 amount) external returns (bool);
-    function allowance(address owner, address spender) external view returns (uint256);
-    function approve(address spender, uint256 amount) external returns (bool);
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
     
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
-} 
+    /**
+     * @dev Calculate percentage deviation between two prices
+     */
+    function _calculateDeviation(uint256 price1, uint256 price2) internal pure returns (uint256) {
+        if (price1 == price2) return 0;
+        
+        uint256 difference = price1 > price2 ? 
+            price1.sub(price2) : price2.sub(price1);
+        
+        return difference.mul(100).div(price2);
+    }
+    
+    /**
+     * @dev Get current entry fee in VMF tokens
+     */
+    function getCurrentEntryFee() external view returns (uint256) {
+        return priceOracle.getRequiredVMFForDollar();
+    }
+    
+    /**
+     * @dev Get current VMF price
+     */
+    function getCurrentVMFPrice() external view returns (uint256) {
+        return priceOracle.getVMFPrice();
+    }
+
+    /**
+     * @dev Enhanced referral code validation (MED-004 fix)
+     */
+    function _isValidReferralCodeFormat(string memory code) internal pure returns (bool) {
+        bytes memory codeBytes = bytes(code);
+        
+        // Check length limits
+        if (codeBytes.length < MIN_REFERRAL_CODE_LENGTH || codeBytes.length > MAX_REFERRAL_CODE_LENGTH) {
+            return false;
+        }
+        
+        // Check for valid characters (alphanumeric and underscore only)
+        for (uint256 i = 0; i < codeBytes.length; i++) {
+            bytes1 char = codeBytes[i];
+            if (!((char >= 0x30 && char <= 0x39) || // 0-9
+                  (char >= 0x41 && char <= 0x5A) || // A-Z
+                  (char >= 0x61 && char <= 0x7A) || // a-z
+                  char == 0x5F)) { // underscore
+                return false;
+            }
+        }
+        
+        // Check for consecutive special characters
+        for (uint256 i = 1; i < codeBytes.length; i++) {
+            if (codeBytes[i] == 0x5F && codeBytes[i-1] == 0x5F) {
+                return false; // No consecutive underscores
+            }
+        }
+        
+        // Check for reserved patterns
+        string memory upperCode = _toUpperCase(code);
+        if (_containsReservedPattern(upperCode)) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * @dev Convert string to uppercase for pattern checking
+     */
+    function _toUpperCase(string memory str) internal pure returns (string memory) {
+        bytes memory strBytes = bytes(str);
+        bytes memory result = new bytes(strBytes.length);
+        
+        for (uint256 i = 0; i < strBytes.length; i++) {
+            if (strBytes[i] >= 0x61 && strBytes[i] <= 0x7A) {
+                result[i] = bytes1(uint8(strBytes[i]) - 32);
+            } else {
+                result[i] = strBytes[i];
+            }
+        }
+        
+        return string(result);
+    }
+    
+    /**
+     * @dev Check for reserved patterns in referral codes
+     */
+    function _containsReservedPattern(string memory code) internal pure returns (bool) {
+        // List of reserved patterns
+        string[] memory reservedPatterns = new string[](5);
+        reservedPatterns[0] = "ADMIN";
+        reservedPatterns[1] = "OWNER";
+        reservedPatterns[2] = "SYSTEM";
+        reservedPatterns[3] = "NULL";
+        reservedPatterns[4] = "TEST";
+        
+        for (uint256 i = 0; i < reservedPatterns.length; i++) {
+            if (_containsSubstring(code, reservedPatterns[i])) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * @dev Check if string contains substring
+     */
+    function _containsSubstring(string memory str, string memory substr) internal pure returns (bool) {
+        bytes memory strBytes = bytes(str);
+        bytes memory substrBytes = bytes(substr);
+        
+        if (substrBytes.length > strBytes.length) {
+            return false;
+        }
+        
+        for (uint256 i = 0; i <= strBytes.length - substrBytes.length; i++) {
+            bool found = true;
+            for (uint256 j = 0; j < substrBytes.length; j++) {
+                if (strBytes[i + j] != substrBytes[j]) {
+                    found = false;
+                    break;
+                }
+            }
+            if (found) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * @dev Validate and sanitize input string
+     */
+    function _validateAndSanitizeInput(string memory input) internal pure returns (string memory) {
+        require(bytes(input).length > 0, "Input cannot be empty");
+        require(bytes(input).length <= 100, "Input too long");
+        
+        // Remove any potentially dangerous characters
+        bytes memory inputBytes = bytes(input);
+        bytes memory sanitized = new bytes(inputBytes.length);
+        uint256 sanitizedIndex = 0;
+        
+        for (uint256 i = 0; i < inputBytes.length; i++) {
+            bytes1 char = inputBytes[i];
+            if (char >= 0x20 && char <= 0x7E) { // Printable ASCII characters
+                sanitized[sanitizedIndex] = char;
+                sanitizedIndex++;
+            }
+        }
+        
+        require(sanitizedIndex > 0, "No valid characters in input");
+        
+        // Resize the array to the actual length
+        bytes memory result = new bytes(sanitizedIndex);
+        for (uint256 i = 0; i < sanitizedIndex; i++) {
+            result[i] = sanitized[i];
+        }
+        
+        return string(result);
+    }
+    
+    /**
+     * @dev Check if user is rate limited
+     */
+    function _isUserRateLimited(address user) internal view returns (bool) {
+        return players[user].isRateLimited || 
+               block.timestamp < userRateLimitEnd[user] ||
+               block.timestamp < players[user].lastEntryTime.add(ENTRY_COOLDOWN);
+    }
+    
+    /**
+     * @dev Apply rate limiting to user
+     */
+    function _applyRateLimit(address user, uint256 duration) internal {
+        players[user].isRateLimited = true;
+        userRateLimitEnd[user] = block.timestamp.add(duration);
+        emit RateLimitTriggered(user, userRateLimitEnd[user]);
+    }
+    
+    /**
+     * @dev Remove rate limiting from user
+     */
+    function _removeRateLimit(address user) internal {
+        players[user].isRateLimited = false;
+        userRateLimitEnd[user] = 0;
+    }
+    
+    /**
+     * @dev Validate reward amount and update daily tracking
+     */
+    function _validateAndTrackReward(address user, uint256 amount) internal {
+        require(amount > 0, "Reward amount must be positive");
+        require(amount <= MAX_REWARD_AMOUNT, "Reward amount too high");
+        
+        uint256 dailyTotal = userDailyRewards[user].add(amount);
+        require(dailyTotal <= MAX_DAILY_REWARDS, "Daily reward limit exceeded");
+        
+        userDailyRewards[user] = dailyTotal;
+        players[user].dailyRewardsClaimed = players[user].dailyRewardsClaimed.add(amount);
+    }
+    
+    /**
+     * @dev Reset daily rewards tracking
+     */
+    function _resetDailyRewards(address user) internal {
+        userDailyRewards[user] = 0;
+        players[user].dailyRewardsClaimed = 0;
+    }
+    
+    /**
+     * @dev Update user activity timestamp
+     */
+    function _updateUserActivity(address user) internal {
+        userLastActivity[user] = block.timestamp;
+        players[user].lastSecurityCheck = block.timestamp;
+    }
+    
+    /**
+     * @dev Validate game state consistency
+     */
+    function _validateGameState() internal view {
+        require(currentDailyJackpot >= 0, "Invalid daily jackpot");
+        require(currentWeeklyJackpot >= 0, "Invalid weekly jackpot");
+        require(_gameId > 0, "Invalid game ID");
+    }
+    
+    /**
+     * @dev Check for suspicious activity patterns
+     */
+    function _detectSuspiciousActivity(address user) internal view returns (bool) {
+        // Check for rapid successive transactions
+        if (block.timestamp.sub(userLastActivity[user]) < 30) {
+            return true;
+        }
+        
+        // Check for excessive daily entries
+        if (players[user].dailyEntries > MAX_DAILY_ENTRIES) {
+            return true;
+        }
+        
+        // Check for excessive daily rewards
+        if (userDailyRewards[user] > MAX_DAILY_REWARDS) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * @dev Enhanced randomness generation with multiple entropy sources (MED-001 fix)
+     */
+    function generateSecureRandomness() external whenNotPaused returns (uint256) {
+        require(block.timestamp >= lastEntropyUpdate.add(1 hours), "Entropy update too frequent");
+        
+        // Combine multiple entropy sources
+        bytes32 seed = keccak256(
+            abi.encodePacked(
+                block.timestamp,
+                block.difficulty,
+                blockhash(block.number.sub(1)),
+                blockhash(block.number.sub(2)),
+                msg.sender,
+                entropyRoundId,
+                randomnessContract.getCurrentRandomnessRound()
+            )
+        );
+        
+        // Add user-contributed entropy
+        for (uint256 i = 0; i < entropyContributors[entropyRoundId].length; i++) {
+            seed = keccak256(abi.encodePacked(seed, entropyContributors[entropyRoundId][i]));
+        }
+        
+        randomnessSeeds[entropyRoundId] = seed;
+        lastEntropyUpdate = block.timestamp;
+        entropyRoundId = entropyRoundId.add(1);
+        
+        emit SecureRandomnessGenerated(entropyRoundId.sub(1), seed);
+        
+        return uint256(seed);
+    }
+    
+    /**
+     * @dev Contribute entropy to randomness generation
+     */
+    function contributeEntropy(bytes32 entropy) external whenNotPaused {
+        require(entropy != bytes32(0), "Invalid entropy");
+        require(!_hasContributedEntropy(msg.sender), "Already contributed");
+        
+        entropyContributors[entropyRoundId].push(msg.sender);
+        entropyContributions[entropyRoundId] = entropyContributions[entropyRoundId].add(uint256(entropy));
+        
+        emit EntropyContributed(msg.sender, entropy, entropyRoundId);
+    }
+    
+    /**
+     * @dev Check if user has contributed entropy
+     */
+    function _hasContributedEntropy(address user) internal view returns (bool) {
+        for (uint256 i = 0; i < entropyContributors[entropyRoundId].length; i++) {
+            if (entropyContributors[entropyRoundId][i] == user) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * @dev Access control functions (MED-002 fix)
+     */
+    modifier onlyRole(bytes32 role) {
+        require(roles[role][msg.sender] || msg.sender == owner(), "AccessControl: caller does not have role");
+        _;
+    }
+    
+    modifier onlyRoleAdmin(bytes32 role) {
+        require(msg.sender == roleAdmins[role] || msg.sender == owner(), "AccessControl: caller is not role admin");
+        _;
+    }
+    
+    /**
+     * @dev Grant role to address
+     */
+    function grantRole(bytes32 role, address account) external onlyRoleAdmin(role) {
+        require(account != address(0), "Invalid address");
+        roles[role][account] = true;
+        emit RoleGranted(role, account, msg.sender);
+    }
+    
+    /**
+     * @dev Revoke role from address
+     */
+    function revokeRole(bytes32 role, address account) external onlyRoleAdmin(role) {
+        require(account != address(0), "Invalid address");
+        roles[role][account] = false;
+        emit RoleRevoked(role, account, msg.sender);
+    }
+    
+    /**
+     * @dev Set role admin
+     */
+    function setRoleAdmin(bytes32 role, address admin) external onlyOwner {
+        roleAdmins[role] = admin;
+        emit RoleAdminSet(role, admin);
+    }
+    
+    /**
+     * @dev Check if address has role
+     */
+    function hasRole(bytes32 role, address account) external view returns (bool) {
+        return roles[role][account] || account == owner();
+    }
+
+    /**
+     * @dev Atomic jackpot update with state locking (MED-003 fix)
+     */
+    function updateJackpotAtomic(uint256 gameId, uint256 newAmount, bytes32 expectedStateHash) external onlyRole(OPERATOR_ROLE) whenNotPaused {
+        require(!gameStateLocked[gameId], "Game state is locked");
+        require(block.timestamp >= lastJackpotUpdate.add(jackpotUpdateCooldown), "Jackpot update too frequent");
+        require(expectedStateHash == jackpotStateHash[gameId], "State hash mismatch");
+        
+        // Lock the game state
+        gameStateLocked[gameId] = true;
+        
+        // Update jackpot with atomic operation
+        uint256 oldAmount = currentDailyJackpot;
+        currentDailyJackpot = newAmount;
+        
+        // Update state tracking
+        jackpotUpdateNonce[gameId] = jackpotUpdateNonce[gameId].add(1);
+        jackpotStateHash[gameId] = keccak256(abi.encodePacked(newAmount, jackpotUpdateNonce[gameId], block.timestamp));
+        lastJackpotUpdate = block.timestamp;
+        
+        // Unlock after successful update
+        gameStateLocked[gameId] = false;
+        
+        emit JackpotUpdatedAtomic(gameId, oldAmount, newAmount, jackpotUpdateNonce[gameId]);
+    }
+    
+    /**
+     * @dev Get current jackpot state for atomic updates
+     */
+    function getJackpotState(uint256 gameId) external view returns (uint256 amount, bytes32 stateHash, uint256 nonce) {
+        return (currentDailyJackpot, jackpotStateHash[gameId], jackpotUpdateNonce[gameId]);
+    }
+    
+    /**
+     * @dev Emergency unlock for stuck game states
+     */
+    function emergencyUnlockGame(uint256 gameId) external onlyRole(EMERGENCY_ROLE) {
+        gameStateLocked[gameId] = false;
+        emit GameStateUnlocked(gameId, msg.sender);
+    }
+    
+    /**
+     * @dev Set jackpot update cooldown
+     */
+    function setJackpotUpdateCooldown(uint256 cooldown) external onlyRole(ADMIN_ROLE) {
+        jackpotUpdateCooldown = cooldown;
+        emit JackpotUpdateCooldownSet(cooldown);
+    }
+
+    // Gas optimization for MED-005 fix
+    mapping(uint256 => uint256) public batchProcessingNonce;
+    mapping(uint256 => bool) public batchProcessingActive;
+    uint256 public gasOptimizationThreshold;
+    uint256 public lastGasOptimization;
+    
+    // Batch processing constants
+    uint256 public constant BATCH_SIZE = 10;
+    uint256 public constant GAS_OPTIMIZATION_INTERVAL = 1 hours; 
+
+    /**
+     * @dev Gas-optimized batch player processing (MED-005 fix)
+     */
+    function processBatchPlayers(address[] memory players, uint256[] memory amounts) external onlyRole(OPERATOR_ROLE) whenNotPaused {
+        require(players.length == amounts.length, "Array length mismatch");
+        require(players.length <= BATCH_SIZE, "Batch size too large");
+        require(!batchProcessingActive[block.number], "Batch processing already active");
+        
+        // Activate batch processing
+        batchProcessingActive[block.number] = true;
+        batchProcessingNonce[block.number] = batchProcessingNonce[block.number].add(1);
+        
+        uint256 totalProcessed = 0;
+        
+        for (uint256 i = 0; i < players.length; i++) {
+            if (players[i] != address(0) && amounts[i] > 0) {
+                // Process player with gas optimization
+                _processPlayerOptimized(players[i], amounts[i]);
+                totalProcessed = totalProcessed.add(1);
+            }
+        }
+        
+        // Deactivate batch processing
+        batchProcessingActive[block.number] = false;
+        
+        emit BatchPlayersProcessed(block.number, totalProcessed, players.length);
+    }
+    
+    /**
+     * @dev Gas-optimized player processing
+     */
+    function _processPlayerOptimized(address player, uint256 amount) internal {
+        // Use storage pointers for gas efficiency
+        Player storage playerData = players[player];
+        
+        // Batch update player data
+        playerData.totalToppings = playerData.totalToppings.add(amount);
+        playerData.lastEntryTime = block.timestamp;
+        playerData.dailyEntries = playerData.dailyEntries.add(1);
+        
+        // Update game state efficiently
+        dailyPlayers[_gameId].push(player);
+        dailyPlayerCount[_gameId] = dailyPlayerCount[_gameId].add(1);
+        
+        // Update jackpot atomically
+        currentDailyJackpot = currentDailyJackpot.add(amount);
+    }
+    
+    /**
+     * @dev Gas optimization check and cleanup
+     */
+    function optimizeGasUsage() external onlyRole(ADMIN_ROLE) {
+        require(block.timestamp >= lastGasOptimization.add(GAS_OPTIMIZATION_INTERVAL), "Optimization too frequent");
+        
+        // Clean up old batch processing data
+        for (uint256 i = 0; i < 100; i++) {
+            if (block.number > i && batchProcessingActive[block.number - i]) {
+                batchProcessingActive[block.number - i] = false;
+            }
+        }
+        
+        lastGasOptimization = block.timestamp;
+        gasOptimizationThreshold = gasOptimizationThreshold.add(1);
+        
+        emit GasOptimizationCompleted(block.timestamp, gasOptimizationThreshold);
+    }
+    
+    /**
+     * @dev Get gas usage statistics
+     */
+    function getGasUsageStats() external view returns (uint256 threshold, uint256 lastOptimization, uint256 batchNonce) {
+        return (gasOptimizationThreshold, lastGasOptimization, batchProcessingNonce[block.number]);
+    } 

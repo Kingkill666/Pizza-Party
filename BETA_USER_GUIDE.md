@@ -181,7 +181,7 @@ Solution:
 ### Getting Help
 - **Discord**: Join our community for support
 - **GitHub Issues**: Report bugs and feature requests
-- **Email**: Contact support@pizzaparty.app
+- **Email**: Contact vmf@vmfcoin.com
 - **Documentation**: Check our comprehensive docs
 
 ## 🎯 Beta Testing Goals
@@ -265,10 +265,10 @@ Solution:
 ## 📞 Contact & Support
 
 ### Beta Support Team
-- **Technical Issues**: tech@pizzaparty.app
-- **General Questions**: support@pizzaparty.app
-- **Security Issues**: security@pizzaparty.app
-- **Feature Requests**: features@pizzaparty.app
+- **Technical Issues**: vmf@vmfcoin.com
+- **General Questions**: vmf@vmfcoin.com
+- **Security Issues**: vmf@vmfcoin.com
+- **Feature Requests**: vmf@vmfcoin.com
 
 ### Response Times
 - **Critical Issues**: 2-4 hours

@@ -166,7 +166,7 @@ npx hardhat test test/fuzzing/
 ### Reporting Process
 1. **Discovery**: Find security vulnerability
 2. **Documentation**: Document the issue
-3. **Submission**: Submit via security@pizzaparty.app
+3. **Submission**: Submit via vmf@vmfcoin.com
 4. **Review**: Security team review
 5. **Resolution**: Fix and reward
 
@@ -193,7 +193,7 @@ npx hardhat test test/fuzzing/
 ## 📞 Security Contact
 
 ### Primary Contact
-- **Email**: security@pizzaparty.app
+- **Email**: vmf@vmfcoin.com
 - **Response Time**: 24 hours for critical issues
 - **Confidentiality**: All reports kept confidential
 
@@ -235,4 +235,4 @@ npx hardhat test test/fuzzing/
 
 ---
 
-**Remember**: Security is everyone's responsibility. If you find a security issue, please report it immediately to security@pizzaparty.app 
+**Remember**: Security is everyone's responsibility. If you find a security issue, please report it immediately to vmf@vmfcoin.com 

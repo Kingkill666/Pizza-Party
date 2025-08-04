@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowLeft, Users, Coins, Handshake, Check, ExternalLink, AlertCircle, X, Clock, Gift } from "lucide-react"
+import { ArrowLeft, Users, Coins, Handshake, Check, ExternalLink, AlertCircle, X, Clock, Gift, Copy, Share } from "lucide-react"
 import { useVMFBalance } from "@/hooks/useVMFBalance"
 import { useWallet } from "@/hooks/useWallet"
 import { WALLETS, isMobile } from "@/lib/wallet-config"
@@ -29,7 +29,7 @@ export default function GamePage() {
   const [hasEntered, setHasEntered] = useState(false)
   const [hasEnteredToday, setHasEnteredToday] = useState(false) // Track if wallet entered today
   const [showInviteModal, setShowInviteModal] = useState(false)
-  const [showSocialShareModal, setShowShareModal] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
   const [showReferralRewardModal, setShowReferralRewardModal] = useState(false)
   const [referralCode, setReferralCode] = useState("")
   const [referralLink, setReferralLink] = useState("")
@@ -165,13 +165,22 @@ export default function GamePage() {
 
   // Generate unique referral code
   const generateReferralCode = () => {
-    if (!connection?.address) return ""
+    console.log(`🔧 generateReferralCode called - connection?.address: ${connection?.address}`)
+    
+    if (!connection?.address) {
+      console.log("❌ No wallet connected for referral code generation")
+      return ""
+    }
+
+    console.log(`✅ Wallet address found: ${connection.address}`)
 
     // Validate wallet address before generating code
     if (!validateWalletAddress(connection.address)) {
-      console.error("Invalid wallet address for referral code generation")
+      console.error("❌ Invalid wallet address for referral code generation")
       return ""
     }
+
+    console.log(`✅ Wallet address validated successfully`)
 
     // Use wallet address in the referral code generation for uniqueness
     const walletSuffix = connection.address.slice(-6).toUpperCase()
@@ -179,12 +188,17 @@ export default function GamePage() {
     const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase()
     const generatedCode = `PIZZA${walletSuffix}${timestamp}${randomStr}`
     
+    console.log(`🔧 Generated referral code: ${generatedCode} (length: ${generatedCode.length})`)
+    console.log(`🔧 Components: PIZZA + ${walletSuffix} + ${timestamp} + ${randomStr}`)
+    
     // Validate the generated code
     if (!validateReferralCode(generatedCode)) {
-      console.error("Generated referral code failed validation")
+      console.error("❌ Generated referral code failed validation")
+      console.error(`❌ Code: "${generatedCode}", Length: ${generatedCode.length}`)
       return ""
     }
     
+    console.log(`✅ Referral code validated successfully: ${generatedCode}`)
     return generatedCode
   }
 
@@ -268,82 +282,78 @@ export default function GamePage() {
 
   // Mark referral as used
   const markReferralAsUsed = (referralCode: string, newUserAddress: string, referrerAddress: string) => {
-    // Mark the new user as having used a referral
-    const usedReferralKey = `pizza_used_referral_${newUserAddress}`
-    localStorage.setItem(
-      usedReferralKey,
-      JSON.stringify({
-        code: referralCode,
-        referrer: referrerAddress,
-        timestamp: Date.now(),
-        date: new Date().toISOString(),
-      }),
-    )
+    const usedReferralsKey = `pizza_used_referrals_${referralCode}`
+    const usedReferrals = JSON.parse(localStorage.getItem(usedReferralsKey) || "[]")
+    usedReferrals.push({
+      user: newUserAddress,
+      referrer: referrerAddress,
+      timestamp: Date.now(),
+      date: new Date().toISOString(),
+    })
+    localStorage.setItem(usedReferralsKey, JSON.stringify(usedReferrals))
 
-    // Update referrer's stats
-    const referrerStatsKey = `pizza_referrer_stats_${referrerAddress}`
-    const stats = JSON.parse(
-      localStorage.getItem(referrerStatsKey) || '{"totalAllowed":3,"used":1,"remaining":2,"joined":0}',
-    )
-    stats.joined += 1
-    localStorage.setItem(referrerStatsKey, JSON.stringify(stats))
+    console.log(`📝 Marked referral code ${referralCode} as used by ${newUserAddress}`)
   }
 
   // Check if user has already used a referral code
   const hasUsedReferralCode = (userAddress: string): boolean => {
-    const usedReferralKey = `pizza_used_referral_${userAddress}`
-    return localStorage.getItem(usedReferralKey) !== null
+    const allUsedReferrals = JSON.parse(localStorage.getItem("pizza_all_used_referrals") || "[]")
+    return allUsedReferrals.some((ref: any) => ref.user === userAddress)
   }
 
-  // Store referral code ownership
+  // Store referral code in localStorage
   const storeReferralCode = (code: string, ownerAddress: string) => {
     const storedReferrals = JSON.parse(localStorage.getItem("pizza_referral_codes") || "{}")
     storedReferrals[code] = ownerAddress
     localStorage.setItem("pizza_referral_codes", JSON.stringify(storedReferrals))
+    console.log(`💾 Stored referral code ${code} for ${ownerAddress}`)
   }
 
-  // Load user's toppings - should start at 0 for new users
+  // Load user's toppings from localStorage
   const loadUserToppings = (userAddress: string): number => {
     const toppingsKey = `pizza_toppings_${userAddress}`
-    const stored = localStorage.getItem(toppingsKey)
+    const toppings = Number.parseInt(localStorage.getItem(toppingsKey) || "0")
+    console.log(`🍕 Loaded ${toppings} toppings for ${userAddress}`)
+    return toppings
+  }
 
-    // Only return stored value if it exists and is a valid number
-    if (stored && !isNaN(Number(stored))) {
-      return Number.parseInt(stored)
+  // Load referral stats for a user
+  const loadReferralStats = (userAddress: string) => {
+    const stats = {
+      totalAllowed: 3,
+      used: 0,
+      remaining: 3,
+      joined: 0,
     }
 
-    // Default to 0 for new users
-    return 0
+    // Count successful referrals
+    const referralSuccessKey = `pizza_referral_success_${userAddress}`
+    const successRecord = JSON.parse(localStorage.getItem(referralSuccessKey) || "[]")
+    stats.joined = successRecord.length
+
+    // Calculate remaining invites
+    stats.used = Math.min(stats.joined, stats.totalAllowed)
+    stats.remaining = Math.max(0, stats.totalAllowed - stats.used)
+
+    console.log(`📊 Referral stats for ${userAddress}:`, stats)
+    return stats
   }
 
-  // Load user's referral stats
-  const loadReferralStats = (userAddress: string) => {
-    const referrerStatsKey = `pizza_referrer_stats_${userAddress}`
-    return JSON.parse(localStorage.getItem(referrerStatsKey) || '{"totalAllowed":3,"used":1,"remaining":2,"joined":0}')
-  }
-
-  // Load community jackpot data
+  // Load community jackpot from localStorage
   const loadCommunityJackpot = () => {
     const jackpot = calculateCommunityJackpot()
     setCommunityJackpot(jackpot)
+    console.log(`💰 Community jackpot: ${jackpot}`)
   }
 
-  // Get actual count of players who entered today's game
+  // Get today's player count from localStorage
   const getTodaysPlayerCount = (): number => {
-    if (typeof window === "undefined") return 0
-
     const today = new Date().toDateString()
-    let count = 0
-    const keys = Object.keys(localStorage)
-
-    keys.forEach((key) => {
-      if (key.startsWith("pizza_entry_") && key.endsWith(`_${today}`)) {
-        if (localStorage.getItem(key) === "true") {
-          count++
-        }
-      }
-    })
-
+    const entries = Object.keys(localStorage).filter(key => 
+      key.startsWith(`pizza_entry_`) && key.includes(today)
+    )
+    const count = entries.length
+    console.log(`👥 Today's player count: ${count}`)
     return count
   }
 
@@ -491,15 +501,39 @@ export default function GamePage() {
 
   // Generate referral code on component mount
   useEffect(() => {
+    console.log(`🔄 useEffect triggered - isConnected: ${isConnected}, address: ${connection?.address}`)
+    
     if (isConnected && connection?.address) {
+      console.log(`✅ Wallet connected, generating referral code for: ${connection.address}`)
+      
       // Generate referral code only when wallet is connected
-      const code = generateReferralCode()
-      setReferralCode(code)
-      setReferralLink(`${window.location.origin}?ref=${code}`)
+      let code = generateReferralCode()
+      console.log(`🎯 Generated code: "${code}"`)
+      
+      // Fallback if generation fails
+      if (!code) {
+        console.log("⚠️ Primary code generation failed, using fallback")
+        const walletSuffix = connection.address.slice(-6).toUpperCase()
+        const timestamp = Date.now().toString(36).toUpperCase()
+        code = `PIZZA${walletSuffix}${timestamp}`
+        console.log(`🔄 Fallback code generated: ${code}`)
+      }
+      
+      if (code) {
+        setReferralCode(code)
+        const link = `${window.location.origin}?ref=${code}`
+        setReferralLink(link)
+        console.log(`🔗 Set referral link: ${link}`)
 
-      // Store this referral code tied to the connected wallet
-      storeReferralCode(code, connection.address)
+        // Store this referral code tied to the connected wallet
+        storeReferralCode(code, connection.address)
+      } else {
+        console.error("❌ Failed to generate referral code even with fallback")
+        setReferralCode("ERROR")
+        setReferralLink("")
+      }
     } else {
+      console.log("❌ Wallet not connected, clearing referral data")
       // Clear referral data when wallet is disconnected
       setReferralCode("")
       setReferralLink("")
@@ -515,7 +549,7 @@ export default function GamePage() {
 
   const validateReferralCode = (code: string): boolean => {
     if (!code) return true // Empty code is valid
-    if (code.length < 3 || code.length > 20) return false
+    if (code.length < 3 || code.length > 50) return false // Increased max length to 50
     if (!/^[a-zA-Z0-9_-]+$/.test(code)) return false
     return true
   }
@@ -602,6 +636,12 @@ export default function GamePage() {
       setShowWalletModal(true)
       return
     }
+    
+    // Debug: Force regenerate referral code
+    console.log("🔧 Manual referral code regeneration triggered")
+    const code = generateReferralCode()
+    console.log(`🎯 Manual generation result: "${code}"`)
+    
     setShowInviteModal(true)
   }
 
@@ -1146,6 +1186,250 @@ export default function GamePage() {
                   🛡️ Your wallet connection is secure and encrypted. We never store your private keys.
                 </p>
               </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Invite Friends Modal */}
+        <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
+          <DialogContent className="max-w-md mx-auto bg-white border-4 border-red-800 rounded-3xl">
+            <DialogHeader>
+              <DialogTitle className="text-xl sm:text-2xl text-red-800 text-center" style={customFontStyle}>
+                🍕 Invite Friends to Pizza Party! 🍕
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 p-4">
+              {/* Your Referral Stats */}
+              <div className="bg-blue-100 p-4 rounded-xl border-2 border-blue-300">
+                <h3 className="text-lg font-bold text-blue-800 mb-2" style={customFontStyle}>
+                  Your Referral Stats
+                </h3>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <div className="text-2xl font-bold text-blue-600" style={customFontStyle}>
+                      {referralStats.used}
+                    </div>
+                    <div className="text-sm text-blue-700" style={customFontStyle}>
+                      Used
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-green-600" style={customFontStyle}>
+                      {referralStats.joined}
+                    </div>
+                    <div className="text-sm text-green-700" style={customFontStyle}>
+                      Joined
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-orange-600" style={customFontStyle}>
+                      {referralStats.remaining}
+                    </div>
+                    <div className="text-sm text-orange-700" style={customFontStyle}>
+                      Remaining
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Your Referral Code */}
+              <div className="bg-yellow-100 p-4 rounded-xl border-2 border-yellow-300">
+                <h3 className="text-lg font-bold text-yellow-800 mb-2" style={customFontStyle}>
+                  Your Referral Code
+                </h3>
+                <div className="bg-white p-3 rounded-lg border border-yellow-400">
+                  <p className="text-lg font-mono font-bold text-center text-gray-800" style={customFontStyle}>
+                    {referralCode || "Loading..."}
+                  </p>
+                </div>
+              </div>
+
+              {/* Share Your Link */}
+              <div className="bg-green-100 p-4 rounded-xl border-2 border-green-300">
+                <h3 className="text-lg font-bold text-green-800 mb-2" style={customFontStyle}>
+                  Share Your Link
+                </h3>
+                <div className="bg-white p-3 rounded-lg border border-green-400 mb-3">
+                  <p className="text-xs font-mono text-gray-800 break-all" style={customFontStyle}>
+                    {referralLink || "Loading..."}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={copyToClipboard}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg"
+                    style={customFontStyle}
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copy Link
+                  </Button>
+                  <Button
+                    onClick={shareLink}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+                    style={customFontStyle}
+                  >
+                    <Share className="mr-2 h-4 w-4" />
+                    Share
+                  </Button>
+                </div>
+              </div>
+
+              {/* Referral Rewards */}
+              <div className="bg-purple-100 p-4 rounded-xl border-2 border-purple-300">
+                <h3 className="text-lg font-bold text-purple-800 mb-2 flex items-center" style={customFontStyle}>
+                  🎁 Referral Rewards
+                </h3>
+                <ul className="space-y-1 text-sm text-purple-700" style={customFontStyle}>
+                  <li>• 2 Toppings per successful referral</li>
+                  <li>• Higher jackpot chances</li>
+                  <li>• Toppings count toward weekly drawing</li>
+                </ul>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Share Modal */}
+        <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
+          <DialogContent className="max-w-md mx-auto bg-white border-4 border-red-800 rounded-3xl">
+            <DialogHeader>
+              <DialogTitle className="text-xl sm:text-2xl text-red-800 text-center" style={customFontStyle}>
+                🍕 Share on Social Media 🍕
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 p-4">
+              <p className="text-center text-gray-600" style={customFontStyle}>
+                Choose where you'd like to share your referral link.
+              </p>
+
+              <div className="space-y-3">
+                {/* X (Twitter) */}
+                <Button
+                  onClick={() => handleSocialShare({ 
+                    action: "share", 
+                    name: "X (Twitter)",
+                    shareUrl: (link: string, text: string) => `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(link)}`
+                  })}
+                  className="w-full bg-black hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between"
+                  style={customFontStyle}
+                >
+                  <div className="flex items-center">
+                    <span className="text-xl mr-3">𝕏</span>
+                    <span>X (Twitter)</span>
+                  </div>
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+
+                {/* Facebook */}
+                <Button
+                  onClick={() => handleSocialShare({ 
+                    action: "share", 
+                    name: "Facebook",
+                    shareUrl: (link: string, text: string) => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`
+                  })}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between"
+                  style={customFontStyle}
+                >
+                  <div className="flex items-center">
+                    <span className="text-xl mr-3">f</span>
+                    <span>Facebook</span>
+                  </div>
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+
+                {/* Telegram */}
+                <Button
+                  onClick={() => handleSocialShare({ 
+                    action: "share", 
+                    name: "Telegram",
+                    shareUrl: (link: string, text: string) => `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`
+                  })}
+                  className="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between"
+                  style={customFontStyle}
+                >
+                  <div className="flex items-center">
+                    <span className="text-xl mr-3">✈️</span>
+                    <span>Telegram</span>
+                  </div>
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+
+                {/* Discord */}
+                <Button
+                  onClick={() => handleSocialShare({ action: "copy", name: "Discord" })}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between"
+                  style={customFontStyle}
+                >
+                  <div className="flex items-center">
+                    <span className="text-xl mr-3">🎮</span>
+                    <span>Discord</span>
+                  </div>
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+
+                {/* WhatsApp */}
+                <Button
+                  onClick={() => handleSocialShare({ 
+                    action: "share", 
+                    name: "WhatsApp",
+                    shareUrl: (link: string, text: string) => `https://wa.me/?text=${encodeURIComponent(`${text} ${link}`)}`
+                  })}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between"
+                  style={customFontStyle}
+                >
+                  <div className="flex items-center">
+                    <span className="text-xl mr-3">💬</span>
+                    <span>WhatsApp</span>
+                  </div>
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+
+                {/* Farcaster */}
+                <Button
+                  onClick={() => handleSocialShare({ 
+                    action: "share", 
+                    name: "Farcaster",
+                    shareUrl: (link: string, text: string) => `https://warpcast.com/~/compose?text=${encodeURIComponent(`${text} ${link}`)}`
+                  })}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between"
+                  style={customFontStyle}
+                >
+                  <div className="flex items-center">
+                    <Image
+                      src="/images/farcaster-icon.png"
+                      alt="Farcaster"
+                      width={20}
+                      height={20}
+                      className="mr-3"
+                    />
+                    <span>Farcaster</span>
+                  </div>
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+
+                {/* Copy Link */}
+                <Button
+                  onClick={copyToClipboard}
+                  className="w-full bg-gray-700 hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between"
+                  style={customFontStyle}
+                >
+                  <div className="flex items-center">
+                    <Copy className="h-5 w-5 mr-3" />
+                    <span>Copy Link</span>
+                  </div>
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {copied && (
+                <div className="bg-green-100 border-2 border-green-300 rounded-lg p-3 text-center">
+                  <p className="text-green-800 font-bold" style={customFontStyle}>
+                    ✅ Link copied to clipboard!
+                  </p>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
