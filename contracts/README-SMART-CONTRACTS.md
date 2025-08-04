@@ -36,7 +36,7 @@ The PizzaParty smart contract is a decentralized gaming platform on the Base net
 ### Game Mechanics
 
 #### Daily Game
-- **Entry Fee**: 1 VMF token per entry
+- **Entry Fee**: $1 VMF token per entry
 - **Jackpot**: 100% of daily entry fees
 - **Winners**: 8 random daily winners
 - **Frequency**: One entry per wallet per day

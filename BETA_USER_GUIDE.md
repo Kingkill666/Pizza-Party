@@ -24,7 +24,7 @@ Thank you for being part of our beta testing program! This guide will help you u
 ## 🎯 Game Mechanics
 
 ### Daily Game
-- **Entry Fee**: 1 VMF token
+- **Entry Fee**: $1 VMF token
 - **Winners**: 8 random winners per day
 - **Prize**: Equal split of daily jackpot
 - **Timing**: New game starts daily at 12pm PST

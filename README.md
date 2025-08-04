@@ -21,7 +21,7 @@ npm run dev
 ## 🎮 Game Overview
 
 ### Daily Game
-- **Entry Fee**: 1 VMF token
+- **Entry Fee**: $1 VMF token
 - **Jackpot**: 100% of daily entry fees
 - **Winners**: 8 random daily winners
 - **Frequency**: One entry per wallet per day
