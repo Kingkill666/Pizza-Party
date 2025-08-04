@@ -114,20 +114,20 @@ export default function JackpotPage() {
               <p className="text-white text-lg mb-2" style={customFontStyle}>
                 Weekly Jackpot
               </p>
-              <p className="text-white text-4xl font-black" style={customFontStyle}>
+              <p className="text-white text-4xl font-black flex items-center justify-center" style={customFontStyle}>
                 <Image
                   src="/images/star-favicon-original.png"
                   alt="Star"
-                  width={24}
-                  height={24}
+                  width={31}
+                  height={31}
                   className="inline mr-2 rounded-full"
                 />
                 {formatJackpotAmount(communityJackpot)} VMF
                 <Image
                   src="/images/star-favicon-original.png"
                   alt="Star"
-                  width={24}
-                  height={24}
+                  width={31}
+                  height={31}
                   className="inline ml-2 rounded-full"
                 />
               </p>
