@@ -5,7 +5,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { ArrowLeft, Trophy, Users, Clock, Gift, Star } from "lucide-react"
-import { calculateCommunityJackpot, formatJackpotAmount, getWeeklyJackpotInfo } from "@/lib/jackpot-data"
+import { 
+  calculateCommunityJackpot, 
+  formatJackpotAmount, 
+  getWeeklyJackpotInfo,
+  getDailyPlayerCount,
+  getWeeklyPlayerCount,
+  getToppingsAvailableToClaim
+} from "@/lib/jackpot-data"
 
 export default function JackpotPage() {
   const customFontStyle = {
@@ -14,6 +21,9 @@ export default function JackpotPage() {
   }
 
   const [communityJackpot, setCommunityJackpot] = useState(0)
+  const [dailyPlayers, setDailyPlayers] = useState(0)
+  const [weeklyPlayers, setWeeklyPlayers] = useState(0)
+  const [toppingsAvailable, setToppingsAvailable] = useState(0)
   const [weeklyInfo, setWeeklyInfo] = useState({
     totalToppings: 0,
     totalPlayers: 0,
@@ -25,27 +35,28 @@ export default function JackpotPage() {
     },
   })
 
-  // Load community jackpot data
-  const loadCommunityJackpot = () => {
+  // Load all real data
+  const loadRealData = () => {
     const jackpot = calculateCommunityJackpot()
-    setCommunityJackpot(jackpot)
-  }
-
-  // Load weekly jackpot info
-  const loadWeeklyInfo = () => {
+    const daily = getDailyPlayerCount()
+    const weekly = getWeeklyPlayerCount()
+    const toppings = getToppingsAvailableToClaim()
     const info = getWeeklyJackpotInfo()
+
+    setCommunityJackpot(jackpot)
+    setDailyPlayers(daily)
+    setWeeklyPlayers(weekly)
+    setToppingsAvailable(toppings)
     setWeeklyInfo(info)
   }
 
   // Load data on mount and refresh periodically
   useEffect(() => {
-    loadCommunityJackpot()
-    loadWeeklyInfo()
+    loadRealData()
 
-    // Refresh every second for countdown
+    // Refresh every second for countdown and real-time updates
     const interval = setInterval(() => {
-      loadCommunityJackpot()
-      loadWeeklyInfo()
+      loadRealData()
     }, 1000)
 
     return () => clearInterval(interval)
@@ -100,10 +111,13 @@ export default function JackpotPage() {
             {/* Jackpot Amount */}
             <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-3 rounded-xl border-4 border-yellow-600 text-center">
               <p className="text-white text-lg mb-2" style={customFontStyle}>
-                Current Jackpot
+                Today's Jackpot
               </p>
               <p className="text-white text-4xl font-black" style={customFontStyle}>
                 {formatJackpotAmount(communityJackpot)} VMF
+              </p>
+              <p className="text-white text-sm" style={customFontStyle}>
+                ({dailyPlayers} players × 1 VMF each)
               </p>
             </div>
 
@@ -165,7 +179,7 @@ export default function JackpotPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="bg-green-100 p-4 rounded-lg text-center">
                 <Gift className="h-6 w-6 mx-auto mb-2 text-green-600" />
                 <p className="text-sm text-green-600" style={customFontStyle}>
@@ -175,13 +189,22 @@ export default function JackpotPage() {
                   {weeklyInfo.totalToppings.toLocaleString()}
                 </p>
               </div>
+              <div className="bg-blue-100 p-4 rounded-lg text-center">
+                <Users className="h-6 w-6 mx-auto mb-2 text-blue-600" />
+                <p className="text-sm text-blue-600" style={customFontStyle}>
+                  Today's Players
+                </p>
+                <p className="text-2xl font-bold text-blue-800" style={customFontStyle}>
+                  {dailyPlayers.toLocaleString()}
+                </p>
+              </div>
               <div className="bg-purple-100 p-4 rounded-lg text-center">
                 <Users className="h-6 w-6 mx-auto mb-2 text-purple-600" />
                 <p className="text-sm text-purple-600" style={customFontStyle}>
-                  Players
+                  Weekly Players
                 </p>
                 <p className="text-2xl font-bold text-purple-800" style={customFontStyle}>
-                  {weeklyInfo.totalPlayers.toLocaleString()}
+                  {weeklyPlayers.toLocaleString()}
                 </p>
               </div>
             </div>

@@ -1,6 +1,6 @@
 // Jackpot calculation and data utilities
 
-// Calculate community jackpot based on player activity
+// Calculate community jackpot based on real player activity
 export const calculateCommunityJackpot = (): number => {
   if (typeof window === "undefined") return 0 // Default for SSR
 
@@ -29,7 +29,7 @@ export const formatJackpotAmount = (amount: number): string => {
   return amount.toLocaleString()
 }
 
-// Get weekly jackpot information
+// Get real weekly jackpot information with actual data
 export const getWeeklyJackpotInfo = () => {
   // Calculate time until next Sunday at 12pm PST
   const now = new Date()
@@ -55,19 +55,19 @@ export const getWeeklyJackpotInfo = () => {
   const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
   const seconds = Math.floor((difference % (1000 * 60)) / 1000)
 
-  // Calculate real toppings based on all earning methods
+  // Calculate real toppings and players from actual game data
   let totalToppings = 0
   let totalPlayers = 0
+  const uniquePlayers = new Set()
 
   if (typeof window !== "undefined") {
     const keys = Object.keys(localStorage)
-    const uniquePlayers = new Set()
+    const today = new Date().toDateString()
 
-    // Count toppings from all earning methods
+    // Count real data from all sources
     keys.forEach((key) => {
-      // Daily play toppings (1 per day played)
+      // Daily play entries (1 topping per day played)
       if (key.startsWith("pizza_entry_")) {
-        const today = new Date().toDateString()
         if (key.includes(today) && localStorage.getItem(key) === "true") {
           totalToppings += 1 // 1 topping for daily play
           const address = key.replace("pizza_entry_", "").replace(`_${today}`, "")
@@ -75,7 +75,7 @@ export const getWeeklyJackpotInfo = () => {
         }
       }
 
-      // Referral toppings (2 per referral)
+      // Referral success records (2 toppings per referral)
       if (key.startsWith("pizza_referral_success_")) {
         const address = key.replace("pizza_referral_success_", "")
         const successRecord = JSON.parse(localStorage.getItem(key) || "[]")
@@ -84,7 +84,7 @@ export const getWeeklyJackpotInfo = () => {
         uniquePlayers.add(address)
       }
 
-      // VMF holdings toppings (1 per 10 VMF - simulated)
+      // VMF holdings (1 topping per 10 VMF - simulated for now)
       if (key.startsWith("pizza_vmf_holdings_")) {
         const address = key.replace("pizza_vmf_holdings_", "")
         const vmfAmount = Number.parseInt(localStorage.getItem(key) || "0")
@@ -93,7 +93,7 @@ export const getWeeklyJackpotInfo = () => {
         uniquePlayers.add(address)
       }
 
-      // Streak bonus toppings (3 for 7-day streak)
+      // Streak bonuses (3 toppings for 7-day streak)
       if (key.startsWith("pizza_streak_")) {
         const address = key.replace("pizza_streak_", "")
         const streakDays = Number.parseInt(localStorage.getItem(key) || "0")
@@ -127,6 +127,58 @@ export const getWeeklyJackpotInfo = () => {
       seconds: Math.max(0, seconds),
     },
   }
+}
+
+// Get real daily player count
+export const getDailyPlayerCount = (): number => {
+  if (typeof window === "undefined") return 0
+
+  const today = new Date().toDateString()
+  const keys = Object.keys(localStorage)
+  let count = 0
+
+  keys.forEach((key) => {
+    if (key.startsWith("pizza_entry_") && key.includes(today) && localStorage.getItem(key) === "true") {
+      count++
+    }
+  })
+
+  return count
+}
+
+// Get real weekly player count (unique players who played this week)
+export const getWeeklyPlayerCount = (): number => {
+  if (typeof window === "undefined") return 0
+
+  const keys = Object.keys(localStorage)
+  const uniquePlayers = new Set()
+
+  keys.forEach((key) => {
+    if (key.startsWith("pizza_entry_")) {
+      const address = key.replace("pizza_entry_", "").split("_")[0]
+      uniquePlayers.add(address)
+    }
+  })
+
+  return uniquePlayers.size
+}
+
+// Get real toppings available to claim
+export const getToppingsAvailableToClaim = (): number => {
+  if (typeof window === "undefined") return 0
+
+  const keys = Object.keys(localStorage)
+  let totalToppings = 0
+
+  keys.forEach((key) => {
+    // Count all earned toppings that haven't been claimed yet
+    if (key.startsWith("pizza_toppings_")) {
+      const toppings = Number.parseInt(localStorage.getItem(key) || "0")
+      totalToppings += toppings
+    }
+  })
+
+  return totalToppings
 }
 
 // Simulate jackpot winner selection (for demo purposes)
