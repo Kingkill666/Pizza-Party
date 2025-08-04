@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback } from "react"
 import {
   type WalletConnection,
   formatAddress,
@@ -16,18 +16,10 @@ export const useWallet = () => {
   const [connection, setConnection] = useState<WalletConnection | null>(null)
   const [isConnecting, setIsConnecting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const hasDisconnectedRef = useRef(false)
 
-  // Check for existing connection on mount (only if not recently disconnected)
+  // Listen for account changes (only when already connected)
   useEffect(() => {
-    if (!hasDisconnectedRef.current) {
-      checkExistingConnection()
-    }
-  }, [])
-
-  // Listen for account changes
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.ethereum) {
+    if (typeof window !== "undefined" && window.ethereum && connection) {
       const handleAccountsChanged = (accounts: string[]) => {
         console.log("👤 Accounts changed:", accounts)
         if (accounts.length === 0) {
@@ -70,42 +62,9 @@ export const useWallet = () => {
     }
   }, [connection])
 
-  const checkExistingConnection = async () => {
-    // Don't check if user has recently disconnected
-    if (hasDisconnectedRef.current) {
-      console.log("🔌 Skipping connection check - user recently disconnected")
-      return
-    }
-
-    try {
-      if (typeof window !== "undefined" && window.ethereum) {
-        console.log("🔍 Checking for existing wallet connection...")
-
-        const accounts = await window.ethereum.request({ method: "eth_accounts" })
-
-        if (accounts && accounts.length > 0) {
-          console.log("✅ Found existing connection:", accounts[0])
-
-          const chainId = await window.ethereum.request({ method: "eth_chainId" })
-
-          setConnection({
-            address: accounts[0],
-            chainId: Number.parseInt(chainId, 16),
-            walletName: "Connected Wallet",
-          })
-        } else {
-          console.log("ℹ️ No existing wallet connection found")
-        }
-      }
-    } catch (error) {
-      console.error("❌ Error checking existing connection:", error)
-    }
-  }
-
   const connectWallet = useCallback(async (walletId: string) => {
     setIsConnecting(walletId)
     setError(null)
-    hasDisconnectedRef.current = false // Reset disconnect flag when connecting
 
     console.log(`🎯 Attempting to connect to ${walletId}`)
     console.log(`📱 Mobile device: ${isMobile()}`)
@@ -143,9 +102,6 @@ export const useWallet = () => {
       console.log(`✅ Successfully connected to ${walletId}:`, walletConnection)
       setConnection(walletConnection)
 
-      // Store connection in localStorage for persistence
-      localStorage.setItem("wallet_connection", JSON.stringify(walletConnection))
-
       return walletConnection
     } catch (error: any) {
       console.error(`❌ Failed to connect to ${walletId}:`, error)
@@ -178,9 +134,6 @@ export const useWallet = () => {
 
   const disconnect = useCallback(() => {
     console.log("🔌 Starting wallet disconnect process...")
-
-    // Set disconnect flag to prevent auto-reconnection
-    hasDisconnectedRef.current = true
 
     // Clear all connection state immediately
     setConnection(null)
