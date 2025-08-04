@@ -9,7 +9,7 @@ import Image from "next/image"
 import { ArrowLeft, Users, Coins, Handshake, Check, ExternalLink, AlertCircle, X, Clock, Gift } from "lucide-react"
 import { useVMFBalance } from "@/hooks/useVMFBalance"
 import { useWallet } from "@/hooks/useWallet"
-import { SUPPORTED_WALLETS, isMobile } from "@/lib/wallet-config"
+import { WALLETS, isMobile } from "@/lib/wallet-config"
 import { calculateCommunityJackpot, formatJackpotAmount } from "@/lib/jackpot-data"
 
 export default function GamePage() {
@@ -1086,7 +1086,7 @@ export default function GamePage() {
               )}
 
               {/* Show all wallets on both mobile and desktop */}
-              {SUPPORTED_WALLETS.map((wallet) => (
+              {WALLETS.map((wallet) => (
                 <Button
                   key={wallet.id}
                   onClick={() => handleWalletConnect(wallet.id)}

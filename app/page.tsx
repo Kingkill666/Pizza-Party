@@ -8,7 +8,7 @@ import { useEffect, useState } from "react"
 import { ExternalLink, AlertCircle, X } from "lucide-react"
 import { useWallet } from "@/hooks/useWallet"
 import {
-  SUPPORTED_WALLETS,
+  WALLETS,
   isMobile,
   isIOS,
   isAndroid,
@@ -256,7 +256,7 @@ export default function HomePage() {
               )}
 
               {/* Show all wallets on both mobile and desktop */}
-              {SUPPORTED_WALLETS.map((wallet) => (
+              {WALLETS.map((wallet) => (
                 <Button
                   key={wallet.id}
                   onClick={() => handleWalletConnect(wallet.id)}

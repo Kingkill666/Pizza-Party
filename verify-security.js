@@ -161,7 +161,7 @@ function checkFrontendSecurity() {
   if (fs.existsSync(walletConfigPath)) {
     const walletContent = fs.readFileSync(walletConfigPath, 'utf8');
     
-    if (walletContent.includes('SUPPORTED_WALLETS') && walletContent.includes('isMobile')) {
+    if (walletContent.includes('WALLETS') && walletContent.includes('isMobile')) {
       logSuccess('Multi-wallet security configuration found');
       securityChecks.frontend.walletSecurity = true;
     } else {
