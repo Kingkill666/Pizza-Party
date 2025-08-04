@@ -98,7 +98,7 @@ export default function JackpotPage() {
 
           <CardContent className="space-y-6">
             {/* Jackpot Amount */}
-            <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-6 rounded-xl border-4 border-yellow-600 text-center">
+            <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-4 rounded-xl border-4 border-yellow-600 text-center">
               <p className="text-white text-lg mb-2" style={customFontStyle}>
                 Current Jackpot
               </p>
