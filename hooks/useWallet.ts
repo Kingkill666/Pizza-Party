@@ -17,6 +17,23 @@ export const useWallet = () => {
   const [isConnecting, setIsConnecting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // Load saved connection on mount (but don't auto-connect)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedConnection = localStorage.getItem("wallet_connection")
+      if (savedConnection) {
+        try {
+          const parsedConnection = JSON.parse(savedConnection)
+          console.log("📱 Found saved connection:", parsedConnection)
+          setConnection(parsedConnection)
+        } catch (error) {
+          console.error("❌ Error parsing saved connection:", error)
+          localStorage.removeItem("wallet_connection")
+        }
+      }
+    }
+  }, [])
+
   // Listen for account changes (only when already connected)
   useEffect(() => {
     if (typeof window !== "undefined" && window.ethereum && connection) {
@@ -101,6 +118,9 @@ export const useWallet = () => {
 
       console.log(`✅ Successfully connected to ${walletId}:`, walletConnection)
       setConnection(walletConnection)
+
+      // Save connection to localStorage for persistence across pages
+      localStorage.setItem("wallet_connection", JSON.stringify(walletConnection))
 
       return walletConnection
     } catch (error: any) {
