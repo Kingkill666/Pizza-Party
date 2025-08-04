@@ -222,35 +222,35 @@ export default function JackpotPage() {
               </h3>
               <ul className="space-y-1 text-xs text-yellow-700" style={customFontStyle}>
                 <li className="flex items-start gap-2">
-                  <span className="text-red-600">🍕</span>
+                  <img src="/images/pepperoni-art.png" alt="Pepperoni" className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <span><strong>Daily Game Rules:</strong> One entry per wallet per day. Each 24-hour game window starts at 12pm PST.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-red-600">🍕</span>
+                  <img src="/images/pepperoni-art.png" alt="Pepperoni" className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <span><strong>Daily Chances:</strong> Every wallet that enters has exactly the same chance to win, regardless of VMF holdings.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-red-600">🍕</span>
+                  <img src="/images/pepperoni-art.png" alt="Pepperoni" className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <span><strong>Prerequisite to qualify:</strong> Must hold minimum VMF to participate</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-red-600">🍕</span>
+                  <img src="/images/pepperoni-art.png" alt="Pepperoni" className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <span><strong>All winners split the jackpot:</strong> Prize pool divided equally among winners</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-red-600">🍕</span>
+                  <img src="/images/pepperoni-art.png" alt="Pepperoni" className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <span><strong>Weekly Jackpot:</strong> 10 winners will be randomly selected. Fair selection process for all participants</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-red-600">🍕</span>
+                  <img src="/images/pepperoni-art.png" alt="Pepperoni" className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <span><strong>Toppings expire & refresh weekly:</strong> Use them or lose them each week</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-red-600">🍕</span>
+                  <img src="/images/pepperoni-art.png" alt="Pepperoni" className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <span><strong>Weekly Jackpot:</strong> Must claim toppings before Monday's 12pm PST to be in the drawing</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-red-600">🍕</span>
+                  <img src="/images/pepperoni-art.png" alt="Pepperoni" className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <span><strong>Weekly VMF jackpot equals total amount of toppings claimed:</strong> Community-driven prize pool</span>
                 </li>
               </ul>
