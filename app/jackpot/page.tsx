@@ -13,6 +13,7 @@ import {
   getWeeklyPlayerCount,
   getToppingsAvailableToClaim
 } from "@/lib/jackpot-data"
+import Image from "next/image"
 
 export default function JackpotPage() {
   const customFontStyle = {
@@ -114,7 +115,21 @@ export default function JackpotPage() {
                 Weekly Jackpot
               </p>
               <p className="text-white text-4xl font-black" style={customFontStyle}>
+                <Image
+                  src="/images/star-favicon-original.png"
+                  alt="Star"
+                  width={24}
+                  height={24}
+                  className="inline mr-2 rounded-full"
+                />
                 {formatJackpotAmount(communityJackpot)} VMF
+                <Image
+                  src="/images/star-favicon-original.png"
+                  alt="Star"
+                  width={24}
+                  height={24}
+                  className="inline ml-2 rounded-full"
+                />
               </p>
             </div>
 
