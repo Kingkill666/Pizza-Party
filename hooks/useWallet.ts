@@ -71,7 +71,7 @@ export const useWallet = () => {
         }
       }
     }
-  }, [connection, disconnect])
+  }, [connection])
 
   const checkExistingConnection = async () => {
     try {
