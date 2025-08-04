@@ -1,105 +1,94 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import {
-  WalletConnection,
+  type WalletConnection,
   formatAddress,
-  isMobile,
-  isWalletInstalled,
-  openWalletInstallPage,
-  getWalletDisplayName,
   connectMobileWallet,
   requestWalletConnection,
-} from "../lib/wallet-config"
+  openWalletInstallPage,
+  isWalletInstalled,
+  getWalletDisplayName,
+  isMobile,
+} from "@/lib/wallet-config"
 
 export const useWallet = () => {
   const [connection, setConnection] = useState<WalletConnection | null>(null)
   const [isConnecting, setIsConnecting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [hasDisconnected, setHasDisconnected] = useState(false)
 
-  // Listen for wallet events
+  // Check for existing connection on mount (only if not recently disconnected)
   useEffect(() => {
-    if (typeof window === "undefined") return
+    if (!hasDisconnected) {
+      checkExistingConnection()
+    }
+  }, [hasDisconnected])
 
-    const handleAccountsChanged = (accounts: string[]) => {
-      console.log("👤 Accounts changed:", accounts)
-      if (accounts.length === 0) {
-        // User disconnected their wallet
-        console.log("🔌 Wallet accounts cleared - user disconnected")
-        disconnect() // Call disconnect to clear state and refresh
-      } else if (connection && accounts[0] !== connection.address) {
-        setConnection((prev) => (prev ? { ...prev, address: accounts[0] } : null))
+  // Listen for account changes
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.ethereum) {
+      const handleAccountsChanged = (accounts: string[]) => {
+        console.log("👤 Accounts changed:", accounts)
+        if (accounts.length === 0) {
+          // User disconnected their wallet
+          console.log("🔌 User disconnected wallet externally")
+          disconnect()
+        } else if (connection && accounts[0] !== connection.address) {
+          setConnection((prev) => (prev ? { ...prev, address: accounts[0] } : null))
+        }
       }
-    }
 
-    const handleChainChanged = (chainId: string) => {
-      console.log("🔗 Chain changed:", chainId)
-      setConnection((prev) => (prev ? { ...prev, chainId: Number.parseInt(chainId, 16) } : null))
-    }
+      const handleChainChanged = (chainId: string) => {
+        console.log("🔗 Chain changed:", chainId)
+        setConnection((prev) => (prev ? { ...prev, chainId: Number.parseInt(chainId, 16) } : null))
+      }
 
-    const handleConnect = (connectInfo: any) => {
-      console.log("🔌 Wallet connected:", connectInfo)
-      // Don't auto-connect - let user manually connect
-      console.log("ℹ️ Ignoring auto-connect - manual connection only")
-    }
+      const handleConnect = (connectInfo: any) => {
+        console.log("🔌 Wallet connected:", connectInfo)
+      }
 
-    const handleDisconnect = (error: any) => {
-      console.log("🔌 Wallet disconnected:", error)
-      disconnect()
-    }
+      const handleDisconnect = (error: any) => {
+        console.log("🔌 Wallet disconnected:", error)
+        disconnect()
+      }
 
-    // Add event listeners
-    if (window.ethereum) {
+      // Add event listeners
       window.ethereum.on("accountsChanged", handleAccountsChanged)
       window.ethereum.on("chainChanged", handleChainChanged)
       window.ethereum.on("connect", handleConnect)
       window.ethereum.on("disconnect", handleDisconnect)
-    }
 
-    return () => {
-      if (window.ethereum) {
-        window.ethereum.removeListener("accountsChanged", handleAccountsChanged)
-        window.ethereum.removeListener("chainChanged", handleChainChanged)
-        window.ethereum.removeListener("connect", handleConnect)
-        window.ethereum.removeListener("disconnect", handleDisconnect)
+      return () => {
+        if (window.ethereum.removeListener) {
+          window.ethereum.removeListener("accountsChanged", handleAccountsChanged)
+          window.ethereum.removeListener("chainChanged", handleChainChanged)
+          window.ethereum.removeListener("connect", handleConnect)
+          window.ethereum.removeListener("disconnect", handleDisconnect)
+        }
       }
     }
   }, [connection])
 
   const checkExistingConnection = async () => {
     try {
-      // Check if user has explicitly disconnected
-      const isDisconnected = localStorage.getItem("wallet_disconnected")
-      if (isDisconnected === "true") {
-        console.log("ℹ️ Wallet was explicitly disconnected, not auto-reconnecting")
-        localStorage.removeItem("wallet_disconnected") // Clear the flag
-        return
-      }
-
       if (typeof window !== "undefined" && window.ethereum) {
         console.log("🔍 Checking for existing wallet connection...")
 
-        try {
-          const accounts = await window.ethereum.request({
-            method: "eth_accounts",
+        const accounts = await window.ethereum.request({ method: "eth_accounts" })
+
+        if (accounts && accounts.length > 0) {
+          console.log("✅ Found existing connection:", accounts[0])
+
+          const chainId = await window.ethereum.request({ method: "eth_chainId" })
+
+          setConnection({
+            address: accounts[0],
+            chainId: Number.parseInt(chainId, 16),
+            walletName: "Connected Wallet",
           })
-
-          if (accounts && accounts.length > 0) {
-            const chainId = await window.ethereum.request({
-              method: "eth_chainId",
-            })
-
-            const existingConnection: WalletConnection = {
-              address: accounts[0],
-              chainId: Number.parseInt(chainId, 16),
-              walletName: "Connected Wallet",
-            }
-
-            console.log("✅ Found existing connection:", existingConnection)
-            setConnection(existingConnection)
-          }
-        } catch (error) {
-          console.log("❌ Error getting existing accounts:", error)
+        } else {
+          console.log("ℹ️ No existing wallet connection found")
         }
       }
     } catch (error) {
@@ -110,6 +99,7 @@ export const useWallet = () => {
   const connectWallet = useCallback(async (walletId: string) => {
     setIsConnecting(walletId)
     setError(null)
+    setHasDisconnected(false) // Reset disconnect flag when connecting
 
     console.log(`🎯 Attempting to connect to ${walletId}`)
     console.log(`📱 Mobile device: ${isMobile()}`)
@@ -150,12 +140,6 @@ export const useWallet = () => {
       // Store connection in localStorage for persistence
       localStorage.setItem("wallet_connection", JSON.stringify(walletConnection))
 
-      // Refresh to homepage after successful connection
-      setTimeout(() => {
-        console.log("🔄 Refreshing to homepage after successful connection")
-        window.location.href = "/"
-      }, 500)
-
       return walletConnection
     } catch (error: any) {
       console.error(`❌ Failed to connect to ${walletId}:`, error)
@@ -189,35 +173,46 @@ export const useWallet = () => {
   const disconnect = useCallback(() => {
     console.log("🔌 Starting wallet disconnect process...")
 
+    // Set disconnect flag to prevent auto-reconnection
+    setHasDisconnected(true)
+
     // Clear all connection state
     setConnection(null)
     setError(null)
 
     // Clear localStorage wallet data
     localStorage.removeItem("wallet_connection")
-    
-    // Add a flag to prevent auto-reconnection
-    localStorage.setItem("wallet_disconnected", "true")
+
+    // Clear any stored wallet connection data
+    if (typeof window !== "undefined") {
+      // Clear any wallet-specific storage
+      localStorage.removeItem("wallet_connection")
+      sessionStorage.removeItem("wallet_connection")
+      
+      // Clear any wallet provider data
+      if (window.ethereum) {
+        // Try to disconnect from the wallet provider
+        try {
+          if (window.ethereum.disconnect) {
+            window.ethereum.disconnect()
+          }
+        } catch (e) {
+          console.log("Wallet provider disconnect not available")
+        }
+      }
+    }
 
     console.log("✅ Wallet disconnected successfully")
 
-    // Force a hard refresh to clear all state
+    // Always reload the page to ensure clean state
     setTimeout(() => {
-      console.log("🔄 Performing hard refresh to homepage")
-      // Clear any cached wallet state
-      if (typeof window !== "undefined" && window.ethereum) {
-        // Remove all event listeners temporarily
-        window.ethereum.removeAllListeners?.()
-      }
-      // Force a complete page reload to homepage
-      window.location.href = "/"
-    }, 100)
+      console.log("🔄 Reloading page for clean state")
+      window.location.reload()
+    }, 500)
   }, [])
 
   const getBalance = useCallback(async (): Promise<string> => {
-    if (!connection?.address || typeof window === "undefined" || !window.ethereum) {
-      return "0"
-    }
+    if (!connection) return "0"
 
     try {
       const balance = await window.ethereum.request({
@@ -225,12 +220,13 @@ export const useWallet = () => {
         params: [connection.address, "latest"],
       })
 
-      return balance
+      const balanceInEth = Number.parseInt(balance, 16) / Math.pow(10, 18)
+      return balanceInEth.toString()
     } catch (error) {
-      console.error("❌ Error getting balance:", error)
+      console.error("Error getting balance:", error)
       return "0"
     }
-  }, [connection?.address])
+  }, [connection])
 
   return {
     connection,
@@ -239,6 +235,8 @@ export const useWallet = () => {
     connectWallet,
     disconnect,
     getBalance,
-    formatAddress: (address: string) => formatAddress(address),
+    isConnected: !!connection,
+    formattedAddress: connection ? formatAddress(connection.address) : null,
+    setError,
   }
 }

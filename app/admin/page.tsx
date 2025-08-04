@@ -133,7 +133,7 @@ export default function AdminPage() {
           if (!blacklisted.includes(address)) {
             blacklisted.push(address)
           }
-        } else {
+    } else {
           const index = blacklisted.indexOf(address)
           if (index > -1) {
             blacklisted.splice(index, 1)
@@ -199,12 +199,12 @@ export default function AdminPage() {
   const getContractStats = () => {
     if (typeof window === "undefined") return {}
 
-    const keys = Object.keys(localStorage)
+      const keys = Object.keys(localStorage)
     let totalEntries = 0
     let totalToppings = 0
     let uniquePlayers = new Set()
 
-    keys.forEach((key) => {
+      keys.forEach((key) => {
       if (key.startsWith("pizza_entry_")) {
         if (localStorage.getItem(key) === "true") {
           totalEntries++
@@ -274,31 +274,31 @@ export default function AdminPage() {
             )}
 
             {/* Contract Statistics */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-blue-100 p-4 rounded-lg text-center">
                 <Users className="h-6 w-6 mx-auto mb-2 text-blue-600" />
-                <p className="text-sm text-blue-600" style={customFontStyle}>
+                          <p className="text-sm text-blue-600" style={customFontStyle}>
                   Total Entries
-                </p>
-                <p className="text-2xl font-bold text-blue-800" style={customFontStyle}>
+                          </p>
+                          <p className="text-2xl font-bold text-blue-800" style={customFontStyle}>
                   {contractStats.totalEntries.toLocaleString()}
-                </p>
-              </div>
+                          </p>
+                        </div>
               <div className="bg-green-100 p-4 rounded-lg text-center">
                 <Coins className="h-6 w-6 mx-auto mb-2 text-green-600" />
-                <p className="text-sm text-green-600" style={customFontStyle}>
-                  Total Toppings
-                </p>
-                <p className="text-2xl font-bold text-green-800" style={customFontStyle}>
+                          <p className="text-sm text-green-600" style={customFontStyle}>
+                            Total Toppings
+                          </p>
+                          <p className="text-2xl font-bold text-green-800" style={customFontStyle}>
                   {contractStats.totalToppings.toLocaleString()}
-                </p>
-              </div>
+                          </p>
+                        </div>
               <div className="bg-purple-100 p-4 rounded-lg text-center">
                 <Activity className="h-6 w-6 mx-auto mb-2 text-purple-600" />
-                <p className="text-sm text-purple-600" style={customFontStyle}>
+                          <p className="text-sm text-purple-600" style={customFontStyle}>
                   Unique Players
-                </p>
-                <p className="text-2xl font-bold text-purple-800" style={customFontStyle}>
+                          </p>
+                          <p className="text-2xl font-bold text-purple-800" style={customFontStyle}>
                   {contractStats.uniquePlayers.toLocaleString()}
                 </p>
               </div>
@@ -346,20 +346,20 @@ export default function AdminPage() {
                   </p>
                   <p className="text-xs text-gray-600" style={customFontStyle}>
                     {securityStatus.lastSecurityCheck.toLocaleTimeString()}
-                  </p>
-                </div>
-              </div>
-            </div>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
             {/* Admin Controls */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Emergency Controls */}
               <div className="bg-red-50 p-4 rounded-xl border-2 border-red-200">
                 <h3 className="text-lg font-bold text-red-800 mb-3" style={customFontStyle}>
                   🚨 Emergency Controls
                 </h3>
                 <div className="space-y-2">
-                  <Button
+                      <Button
                     onClick={() => handleEmergencyPause(!securityStatus.contractPaused)}
                     disabled={isProcessing || !isConnected}
                     className={`w-full ${
@@ -369,22 +369,22 @@ export default function AdminPage() {
                     } text-white`}
                   >
                     {isProcessing ? "Processing..." : securityStatus.contractPaused ? "Unpause Contract" : "Pause Contract"}
-                  </Button>
+                      </Button>
                   <Button
                     onClick={() => setShowEmergencyModal(true)}
                     disabled={isProcessing || !isConnected}
                     className="w-full bg-orange-600 hover:bg-orange-700 text-white"
                   >
                     Emergency Withdrawal
-                  </Button>
+                      </Button>
                 </div>
-              </div>
+                    </div>
 
               {/* Security Controls */}
               <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
                 <h3 className="text-lg font-bold text-blue-800 mb-3" style={customFontStyle}>
                   🛡️ Security Controls
-                </h3>
+                      </h3>
                 <div className="space-y-2">
                   <Button
                     onClick={() => setShowSecurityModal(true)}
@@ -400,9 +400,9 @@ export default function AdminPage() {
                   >
                     Refresh Security Status
                   </Button>
-                </div>
-              </div>
-            </div>
+                      </div>
+                    </div>
+                      </div>
 
             {/* Payout System */}
             <PayoutSystem />

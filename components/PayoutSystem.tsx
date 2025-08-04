@@ -368,7 +368,7 @@ export default function PayoutSystem() {
           {/* Error Display */}
           {payoutError && (
             <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-red-600" />
                 <p className="text-red-800 font-bold" style={customFontStyle}>
                   {payoutError}
@@ -377,7 +377,7 @@ export default function PayoutSystem() {
             </div>
           )}
 
-          {/* Payout History */}
+      {/* Payout History */}
           <div className="bg-gray-50 p-4 rounded-xl border-2 border-gray-200">
             <h3 className="text-lg font-bold text-gray-800 mb-3" style={customFontStyle}>
               📊 Payout History
@@ -400,12 +400,12 @@ export default function PayoutSystem() {
                         </p>
                         <p className="text-sm text-gray-600" style={customFontStyle}>
                           Jackpot: {formatJackpotAmount(payout.jackpotAmount)} VMF
-                        </p>
+                  </p>
                         <p className="text-sm text-gray-600" style={customFontStyle}>
                           Prize per winner: {formatJackpotAmount(payout.prizePerWinner)} VMF
-                        </p>
-                      </div>
-                      <div className="text-right">
+                  </p>
+                </div>
+                <div className="text-right">
                         <div className="flex items-center gap-1">
                           <Check className="h-4 w-4 text-green-600" />
                           <span className="text-sm text-green-600" style={customFontStyle}>
@@ -419,8 +419,8 @@ export default function PayoutSystem() {
                     </div>
                   </div>
                 ))
-              )}
-            </div>
+                  )}
+                </div>
           </div>
         </CardContent>
       </Card>
