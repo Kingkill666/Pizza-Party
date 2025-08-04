@@ -11,35 +11,35 @@ export interface WalletInfo {
   iconImage?: string // Add support for image icons
 }
 
-export const SUPPORTED_WALLETS: WalletInfo[] = [
+export const WALLETS: WalletInfo[] = [
   {
     id: "metamask",
     name: "MetaMask",
     icon: "🦊",
     color: "bg-orange-500 hover:bg-orange-600",
     mobile: true,
-    deepLink: "metamask://dapp/",
-    universalLink: "https://metamask.app.link/dapp/",
+    deepLink: "metamask://",
+    universalLink: "https://metamask.app.link/",
     downloadUrl: "https://metamask.io/download/",
   },
   {
     id: "coinbase",
     name: "Coinbase Wallet",
-    icon: "🔵",
-    color: "bg-blue-600 hover:bg-blue-700",
+    icon: "🪙",
+    color: "bg-blue-500 hover:bg-blue-600",
     mobile: true,
-    deepLink: "cbwallet://dapp/",
-    universalLink: "https://go.cb-w.com/dapp?cb_url=",
+    deepLink: "coinbasewallet://",
+    universalLink: "https://wallet.coinbase.com/",
     downloadUrl: "https://wallet.coinbase.com/",
   },
   {
     id: "trust",
     name: "Trust Wallet",
     icon: "🛡️",
-    color: "bg-blue-400 hover:bg-blue-500",
+    color: "bg-blue-600 hover:bg-blue-700",
     mobile: true,
     deepLink: "trust://",
-    universalLink: "https://link.trustwallet.com/open_url?coin_id=60&url=",
+    universalLink: "https://link.trustwallet.com/",
     downloadUrl: "https://trustwallet.com/",
   },
   {
@@ -53,13 +53,6 @@ export const SUPPORTED_WALLETS: WalletInfo[] = [
     downloadUrl: "https://rainbow.me/",
   },
   {
-    id: "walletconnect",
-    name: "WalletConnect",
-    icon: "🔗",
-    color: "bg-blue-500 hover:bg-blue-600",
-    mobile: true,
-  },
-  {
     id: "phantom",
     name: "Phantom",
     icon: "👻",
@@ -68,16 +61,6 @@ export const SUPPORTED_WALLETS: WalletInfo[] = [
     deepLink: "phantom://",
     universalLink: "https://phantom.app/ul/",
     downloadUrl: "https://phantom.app/",
-  },
-  {
-    id: "farcaster",
-    name: "Farcaster",
-    icon: "", // Will use iconImage instead
-    iconImage: "/images/farcaster-icon.png",
-    color: "bg-purple-600 hover:bg-purple-700",
-    mobile: true,
-    deepLink: "farcaster://",
-    downloadUrl: "https://www.farcaster.xyz/",
   },
 ]
 
@@ -137,7 +120,6 @@ export const isInWalletBrowser = (): string | null => {
   if (userAgent.includes("trust")) return "trust"
   if (userAgent.includes("rainbow")) return "rainbow"
   if (userAgent.includes("phantom")) return "phantom"
-  if (userAgent.includes("farcaster")) return "farcaster"
 
   return null
 }
@@ -164,7 +146,7 @@ export const getCurrentPageUrl = (): string => {
 
 // Improved mobile wallet connection - use WalletConnect and manual instructions
 export const connectMobileWallet = async (walletId: string): Promise<any> => {
-  const wallet = SUPPORTED_WALLETS.find((w) => w.id === walletId)
+  const wallet = WALLETS.find((w) => w.id === walletId)
   if (!wallet) throw new Error("Wallet not found")
 
   console.log(`🚀 Attempting mobile connection to ${walletId}`)
@@ -219,47 +201,13 @@ export const connectMobileWallet = async (walletId: string): Promise<any> => {
 2. Open your ${wallet.name} app
 3. Go to the browser/dApp section
 4. Paste the URL and visit this page
-5. Try connecting again
-
-Or use WalletConnect if available.`
+5. Try connecting again`
 
     throw new Error(instructions)
   }
 
   // Desktop fallback (unchanged)
   return requestWalletConnection(walletId)
-}
-
-// Initialize WalletConnect for mobile wallets
-export const initWalletConnect = async (): Promise<any> => {
-  try {
-    console.log("🔗 Initializing WalletConnect...")
-
-    // Simple WalletConnect implementation
-    // In a real app, you'd use @walletconnect/web3-provider
-    if (window.ethereum) {
-      return await window.ethereum
-        .request({
-          method: "eth_requestAccounts",
-        })
-        .then(async (accounts: string[]) => {
-          const chainId = await window.ethereum.request({
-            method: "eth_chainId",
-          })
-
-          return {
-            accounts,
-            chainId,
-            provider: window.ethereum,
-          }
-        })
-    }
-
-    throw new Error("WalletConnect not available")
-  } catch (error) {
-    console.error("❌ WalletConnect failed:", error)
-    throw error
-  }
 }
 
 // Enhanced wallet provider detection for mobile
@@ -292,10 +240,6 @@ export const getWalletProvider = (walletId: string): any => {
       return allProviders.find((provider) => provider.isCoinbaseWallet || provider.isCoinbase) || window.ethereum
     case "rainbow":
       return allProviders.find((provider) => provider.isRainbow) || window.ethereum
-    case "farcaster":
-      return allProviders.find((provider) => provider.isFarcaster) || window.ethereum
-    case "walletconnect":
-      return window.ethereum // WalletConnect will inject here
     default:
       return window.ethereum
   }
@@ -325,7 +269,7 @@ export const requestWalletConnection = async (walletId: string): Promise<any> =>
   if (isMobile()) {
     if (!window.ethereum) {
       // Provide specific instructions for mobile users
-      const wallet = SUPPORTED_WALLETS.find((w) => w.id === walletId)
+      const wallet = WALLETS.find((w) => w.id === walletId)
       const walletName = wallet?.name || "wallet"
 
       throw new Error(`No Web3 wallet detected. Please:
@@ -369,7 +313,7 @@ Make sure you have ${walletName} installed from your app store.`)
       } else if (error.code === -32002) {
         throw new Error("Connection request pending. Please check your wallet app and approve the connection.")
       } else {
-        const wallet = SUPPORTED_WALLETS.find((w) => w.id === walletId)
+        const wallet = WALLETS.find((w) => w.id === walletId)
         const walletName = wallet?.name || "wallet"
 
         throw new Error(`Connection failed. Please make sure you're browsing from within your ${walletName} app.`)
@@ -412,7 +356,7 @@ Make sure you have ${walletName} installed from your app store.`)
     console.error(`❌ ${walletId} connection failed:`, error)
     
     // Provide specific error messages for different wallet types
-    const wallet = SUPPORTED_WALLETS.find((w) => w.id === walletId)
+    const wallet = WALLETS.find((w) => w.id === walletId)
     const walletName = wallet?.name || walletId
     
     if (error.code === 4001) {
@@ -429,7 +373,7 @@ Make sure you have ${walletName} installed from your app store.`)
 
 // Open wallet installation page
 export const openWalletInstallPage = (walletId: string): void => {
-  const wallet = SUPPORTED_WALLETS.find((w) => w.id === walletId)
+  const wallet = WALLETS.find((w) => w.id === walletId)
   if (!wallet?.downloadUrl) return
 
   if (isMobile()) {
@@ -465,7 +409,7 @@ export const isWalletInstalled = (walletId: string): boolean => {
 
 // Get wallet display name
 export const getWalletDisplayName = (walletId: string): string => {
-  const wallet = SUPPORTED_WALLETS.find((w) => w.id === walletId)
+  const wallet = WALLETS.find((w) => w.id === walletId)
   return wallet?.name || walletId
 }
 
