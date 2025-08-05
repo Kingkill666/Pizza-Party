@@ -8,60 +8,64 @@ Thank you for being part of our beta testing program! This guide will help you u
 
 ### 1. Connect Your Wallet
 - **Supported Wallets**: MetaMask, Coinbase Wallet, Trust Wallet, Rainbow, Phantom, Farcaster
-- **Network**: Sepolia Testnet (for beta testing)
-- **Token**: Sepolia ETH required for gas fees
+- **Network**: Base Sepolia Testnet (for beta testing)
+- **Token**: Base Sepolia ETH required for gas fees
 
-#### **How to Switch to Sepolia Testnet (MetaMask):**
+#### **How to Switch to Base Sepolia Testnet (MetaMask):**
 1. **Open MetaMask**
 2. **Click the network dropdown** (top of wallet)
-3. **Select "Sepolia"** from the list
-4. **If Sepolia isn't listed**, click "Add network" and enter:
-   - **Network Name**: Sepolia
-   - **RPC URL**: https://rpc.sepolia.org
-   - **Chain ID**: 11155111
+3. **Select "Base Sepolia"** from the list
+4. **If Base Sepolia isn't listed**, click "Add network" and enter:
+   - **Network Name**: Base Sepolia
+   - **RPC URL**: https://sepolia.base.org
+   - **Chain ID**: 84532
    - **Currency Symbol**: ETH
-   - **Block Explorer**: https://sepolia.etherscan.io
+   - **Block Explorer**: https://sepolia.basescan.org
 
-### 2. Get Sepolia ETH (Free)
-Since we're testing on Sepolia testnet, you'll need Sepolia ETH for gas fees. Here are free faucets:
+### 2. Get Base Sepolia ETH (Free)
+Since we're testing on Base Sepolia testnet, you'll need Base Sepolia ETH for gas fees. Here are free faucets:
 
-#### **Free Sepolia ETH Faucets:**
-- **Alchemy Sepolia Faucet**: https://sepoliafaucet.com/
-- **Infura Sepolia Faucet**: https://www.infura.io/faucet/sepolia
-- **Chainlink Sepolia Faucet**: https://faucets.chain.link/sepolia
-- **Paradigm Sepolia Faucet**: https://faucet.paradigm.xyz/
-- **QuickNode Sepolia Faucet**: https://faucet.quicknode.com/ethereum/sepolia
+#### **Free Base Sepolia ETH Faucets:**
+- **Coinbase Developer Platform Faucet**: https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet
+- **thirdweb Faucet**: https://thirdweb.com/faucet/base-sepolia
+- **Superchain Faucet**: https://superchain.com/faucet
+- **Alchemy Faucet**: https://www.alchemy.com/faucets/base-sepolia-faucet
+- **Bware Labs Faucet**: https://faucet.bwarelabs.com/
+- **Chainstack Faucet**: https://faucet.chainstack.com/
+- **QuickNode Faucet**: https://faucet.quicknode.com/base-sepolia
+- **LearnWeb3 Faucet**: https://learnweb3.io/faucets/base-sepolia
+- **Ethereum Ecosystem Faucet**: https://base-sepolia-faucet.pk910.de/
 
-#### **How to Get Free Sepolia ETH:**
+#### **How to Get Free Base Sepolia ETH:**
 1. **Visit any faucet above**
 2. **Connect your wallet** (MetaMask recommended)
 3. **Enter your wallet address**
 4. **Complete any verification** (if required)
-5. **Receive 0.1-0.5 Sepolia ETH** (usually within minutes)
+5. **Receive 0.1-0.5 Base Sepolia ETH** (usually within minutes)
 
 #### **Important Notes:**
-- **Sepolia ETH has no real value** - it's only for testing
+- **Base Sepolia ETH has no real value** - it's only for testing
 - **Each faucet has daily limits** - try multiple faucets if needed
-- **Keep some ETH for gas fees** - transactions cost ~0.001-0.01 Sepolia ETH
+- **Keep some ETH for gas fees** - transactions cost ~0.001-0.01 Base Sepolia ETH
 - **Faucets may require social media verification** - this is normal
 
 ### 3. Start Playing (Beta Version)
-- **Daily Game**: Enter once per day for 0.001 Sepolia ETH
-- **Weekly Jackpot**: Enter for 0.001 Sepolia ETH to participate
+- **Daily Game**: Enter once per day for 0.001 Base Sepolia ETH
+- **Weekly Jackpot**: Enter for 0.001 Base Sepolia ETH to participate
 - **Referrals**: Invite friends to earn bonus toppings
-- **All gameplay uses real Sepolia ETH for jackpots**
+- **All gameplay uses real Base Sepolia ETH for jackpots**
 
 ## 🎯 Game Mechanics (Beta Version)
 
 ### Daily Game
-- **Entry Fee**: 0.001 Sepolia ETH (cheapest transferable amount)
+- **Entry Fee**: 0.001 Base Sepolia ETH (cheapest transferable amount)
 - **Winners**: 8 random winners per day
 - **Prize**: Equal split of daily jackpot (all entry fees collected)
 - **Timing**: New game starts daily at 12pm PST
 
 ### Weekly Jackpot
-- **Entry Fee**: 0.001 Sepolia ETH (cheapest transferable amount)
-- **Prize Pool**: Total Sepolia ETH from all weekly entries
+- **Entry Fee**: 0.001 Base Sepolia ETH (cheapest transferable amount)
+- **Prize Pool**: Total Base Sepolia ETH from all weekly entries
 - **Winners**: 10 random winners
 - **Timing**: Draw every Sunday at 12pm PST
 - **Weighting**: More entries = higher chance to win
@@ -133,7 +137,7 @@ Since we're testing on Sepolia testnet, you'll need Sepolia ETH for gas fees. He
 
 ### General Tips
 - **Wallet Security**: Never share private keys
-- **Network Selection**: Always use Base network
+- **Network Selection**: Always use Base Sepolia network
 - **Transaction Confirmation**: Wait for confirmations
 - **Error Handling**: Check error messages carefully
 
@@ -148,7 +152,7 @@ Since we're testing on Sepolia testnet, you'll need Sepolia ETH for gas fees. He
 ### Workarounds
 - **Retry Transactions**: If transaction fails, try again
 - **Refresh Page**: Reload if UI becomes unresponsive
-- **Check Network**: Ensure you're on Base network
+- **Check Network**: Ensure you're on Base Sepolia network
 - **Clear Cache**: Clear browser cache if needed
 
 ## 📊 Analytics & Tracking
@@ -174,7 +178,7 @@ Since we're testing on Sepolia testnet, you'll need Sepolia ETH for gas fees. He
 Issue: "No Web3 wallet detected"
 Solution: 
 1. Install MetaMask or another supported wallet
-2. Switch to Base network
+2. Switch to Base Sepolia network
 3. Refresh the page
 4. Try connecting again
 ```
@@ -185,7 +189,7 @@ Issue: "Transaction failed"
 Solution:
 1. Check your VMF balance
 2. Ensure you have ETH for gas fees
-3. Verify you're on Base network
+3. Verify you're on Base Sepolia network
 4. Try again with higher gas limit
 ```
 
@@ -193,18 +197,18 @@ Solution:
 ```
 Issue: "Wrong network"
 Solution:
-1. Switch wallet to Sepolia testnet
-2. Add Sepolia network if not available
+1. Switch wallet to Base Sepolia testnet
+2. Add Base Sepolia network if not available
 3. Refresh the page
 4. Reconnect wallet
 ```
 
-#### Sepolia ETH Issues
+#### Base Sepolia ETH Issues
 ```
 Issue: "Insufficient gas fees"
 Solution:
-1. Visit a Sepolia faucet (listed above)
-2. Request free Sepolia ETH
+1. Visit a Base Sepolia faucet (listed above)
+2. Request free Base Sepolia ETH
 3. Wait for confirmation (usually 1-5 minutes)
 4. Try transaction again
 ```
@@ -213,17 +217,17 @@ Solution:
 ```
 Issue: "Insufficient balance for entry fee"
 Solution:
-1. Ensure you have at least 0.001 Sepolia ETH
-2. Account for gas fees (~0.0001-0.001 Sepolia ETH)
-3. Get more Sepolia ETH from faucets if needed
+1. Ensure you have at least 0.001 Base Sepolia ETH
+2. Account for gas fees (~0.0001-0.001 Base Sepolia ETH)
+3. Get more Base Sepolia ETH from faucets if needed
 4. Try entry again
 ```
 
 #### Beta Testing Notes
 ```
-Important: This is beta testing on Sepolia testnet
-- Entry fees are 0.001 Sepolia ETH per game
-- Sepolia ETH has no real value but is used for jackpots
+Important: This is beta testing on Base Sepolia testnet
+- Entry fees are 0.001 Base Sepolia ETH per game
+- Base Sepolia ETH has no real value but is used for jackpots
 - All gameplay is simulated except for entry fees
 - Perfect for testing without real money risk
 ```
@@ -345,21 +349,21 @@ Solution:
 ## 💰 Jackpot Mechanics
 
 ### Daily Jackpot
-- **Entry Fee**: 0.001 Sepolia ETH per player
+- **Entry Fee**: 0.001 Base Sepolia ETH per player
 - **Prize Pool**: 100% of all daily entry fees
 - **Distribution**: Equal split among 8 winners
-- **Example**: If 100 players enter, jackpot = 0.1 Sepolia ETH
-- **Winner Prize**: 0.0125 Sepolia ETH each (0.1 ÷ 8)
+- **Example**: If 100 players enter, jackpot = 0.1 Base Sepolia ETH
+- **Winner Prize**: 0.0125 Base Sepolia ETH each (0.1 ÷ 8)
 
 ### Weekly Jackpot
-- **Entry Fee**: 0.001 Sepolia ETH per entry
+- **Entry Fee**: 0.001 Base Sepolia ETH per entry
 - **Prize Pool**: 100% of all weekly entry fees
 - **Distribution**: Equal split among 10 winners
-- **Example**: If 500 entries, jackpot = 0.5 Sepolia ETH
-- **Winner Prize**: 0.05 Sepolia ETH each (0.5 ÷ 10)
+- **Example**: If 500 entries, jackpot = 0.5 Base Sepolia ETH
+- **Winner Prize**: 0.05 Base Sepolia ETH each (0.5 ÷ 10)
 
 ### Important Notes
-- **Sepolia ETH has no real value** - it's only for testing
+- **Base Sepolia ETH has no real value** - it's only for testing
 - **Entry fees fund the jackpots** - no external funding
 - **More players = bigger jackpots** - community-driven
-- **Gas fees are separate** - ~0.0001-0.001 Sepolia ETH per transaction 
+- **Gas fees are separate** - ~0.0001-0.001 Base Sepolia ETH per transaction 
