@@ -19,14 +19,8 @@ Welcome to the Pizza Party beta! We're excited to have you test our decentralize
    - **Block Explorer**: https://sepolia.basescan.org
 
 2. **Get Base Sepolia ETH** from these faucets:
-   - [Coinbase Developer Platform](https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet)
-   - [thirdweb Faucet](https://thirdweb.com/faucet/base-sepolia)
-   - [Superchain Faucet](https://superchain.com/faucet)
-   - [Alchemy Faucet](https://www.alchemy.com/faucets/base-sepolia-faucet)
-   - [Bware Labs Faucet](https://faucet.bwarelabs.com/)
-   - [QuickNode Faucet](https://faucet.quicknode.com/base-sepolia)
-   - [LearnWeb3 Faucet](https://learnweb3.io/faucets/base-sepolia)
-   - [Ethereum Ecosystem Faucet](https://base-sepolia-faucet.pk910.de/)
+   - [Chainlink Faucet](https://faucets.chain.link/base-sepolia)
+   - [QuickNode Faucet](https://faucet.quicknode.com/base/sepolia)
 
 ## 🎮 Testing Areas
 
