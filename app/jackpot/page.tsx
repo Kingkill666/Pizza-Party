@@ -122,7 +122,7 @@ export default function JackpotPage() {
                   height={31}
                   className="inline mr-2 rounded-full"
                 />
-                {formatJackpotAmount(communityJackpot)} VMF
+                {formatJackpotAmount(communityJackpot)} Base Sepolia
                 <Image
                   src="/images/star-favicon-original.png"
                   alt="Star"
@@ -224,7 +224,7 @@ export default function JackpotPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <img src="/images/pepperoni-art.png" alt="Pepperoni" className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span><strong>Hold 10 VMF:</strong> 1 topping per 10 VMF in wallet</span>
+                  <span><strong>Hold .001 Base Sepolia:</strong> 1 topping for Base Sepolia in wallet</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <img src="/images/pepperoni-art.png" alt="Pepperoni" className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -253,11 +253,11 @@ export default function JackpotPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <img src="/images/pepperoni-art.png" alt="Pepperoni" className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span><strong>Daily Chances:</strong> Every wallet that enters has exactly the same chance to win, regardless of VMF holdings.</span>
+                  <span><strong>Daily Chances:</strong> Every wallet that enters has exactly the same chance to win, regardless of Base Sepolia holdings.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <img src="/images/pepperoni-art.png" alt="Pepperoni" className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span><strong>Prerequisite to qualify:</strong> Must hold minimum VMF to participate</span>
+                  <span><strong>Prerequisite to qualify:</strong> Must hold minimum Base Sepolia to participate</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <img src="/images/pepperoni-art.png" alt="Pepperoni" className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -277,7 +277,7 @@ export default function JackpotPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <img src="/images/pepperoni-art.png" alt="Pepperoni" className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span><strong>Weekly VMF jackpot equals total amount of toppings claimed:</strong> Community-driven prize pool</span>
+                  <span><strong>Weekly jackpot equals total amount of toppings claimed:</strong> Community-driven prize pool</span>
                 </li>
               </ul>
             </div>

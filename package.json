@@ -12,11 +12,13 @@
     "test:coverage": "TS_NODE_PROJECT=./tsconfig.hardhat.json REPORT_GAS=true hardhat test --coverage",
     "test:security": "TS_NODE_PROJECT=./tsconfig.hardhat.json hardhat test test/security/",
     "test:integration": "TS_NODE_PROJECT=./tsconfig.hardhat.json hardhat test test/integration/",
-    "deploy:testnet": "hardhat run scripts/deploy.ts --network baseSepolia",
+    "test:base-sepolia": "hardhat run scripts/test-base-sepolia.js --network baseSepolia",
+    "deploy:testnet": "hardhat run scripts/deploy-testnet.ts --network baseSepolia",
     "deploy:mainnet": "hardhat run scripts/deploy.ts --network base",
     "verify": "hardhat verify --network base"
   },
   "dependencies": {
+    "@farcaster/miniapp-sdk": "^0.1.8",
     "@hookform/resolvers": "^3.10.0",
     "@openzeppelin/contracts": "^5.4.0",
     "@radix-ui/react-accordion": "latest",

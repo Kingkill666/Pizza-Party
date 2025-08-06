@@ -82,6 +82,23 @@ export const BASE_NETWORK = {
   blockExplorerUrls: ["https://basescan.org"],
 }
 
+// Base Sepolia testnet configuration
+export const BASE_SEPOLIA_NETWORK = {
+  chainId: 84532,
+  chainName: "Base Sepolia",
+  nativeCurrency: {
+    name: "Ethereum",
+    symbol: "ETH",
+    decimals: 18,
+  },
+  rpcUrls: [
+    "https://sepolia.base.org",
+    "https://base-sepolia.g.alchemy.com/v2/demo",
+    "https://base-sepolia.gateway.tenderly.co",
+  ],
+  blockExplorerUrls: ["https://sepolia.basescan.org"],
+}
+
 // Mobile detection
 export const isMobile = (): boolean => {
   if (typeof window === "undefined") return false
@@ -504,6 +521,51 @@ export const ensureBaseNetwork = async (provider?: any): Promise<void> => {
       // Don't throw error for mobile wallets, they might handle network switching differently
       if (!isMobile()) {
         throw new Error("Please switch to Base network in your wallet")
+      }
+    }
+  }
+}
+
+// Ensure Base Sepolia testnet is added/switched (for beta testing)
+export const ensureBaseSepoliaNetwork = async (provider?: any): Promise<void> => {
+  const targetProvider = provider || window.ethereum
+  if (typeof window === "undefined" || !targetProvider) return
+
+  try {
+    // Try to switch to Base Sepolia network
+    await targetProvider.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: `0x${BASE_SEPOLIA_NETWORK.chainId.toString(16)}` }],
+    })
+    console.log("✅ Switched to Base Sepolia testnet")
+  } catch (switchError: any) {
+    console.log("⚠️ Switch failed, trying to add Base Sepolia network...")
+
+    // If Base Sepolia network is not added, add it
+    if (switchError.code === 4902) {
+      try {
+        await targetProvider.request({
+          method: "wallet_addEthereumChain",
+          params: [
+            {
+              chainId: `0x${BASE_SEPOLIA_NETWORK.chainId.toString(16)}`,
+              chainName: BASE_SEPOLIA_NETWORK.chainName,
+              nativeCurrency: BASE_SEPOLIA_NETWORK.nativeCurrency,
+              rpcUrls: BASE_SEPOLIA_NETWORK.rpcUrls,
+              blockExplorerUrls: BASE_SEPOLIA_NETWORK.blockExplorerUrls,
+            },
+          ],
+        })
+        console.log("✅ Added Base Sepolia testnet")
+      } catch (addError) {
+        console.error("❌ Failed to add Base Sepolia network:", addError)
+        throw new Error("Please add Base Sepolia testnet to your wallet manually")
+      }
+    } else {
+      console.error("❌ Failed to switch to Base Sepolia network:", switchError)
+      // Don't throw error for mobile wallets, they might handle network switching differently
+      if (!isMobile()) {
+        throw new Error("Please switch to Base Sepolia testnet in your wallet")
       }
     }
   }

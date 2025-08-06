@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🍕 Pizza Party Community
+    url: https://x.com/VMFCryptoHub
+    about: Join the VMF Crypto Veterans Hub for community support and updates
+  - name: 📧 Email Support
+    url: mailto:vmf@vmfcoin.com
+    about: Contact us directly for urgent issues or private matters
+  - name: 📚 Documentation
+    url: https://github.com/Kingkill666/Pizza-Party
+    about: View project documentation and guides 

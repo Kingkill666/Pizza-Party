@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import { FarcasterWrapper } from "@/components/FarcasterWrapper"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -14,7 +15,17 @@ export const metadata: Metadata = {
     apple: "/images/star-favicon.png",
   },
   viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
-    generator: 'v0.dev'
+  generator: 'v0.dev',
+  // Farcaster Frame metadata
+  other: {
+    'fc:frame': 'vNext',
+    'fc:frame:image': 'https://pizzaparty.app/images/pizza-transparent.png',
+    'fc:frame:button:1': 'Play Daily Game',
+    'fc:frame:button:2': 'View Jackpot',
+    'fc:frame:button:3': 'Connect Wallet',
+    'fc:frame:button:4': 'Share Pizza Party',
+    'fc:frame:post_url': 'https://pizzaparty.app/api/frame',
+  },
 }
 
 export default function RootLayout({
@@ -24,7 +35,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <FarcasterWrapper>
+          {children}
+        </FarcasterWrapper>
+      </body>
     </html>
   )
 }

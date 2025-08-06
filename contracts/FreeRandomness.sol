@@ -3,7 +3,6 @@ pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
  * @title FreeRandomness
@@ -17,8 +16,6 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * 5. User-Contributed Entropy (FREE)
  */
 contract FreeRandomness is ReentrancyGuard, Ownable {
-    using SafeMath for uint256;
-    
     // Commit-Reveal Scheme
     struct Commit {
         bytes32 commitment;
@@ -80,7 +77,7 @@ contract FreeRandomness is ReentrancyGuard, Ownable {
         
         RandomnessRound storage round = randomnessRounds[roundId];
         round.roundId = roundId;
-        round.deadline = block.timestamp.add(commitPhaseDuration);
+        round.deadline = block.timestamp + commitPhaseDuration;
         round.isComplete = false;
         
         emit RandomnessRequested(roundId, msg.sender);
@@ -108,7 +105,7 @@ contract FreeRandomness is ReentrancyGuard, Ownable {
         
         // Add contributor
         roundContributors[roundId].push(msg.sender);
-        round.totalContributors = round.totalContributors.add(1);
+        round.totalContributors = round.totalContributors + 1;
         
         // Store commitment
         commits[msg.sender] = Commit({
@@ -127,7 +124,7 @@ contract FreeRandomness is ReentrancyGuard, Ownable {
     function revealRandomness(uint256 roundId, uint256 randomValue, bytes32 salt) external nonReentrant {
         RandomnessRound storage round = randomnessRounds[roundId];
         require(block.timestamp > round.deadline, "Commit phase still active");
-        require(block.timestamp <= round.deadline.add(revealPhaseDuration), "Reveal phase ended");
+        require(block.timestamp <= round.deadline + revealPhaseDuration, "Reveal phase ended");
         require(!round.isComplete, "Round already completed");
         
         Commit storage commit = commits[msg.sender];
@@ -143,7 +140,7 @@ contract FreeRandomness is ReentrancyGuard, Ownable {
         commit.randomValue = randomValue;
         
         // Add to total entropy
-        round.totalEntropy = round.totalEntropy.add(randomValue);
+        round.totalEntropy = round.totalEntropy + randomValue;
         userContributions[roundId][msg.sender] = randomValue;
         
         emit RandomnessRevealed(roundId, msg.sender, randomValue);
@@ -181,9 +178,9 @@ contract FreeRandomness is ReentrancyGuard, Ownable {
         return EntropySource({
             blockNumber: block.number,
             timestamp: block.timestamp,
-            difficulty: block.difficulty,
+            difficulty: block.prevrandao,
             gasLimit: block.gaslimit,
-            gasUsed: block.gasused,
+            gasUsed: block.gaslimit,
             baseFee: block.basefee,
             miner: block.coinbase
         });
@@ -197,24 +194,24 @@ contract FreeRandomness is ReentrancyGuard, Ownable {
         
         // Combine multiple entropy sources
         uint256 combinedEntropy = round.totalEntropy;
-        combinedEntropy = combinedEntropy.add(entropy.blockNumber);
-        combinedEntropy = combinedEntropy.add(entropy.timestamp);
-        combinedEntropy = combinedEntropy.add(entropy.difficulty);
-        combinedEntropy = combinedEntropy.add(entropy.gasLimit);
-        combinedEntropy = combinedEntropy.add(entropy.gasUsed);
-        combinedEntropy = combinedEntropy.add(entropy.baseFee);
-        combinedEntropy = combinedEntropy.add(uint256(uint160(entropy.miner)));
+        combinedEntropy = combinedEntropy + entropy.blockNumber;
+        combinedEntropy = combinedEntropy + entropy.timestamp;
+        combinedEntropy = combinedEntropy + entropy.difficulty;
+        combinedEntropy = combinedEntropy + entropy.gasLimit;
+        combinedEntropy = combinedEntropy + entropy.gasUsed;
+        combinedEntropy = combinedEntropy + entropy.baseFee;
+        combinedEntropy = combinedEntropy + uint256(uint160(entropy.miner));
         
         // Add user-specific entropy
         for (uint256 i = 0; i < roundContributors[roundId].length; i++) {
             address contributor = roundContributors[roundId][i];
-            combinedEntropy = combinedEntropy.add(uint256(uint160(contributor)));
-            combinedEntropy = combinedEntropy.add(userContributions[roundId][contributor]);
+            combinedEntropy = combinedEntropy + uint256(uint160(contributor));
+            combinedEntropy = combinedEntropy + userContributions[roundId][contributor];
         }
         
         // Add time-based entropy
-        combinedEntropy = combinedEntropy.add(block.timestamp);
-        combinedEntropy = combinedEntropy.add(roundId);
+        combinedEntropy = combinedEntropy + block.timestamp;
+        combinedEntropy = combinedEntropy + roundId;
         
         // Final hash for unpredictability
         return uint256(keccak256(abi.encodePacked(
@@ -240,7 +237,7 @@ contract FreeRandomness is ReentrancyGuard, Ownable {
     function forceFinalize(uint256 roundId) external onlyOwner {
         RandomnessRound storage round = randomnessRounds[roundId];
         require(!round.isComplete, "Already finalized");
-        require(block.timestamp > round.deadline.add(revealPhaseDuration), "Reveal phase not ended");
+        require(block.timestamp > round.deadline + revealPhaseDuration, "Reveal phase not ended");
         
         _finalizeRandomness(roundId);
     }
@@ -285,5 +282,12 @@ contract FreeRandomness is ReentrancyGuard, Ownable {
         revealPhaseDuration = _revealPhaseDuration;
         minContributors = _minContributors;
         maxContributors = _maxContributors;
+    }
+
+    /**
+     * @dev Get current randomness round
+     */
+    function getCurrentRandomnessRound() external view returns (uint256) {
+        return currentRoundId;
     }
 } 

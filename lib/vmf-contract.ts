@@ -1,5 +1,5 @@
 // VMF Token contract utilities - VMF is on BASE NETWORK!
-export const VMF_CONTRACT_ADDRESS = "0x2213414893259b0C48066Acd1763e7fbA97859E5"
+export const VMF_CONTRACT_ADDRESS = "0xc33f4c5102Bf1cF44bFa5A1678170ebC6F242D6A"
 
 // Base network RPC endpoints (VMF is on Base!)
 export const BASE_RPC_ENDPOINTS = [

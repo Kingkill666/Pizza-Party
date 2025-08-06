@@ -1,0 +1,37 @@
+{
+  "name": "Pizza Party",
+  "description": "Play to win a slice of the pie! Daily jackpots, weekly prizes, and VMF rewards on Base network.",
+  "icon": "https://pizzaparty.app/images/pizza-transparent.png",
+  "splash": "https://pizzaparty.app/images/pizza-transparent.png",
+  "url": "https://pizzaparty.app",
+  "frameUrl": "https://pizzaparty.app/frame",
+  "categories": ["gaming", "defi", "social"],
+  "tags": ["pizza", "gaming", "jackpot", "vmf", "base", "defi"],
+  "author": {
+    "name": "Pizza Party Team",
+    "url": "https://pizzaparty.app"
+  },
+  "version": "1.0.0",
+  "permissions": [
+    "wallet_connect",
+    "user_profile"
+  ],
+  "features": [
+    "daily_jackpot",
+    "weekly_prizes", 
+    "referral_system",
+    "toppings_rewards",
+    "vmf_integration"
+  ],
+  "networks": ["base"],
+  "tokens": ["vmf"],
+  "social": {
+    "farcaster": "pizzaparty",
+    "twitter": "pizzapartyapp",
+    "discord": "pizzaparty"
+  },
+  "support": {
+    "email": "vmf@vmfcoin.com",
+    "website": "https://pizzaparty.app"
+  }
+} 

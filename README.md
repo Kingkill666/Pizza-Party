@@ -39,6 +39,38 @@ npm run dev
 - **Referrals**: 2 toppings per accepted referral
 - **7-Day Streak**: 3 toppings bonus
 
+## 🧪 Beta Testing on Base Sepolia
+
+### Testnet Information
+- **Network**: Base Sepolia Testnet
+- **Chain ID**: 84532
+- **RPC URL**: https://sepolia.base.org
+- **Block Explorer**: https://sepolia.basescan.org
+- **Entry Fee**: 0.001 Base Sepolia ETH (for testing)
+
+### Free Base Sepolia ETH Faucets
+For beta testing, you'll need Base Sepolia ETH for gas fees. Get free testnet ETH from:
+
+- **Coinbase Developer Platform**: https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet
+- **thirdweb Faucet**: https://thirdweb.com/faucet/base-sepolia
+- **Superchain Faucet**: https://superchain.com/faucet
+- **Alchemy Faucet**: https://www.alchemy.com/faucets/base-sepolia-faucet
+- **Bware Labs Faucet**: https://faucet.bwarelabs.com/
+- **Chainstack Faucet**: https://faucet.chainstack.com/
+- **QuickNode Faucet**: https://faucet.quicknode.com/base-sepolia
+- **LearnWeb3 Faucet**: https://learnweb3.io/faucets/base-sepolia
+- **Ethereum Ecosystem Faucet**: https://base-sepolia-faucet.pk910.de/
+
+### Adding Base Sepolia to MetaMask
+1. Open MetaMask
+2. Click network dropdown
+3. Select "Base Sepolia" or add manually:
+   - **Network Name**: Base Sepolia
+   - **RPC URL**: https://sepolia.base.org
+   - **Chain ID**: 84532
+   - **Currency Symbol**: ETH
+   - **Block Explorer**: https://sepolia.basescan.org
+
 ## 🔒 Security Features
 
 ### Smart Contract Security
@@ -217,6 +249,7 @@ PRIVATE_KEY=your_private_key
 - **README-SMART-CONTRACTS.md** - Smart contract documentation
 - **SECURITY.md** - Security documentation
 - **DEPLOYMENT.md** - Deployment guide
+- **BETA_USER_GUIDE.md** - Beta testing guide
 
 ### Key Features Documented
 - **Game Mechanics** - Complete game rules

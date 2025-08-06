@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+
 import "./FreeRandomness.sol";
 
 /**
@@ -28,7 +28,7 @@ import "./FreeRandomness.sol";
  * - Event-based state updates
  */
 contract SecureReferralSystem is ReentrancyGuard, Ownable, Pausable {
-    using SafeMath for uint256;
+    
     
     // Free Randomness contract for VRF-based generation
     FreeRandomness public randomnessContract;
@@ -210,7 +210,7 @@ contract SecureReferralSystem is ReentrancyGuard, Ownable, Pausable {
         referralCodes[codeHash] = ReferralCode({
             codeHash: codeHash,
             creator: msg.sender,
-            expiry: block.timestamp.add(CODE_EXPIRY_DURATION),
+            expiry: block.timestamp + CODE_EXPIRY_DURATION,
             claimed: false,
             claimCount: 0,
             maxClaims: maxClaims,
@@ -220,17 +220,17 @@ contract SecureReferralSystem is ReentrancyGuard, Ownable, Pausable {
         });
         
         // Update user data
-        userReferralData[msg.sender].totalCodesCreated = userReferralData[msg.sender].totalCodesCreated.add(1);
+        userReferralData[msg.sender].totalCodesCreated = userReferralData[msg.sender].totalCodesCreated + 1;
         userReferralData[msg.sender].lastCodeGeneration = block.timestamp;
-        userReferralData[msg.sender].cooldownEndTime = block.timestamp.add(GENERATION_COOLDOWN);
+        userReferralData[msg.sender].cooldownEndTime = block.timestamp + GENERATION_COOLDOWN;
         
-        totalCodesGenerated = totalCodesGenerated.add(1);
+        totalCodesGenerated = totalCodesGenerated + 1;
         
         emit ReferralCodeGenerated(
             codeHash,
             msg.sender,
             codeString,
-            block.timestamp.add(CODE_EXPIRY_DURATION),
+            block.timestamp + CODE_EXPIRY_DURATION,
             maxClaims,
             rewardAmount
         );
@@ -264,7 +264,7 @@ contract SecureReferralSystem is ReentrancyGuard, Ownable, Pausable {
         referralCodes[codeHash] = ReferralCode({
             codeHash: codeHash,
             creator: msg.sender,
-            expiry: block.timestamp.add(CODE_EXPIRY_DURATION),
+            expiry: block.timestamp + CODE_EXPIRY_DURATION,
             claimed: false,
             claimCount: 0,
             maxClaims: maxClaims,
@@ -274,17 +274,17 @@ contract SecureReferralSystem is ReentrancyGuard, Ownable, Pausable {
         });
         
         // Update user data
-        userReferralData[msg.sender].totalCodesCreated = userReferralData[msg.sender].totalCodesCreated.add(1);
+        userReferralData[msg.sender].totalCodesCreated = userReferralData[msg.sender].totalCodesCreated + 1;
         userReferralData[msg.sender].lastCodeGeneration = block.timestamp;
-        userReferralData[msg.sender].cooldownEndTime = block.timestamp.add(GENERATION_COOLDOWN);
+        userReferralData[msg.sender].cooldownEndTime = block.timestamp + GENERATION_COOLDOWN;
         
-        totalCodesGenerated = totalCodesGenerated.add(1);
+        totalCodesGenerated = totalCodesGenerated + 1;
         
         emit ReferralCodeGenerated(
             codeHash,
             msg.sender,
             codeString,
-            block.timestamp.add(CODE_EXPIRY_DURATION),
+            block.timestamp + CODE_EXPIRY_DURATION,
             maxClaims,
             rewardAmount
         );
@@ -326,18 +326,18 @@ contract SecureReferralSystem is ReentrancyGuard, Ownable, Pausable {
         _processReferralClaim(codeHash, msg.sender);
         
         // Update user data
-        userReferralData[msg.sender].totalCodesClaimed = userReferralData[msg.sender].totalCodesClaimed.add(1);
-        userReferralData[msg.sender].cooldownEndTime = block.timestamp.add(CLAIM_COOLDOWN);
+        userReferralData[msg.sender].totalCodesClaimed = userReferralData[msg.sender].totalCodesClaimed + 1;
+        userReferralData[msg.sender].cooldownEndTime = block.timestamp + CLAIM_COOLDOWN;
         
         // Update code data
-        referralCodes[codeHash].claimCount = referralCodes[codeHash].claimCount.add(1);
+        referralCodes[codeHash].claimCount = referralCodes[codeHash].claimCount + 1;
         
         // Check if code should be marked as fully claimed
         if (referralCodes[codeHash].claimCount >= referralCodes[codeHash].maxClaims) {
             referralCodes[codeHash].claimed = true;
         }
         
-        totalCodesClaimed = totalCodesClaimed.add(1);
+        totalCodesClaimed = totalCodesClaimed + 1;
         
         emit ReferralCodeClaimed(
             codeHash,
@@ -358,15 +358,15 @@ contract SecureReferralSystem is ReentrancyGuard, Ownable, Pausable {
         require(referralCodes[codeHash].isActive, "Code already reclaimed");
         
         // Calculate remaining rewards
-        uint256 remainingClaims = referralCodes[codeHash].maxClaims.sub(referralCodes[codeHash].claimCount);
-        uint256 reclaimedAmount = remainingClaims.mul(referralCodes[codeHash].rewardAmount);
+        uint256 remainingClaims = referralCodes[codeHash].maxClaims - referralCodes[codeHash].claimCount;
+        uint256 reclaimedAmount = remainingClaims * referralCodes[codeHash].rewardAmount;
         
         // Mark code as inactive
         referralCodes[codeHash].isActive = false;
         
         // Update user rewards
-        userReferralData[msg.sender].totalRewardsEarned = userReferralData[msg.sender].totalRewardsEarned.add(reclaimedAmount);
-        totalRewardsDistributed = totalRewardsDistributed.add(reclaimedAmount);
+        userReferralData[msg.sender].totalRewardsEarned = userReferralData[msg.sender].totalRewardsEarned + reclaimedAmount;
+        totalRewardsDistributed = totalRewardsDistributed + reclaimedAmount;
         
         emit CodeReclaimed(codeHash, msg.sender, reclaimedAmount);
         emit ReferralCodeExpired(codeHash, msg.sender, block.timestamp);
@@ -508,8 +508,8 @@ contract SecureReferralSystem is ReentrancyGuard, Ownable, Pausable {
             abi.encodePacked(
                 player,
                 block.timestamp,
-                block.difficulty,
-                blockhash(block.number.sub(1))
+                block.prevrandao,
+                blockhash(block.number - 1)
             )
         );
     }
@@ -543,13 +543,13 @@ contract SecureReferralSystem is ReentrancyGuard, Ownable, Pausable {
         }));
         
         // Award rewards to claimer
-        userReferralData[claimer].totalRewardsEarned = userReferralData[claimer].totalRewardsEarned.add(code.rewardAmount);
+        userReferralData[claimer].totalRewardsEarned = userReferralData[claimer].totalRewardsEarned + code.rewardAmount;
         
         // Award bonus rewards to code creator
         uint256 creatorBonus = BONUS_REWARD_AMOUNT;
-        userReferralData[code.creator].totalRewardsEarned = userReferralData[code.creator].totalRewardsEarned.add(creatorBonus);
+        userReferralData[code.creator].totalRewardsEarned = userReferralData[code.creator].totalRewardsEarned + creatorBonus;
         
-        totalRewardsDistributed = totalRewardsDistributed.add(code.rewardAmount.add(creatorBonus));
+        totalRewardsDistributed = totalRewardsDistributed + code.rewardAmount + creatorBonus;
         
         emit RewardDistributed(claimer, code.rewardAmount, "Referral code claim");
         emit RewardDistributed(code.creator, creatorBonus, "Referral code creator bonus");

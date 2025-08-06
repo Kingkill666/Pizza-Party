@@ -1,8 +1,8 @@
 ---
-name: 🐛 Bug Report
-about: Create a report to help us improve Pizza Party dApp
+name: Bug Report
+about: Report a bug to help improve Pizza Party
 title: '[BUG] '
-labels: ['bug', 'needs-triage']
+labels: ['bug', 'beta-testing']
 assignees: ''
 ---
 
@@ -16,38 +16,60 @@ A clear and concise description of what the bug is.
 4. See error
 
 ## ✅ Expected Behavior
-A clear and concise description of what you expected to happen.
+Describe what you expected to happen.
 
 ## ❌ Actual Behavior
-A clear and concise description of what actually happened.
+Describe what actually happened.
 
-## 📱 Environment
-- **Device:** [e.g. iPhone 12, Desktop]
-- **Browser:** [e.g. Chrome 120, Safari 17]
-- **Wallet:** [e.g. MetaMask, Coinbase Wallet]
-- **Network:** [e.g. Base Mainnet, Base Sepolia]
-- **OS:** [e.g. iOS 17, Windows 11, macOS 14]
+## 🖥️ Environment
+- **Wallet used**: (e.g., MetaMask, Coinbase Wallet, Trust Wallet)
+- **Network**: (e.g., Base Sepolia, Base Mainnet)
+- **Browser/Device**: (e.g., Chrome on Windows, Safari on iOS, Mobile app)
+- **VMF Contract Address**: 0x2213414893259b0C48066Acd1763e7fbA97859E5
+- **Pizza Party Contract**: (if deployed, include address)
 
-## 📸 Screenshots
-If applicable, add screenshots to help explain your problem.
+## 📸 Screenshots/Videos
+If applicable, add screenshots or videos to help explain the problem.
 
-## 🔗 Additional Context
+## 🔗 Transaction Details
+- **Transaction Hash**: (if applicable)
+- **Block Number**: (if applicable)
+- **Gas Used**: (if applicable)
+- **Error Message**: (if any)
+
+## 📱 Additional Context
 Add any other context about the problem here, such as:
 - Console errors
-- Network tab information
-- Wallet connection status
-- Game state when the bug occurred
+- Network errors
+- Wallet connection issues
+- Game state when bug occurred
+- Referral code used (if applicable)
 
-## 🎯 Impact
-- [ ] **High** - Game is unplayable
-- [ ] **Medium** - Game is playable but with issues
-- [ ] **Low** - Minor UI/UX issue
+## 🏷️ Bug Category
+- [ ] **Critical** - Game-breaking, prevents play
+- [ ] **High** - Major functionality broken
+- [ ] **Medium** - Minor functionality issue
+- [ ] **Low** - UI/UX issue
+- [ ] **Cosmetic** - Visual issue only
 
-## 🏷️ Labels
-- [ ] **Wallet Connection** - Issues with wallet integration
-- [ ] **Game Logic** - Issues with game mechanics
-- [ ] **Jackpot System** - Issues with payout calculations
-- [ ] **UI/UX** - Visual or interaction issues
-- [ ] **Performance** - Slow loading or responsiveness
-- [ ] **Mobile** - Mobile-specific issues
-- [ ] **Smart Contract** - Blockchain-related issues 
+## 🎮 Game Context
+- [ ] **Daily Game** - Bug in daily jackpot entry
+- [ ] **Weekly Jackpot** - Bug in weekly game
+- [ ] **Referral System** - Bug in referral codes/rewards
+- [ ] **Toppings System** - Bug in toppings claiming
+- [ ] **Wallet Connection** - Bug in wallet integration
+- [ ] **UI/UX** - Bug in interface
+- [ ] **Farcaster Integration** - Bug in Farcaster mini-app
+- [ ] **Other** - Specify below
+
+## 🔧 Technical Details
+- **Error Code**: (if any)
+- **Console Logs**: (if applicable)
+- **Network Tab**: (if applicable)
+- **Wallet State**: (connected/disconnected, network, balance)
+
+---
+
+**Thank you for helping improve Pizza Party! 🍕**
+
+*This bug report will help us identify and fix issues quickly. Please provide as much detail as possible.* 

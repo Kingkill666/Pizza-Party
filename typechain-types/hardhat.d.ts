@@ -50,17 +50,37 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ReentrancyGuard__factory>;
     getContractFactory(
+      name: "FreePriceOracle",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.FreePriceOracle__factory>;
+    getContractFactory(
+      name: "FreeRandomness",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.FreeRandomness__factory>;
+    getContractFactory(
       name: "MockVMF",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MockVMF__factory>;
     getContractFactory(
-      name: "IERC20",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC20__factory>;
-    getContractFactory(
       name: "PizzaParty",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.PizzaParty__factory>;
+    getContractFactory(
+      name: "SecureReferralSystem",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.SecureReferralSystem__factory>;
+    getContractFactory(
+      name: "IUniswapV3Factory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IUniswapV3Factory__factory>;
+    getContractFactory(
+      name: "IUniswapV3Pool",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IUniswapV3Pool__factory>;
+    getContractFactory(
+      name: "UniswapPriceOracle",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.UniswapPriceOracle__factory>;
 
     getContractAt(
       name: "Ownable",
@@ -108,20 +128,45 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.ReentrancyGuard>;
     getContractAt(
+      name: "FreePriceOracle",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.FreePriceOracle>;
+    getContractAt(
+      name: "FreeRandomness",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.FreeRandomness>;
+    getContractAt(
       name: "MockVMF",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.MockVMF>;
     getContractAt(
-      name: "IERC20",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IERC20>;
-    getContractAt(
       name: "PizzaParty",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.PizzaParty>;
+    getContractAt(
+      name: "SecureReferralSystem",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.SecureReferralSystem>;
+    getContractAt(
+      name: "IUniswapV3Factory",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IUniswapV3Factory>;
+    getContractAt(
+      name: "IUniswapV3Pool",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IUniswapV3Pool>;
+    getContractAt(
+      name: "UniswapPriceOracle",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.UniswapPriceOracle>;
 
     deployContract(
       name: "Ownable",
@@ -160,17 +205,37 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ReentrancyGuard>;
     deployContract(
+      name: "FreePriceOracle",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.FreePriceOracle>;
+    deployContract(
+      name: "FreeRandomness",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.FreeRandomness>;
+    deployContract(
       name: "MockVMF",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.MockVMF>;
     deployContract(
-      name: "IERC20",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IERC20>;
-    deployContract(
       name: "PizzaParty",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.PizzaParty>;
+    deployContract(
+      name: "SecureReferralSystem",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.SecureReferralSystem>;
+    deployContract(
+      name: "IUniswapV3Factory",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IUniswapV3Factory>;
+    deployContract(
+      name: "IUniswapV3Pool",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IUniswapV3Pool>;
+    deployContract(
+      name: "UniswapPriceOracle",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.UniswapPriceOracle>;
 
     deployContract(
       name: "Ownable",
@@ -218,20 +283,45 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ReentrancyGuard>;
     deployContract(
+      name: "FreePriceOracle",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.FreePriceOracle>;
+    deployContract(
+      name: "FreeRandomness",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.FreeRandomness>;
+    deployContract(
       name: "MockVMF",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.MockVMF>;
     deployContract(
-      name: "IERC20",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IERC20>;
-    deployContract(
       name: "PizzaParty",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.PizzaParty>;
+    deployContract(
+      name: "SecureReferralSystem",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.SecureReferralSystem>;
+    deployContract(
+      name: "IUniswapV3Factory",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IUniswapV3Factory>;
+    deployContract(
+      name: "IUniswapV3Pool",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IUniswapV3Pool>;
+    deployContract(
+      name: "UniswapPriceOracle",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.UniswapPriceOracle>;
 
     // default types
     getContractFactory(

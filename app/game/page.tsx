@@ -834,7 +834,7 @@ export default function GamePage() {
               <div className="bg-green-100 p-3 rounded-lg text-center">
                 <Coins className="h-5 w-5 mx-auto mb-1 text-green-600" />
                 <p className="text-sm text-green-600" style={customFontStyle}>
-                  VMF Jackpot
+                  Jackpot
                 </p>
                 <p className="text-xl font-bold text-green-800" style={customFontStyle}>
                   {formatJackpotAmount(communityJackpot)}
@@ -941,7 +941,7 @@ export default function GamePage() {
                       height={24}
                       className="inline mr-2 rounded-full"
                     />
-                    ENTER GAME $1 VMF
+                    ENTER GAME .001 Base Sepolia
                     <Image
                       src="/images/star-favicon-original.png"
                       alt="Star"

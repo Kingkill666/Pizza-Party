@@ -2,7 +2,6 @@
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
  * @title FreePriceOracle
@@ -15,8 +14,6 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * - Manual price updates
  */
 contract FreePriceOracle is Ownable {
-    using SafeMath for uint256;
-    
     // Price sources
     struct PriceSource {
         address source;
@@ -79,7 +76,7 @@ contract FreePriceOracle is Ownable {
         uint256 vmfPrice = getVMFPrice();
         
         // Calculate: $1 / VMF_price
-        return PRICE_PRECISION.mul(1e18).div(vmfPrice);
+        return (PRICE_PRECISION * 1e18) / vmfPrice;
     }
     
     /**
@@ -143,10 +140,9 @@ contract FreePriceOracle is Ownable {
             if (sourceData.isActive && 
                 block.timestamp < sourceData.timestamp + UPDATE_THRESHOLD) {
                 
-                totalWeightedPrice = totalWeightedPrice.add(
-                    sourceData.price.mul(sourceData.weight)
-                );
-                totalWeight = totalWeight.add(sourceData.weight);
+                totalWeightedPrice = totalWeightedPrice +
+                    sourceData.price * sourceData.weight;
+                totalWeight = totalWeight + sourceData.weight;
                 validSources++;
             }
         }
@@ -155,7 +151,7 @@ contract FreePriceOracle is Ownable {
             return currentPrice.aggregatedPrice;
         }
         
-        return totalWeightedPrice.div(totalWeight);
+        return totalWeightedPrice / totalWeight;
     }
     
     /**
@@ -181,9 +177,9 @@ contract FreePriceOracle is Ownable {
         if (price1 == price2) return 0;
         
         uint256 difference = price1 > price2 ? 
-            price1.sub(price2) : price2.sub(price1);
+            price1 - price2 : price2 - price1;
         
-        return difference.mul(100).div(price2);
+        return (difference * 100) / price2;
     }
     
     /**

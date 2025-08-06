@@ -1,49 +1,52 @@
 ---
-name: 💡 Feature Request
-about: Suggest an idea for Pizza Party dApp
+name: Feature Request
+about: Suggest an idea for Pizza Party
 title: '[FEATURE] '
-labels: ['enhancement', 'needs-triage']
+labels: ['enhancement', 'beta-testing']
 assignees: ''
 ---
 
-## 💡 Feature Description
+## 🚀 Feature Description
 A clear and concise description of the feature you'd like to see.
 
-## 🎯 Problem Statement
+## 💡 Problem Statement
 A clear and concise description of what problem this feature would solve.
 
-## 💭 Proposed Solution
+## 🎯 Proposed Solution
 A clear and concise description of what you want to happen.
 
 ## 🔄 Alternative Solutions
 A clear and concise description of any alternative solutions or features you've considered.
 
-## 📱 Use Case
-Describe how this feature would be used:
-- **Who** would use this feature?
-- **When** would they use it?
-- **Why** would they need it?
+## 📱 Feature Context
+- [ ] **Game Mechanics** - New game features or rules
+- [ ] **UI/UX** - Interface improvements
+- [ ] **Wallet Integration** - New wallet support
+- [ ] **Social Features** - Referral system improvements
+- [ ] **Rewards System** - New reward mechanisms
+- [ ] **Farcaster Integration** - Farcaster-specific features
+- [ ] **Mobile Experience** - Mobile-specific features
+- [ ] **Performance** - Speed or efficiency improvements
+- [ ] **Security** - Security enhancements
+- [ ] **Other** - Specify below
 
-## 🎮 Game Impact
-- [ ] **Core Gameplay** - Affects main game mechanics
-- [ ] **Wallet Integration** - Improves wallet experience
-- [ ] **Jackpot System** - Enhances payout features
-- [ ] **UI/UX** - Improves user interface
-- [ ] **Performance** - Optimizes app performance
-- [ ] **Mobile** - Mobile-specific enhancement
-- [ ] **Social** - Adds social features
-- [ ] **Security** - Improves security features
+## 🎮 Use Case
+Describe how this feature would be used in the game.
 
-## 📊 Priority
-- [ ] **High** - Essential for game functionality
-- [ ] **Medium** - Important for user experience
-- [ ] **Low** - Nice to have enhancement
+## 📸 Mockups/Screenshots
+If applicable, add mockups or screenshots to help explain the feature.
 
-## 🎨 Mockups/Screenshots
-If applicable, add mockups or screenshots to illustrate the feature.
+## 🔗 Additional Context
+Add any other context or screenshots about the feature request here.
 
-## 🔗 Related Issues
-Link any related issues or discussions here.
+## 🏷️ Priority
+- [ ] **Critical** - Essential for game functionality
+- [ ] **High** - Important for user experience
+- [ ] **Medium** - Nice to have
+- [ ] **Low** - Future consideration
 
-## 📝 Additional Context
-Add any other context or references about the feature request here. 
+---
+
+**Thank you for your suggestion! 🍕**
+
+*Your feature request helps us understand what players want most.* 

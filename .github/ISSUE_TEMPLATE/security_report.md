@@ -1,67 +1,66 @@
 ---
-name: 🔒 Security Report
-about: Report a security vulnerability in Pizza Party dApp
+name: Security Report
+about: Report a security vulnerability in Pizza Party
 title: '[SECURITY] '
-labels: ['security', 'needs-triage']
+labels: ['security', 'high-priority']
 assignees: ''
 ---
 
 ## 🔒 Security Vulnerability Description
-A clear and concise description of the security vulnerability.
+A clear and concise description of the security issue.
 
-## 🎯 Vulnerability Type
-- [ ] **Smart Contract** - Vulnerability in smart contract code
-- [ ] **Frontend** - Client-side security issue
-- [ ] **Wallet Integration** - Wallet connection vulnerability
-- [ ] **Data Validation** - Input validation bypass
-- [ ] **Authentication** - Authentication/authorization issue
-- [ ] **Data Exposure** - Sensitive data exposure
-- [ ] **DoS** - Denial of service vulnerability
-- [ ] **Other** - Please specify
+## 🚨 Severity Level
+- [ ] **Critical** - Immediate action required, potential for significant loss
+- [ ] **High** - Important to fix soon, potential for moderate loss
+- [ ] **Medium** - Should be addressed, limited potential for loss
+- [ ] **Low** - Minor issue, minimal risk
 
 ## 🔄 Steps to Reproduce
 1. Go to '...'
 2. Click on '....'
-3. Perform action '....'
+3. Scroll down to '....'
 4. See vulnerability
 
 ## 🎯 Impact Assessment
-- [ ] **Critical** - Can lead to fund loss or complete compromise
-- [ ] **High** - Can lead to significant security breach
-- [ ] **Medium** - Can lead to data exposure or minor breach
-- [ ] **Low** - Minor security concern
+Describe the potential impact of this vulnerability:
+- **User Impact**: How does this affect users?
+- **Financial Impact**: Any potential financial losses?
+- **Data Impact**: Any data exposure risks?
+- **System Impact**: How does this affect the system?
 
 ## 🛡️ Expected Behavior
-A clear and concise description of what should happen from a security perspective.
+Describe what should happen in a secure system.
 
 ## ❌ Actual Behavior
-A clear and concise description of what actually happens that creates the vulnerability.
+Describe what actually happens that creates the vulnerability.
 
-## 🔧 Environment
-- **Network:** [e.g. Base Mainnet, Base Sepolia, Local]
-- **Wallet:** [e.g. MetaMask, Coinbase Wallet]
-- **Browser:** [e.g. Chrome 120, Safari 17]
-- **OS:** [e.g. Windows 11, macOS 14, iOS 17]
+## 🔗 Technical Details
+- **Vulnerability Type**: (e.g., Reentrancy, Access Control, Input Validation)
+- **Affected Component**: (e.g., Smart Contract, Frontend, API)
+- **Attack Vector**: How could this be exploited?
+- **Proof of Concept**: (if available, provide details)
 
-## 📸 Proof of Concept
-If applicable, provide a proof of concept or detailed steps to demonstrate the vulnerability.
+## 📱 Environment
+- **Network**: (e.g., Base Sepolia, Base Mainnet)
+- **Wallet**: (e.g., MetaMask, Coinbase Wallet)
+- **Browser/Device**: (e.g., Chrome on Windows, Mobile app)
+- **Contract Address**: (if applicable)
 
-## 🔗 Additional Context
-Add any other context about the vulnerability here, such as:
-- Related smart contract functions
-- Affected user data
-- Potential attack vectors
-- Suggested mitigation strategies
+## 🔧 Mitigation Suggestions
+Any suggestions for how this could be fixed or mitigated.
 
-## 📞 Responsible Disclosure
+## 📞 Contact Information
+- **Email**: vmf@vmfcoin.com
+- **Discord**: VMF Crypto Veterans Hub
+- **X/Twitter**: @VMFCryptoHub
+
+## 🔐 Responsible Disclosure
+- [ ] I agree to responsible disclosure practices
 - [ ] I will not publicly disclose this vulnerability until it's fixed
-- [ ] I understand this is a security-sensitive issue
-- [ ] I have provided all necessary information for reproduction
+- [ ] I understand this is for security research purposes only
 
-## 🏷️ Labels
-- [ ] **Smart Contract** - Blockchain-related vulnerability
-- [ ] **Frontend** - Client-side security issue
-- [ ] **Wallet** - Wallet integration vulnerability
-- [ ] **Data** - Data handling security issue
-- [ ] **Authentication** - Auth-related vulnerability
-- [ ] **DoS** - Denial of service vulnerability 
+---
+
+**Thank you for helping keep Pizza Party secure! 🔒**
+
+*Security reports are taken very seriously and will be addressed promptly.* 

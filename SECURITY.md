@@ -1,238 +1,238 @@
-# Security Documentation
+# 🔒 Security Policy
 
-## 🔒 Security Overview
+## 🛡️ Security Overview
 
-The Pizza Party dApp implements comprehensive security measures to protect users, funds, and the integrity of the gaming platform.
+Pizza Party is committed to maintaining the highest security standards for our decentralized gaming platform. We take security seriously and have implemented multiple layers of protection to ensure a safe gaming experience.
 
-## 🛡️ Smart Contract Security
-
-### Reentrancy Protection
-- **Implementation**: OpenZeppelin's `ReentrancyGuard`
-- **Coverage**: All external functions that handle token transfers
-- **Protection**: Prevents reentrancy attacks during critical operations
-
-### Access Control
-- **Owner Functions**: Restricted to contract owner only
-- **Admin Controls**: Emergency pause, blacklist management
-- **Multi-signature**: Planned for future implementation
-
-### Input Validation
-- **Address Validation**: All addresses validated before use
-- **String Validation**: Referral codes and user inputs sanitized
-- **Balance Checks**: Token balance verification before operations
-
-### Emergency Controls
-- **Pause Functionality**: Contract can be paused in emergency
-- **Blacklist System**: Malicious addresses can be blocked
-- **Emergency Withdrawal**: Admin can withdraw funds if needed
-
-## 🔐 Frontend Security
-
-### On-chain Data Only
-- **Critical Data**: All jackpot calculations from blockchain
-- **No localStorage**: Removed vulnerable localStorage calculations
-- **Real-time Updates**: Live data from smart contract
-
-### Input Sanitization
-- **User Inputs**: All inputs validated and sanitized
-- **Address Format**: Proper Ethereum address validation
-- **Referral Codes**: Validated before processing
-
-### Wallet Integration Security
-- **Multiple Wallets**: Support for various wallet providers
-- **Connection Validation**: Secure wallet connection process
-- **Error Handling**: Graceful handling of connection failures
-
-### Rate Limiting
-- **API Calls**: Rate limiting on blockchain interactions
-- **User Actions**: Prevention of spam attacks
-- **Transaction Limits**: Reasonable limits on user actions
-
-## 🚨 Critical Security Fixes
-
-### Off-chain/On-chain Integration Vulnerability
-**Issue**: Previous implementation used localStorage for jackpot calculations
-**Risk**: Data manipulation and front-running attacks
-**Fix**: 
-- Removed all localStorage jackpot calculations
-- All critical data now sourced from blockchain
-- Eliminated data manipulation vulnerability
-
-### Implementation Details
-```typescript
-// BEFORE (Vulnerable)
-const jackpot = localStorage.getItem('jackpot') || 0
-
-// AFTER (Secure)
-const jackpot = await contract.getCurrentJackpot()
-```
-
-## 🔍 Security Monitoring
-
-### Contract Monitoring
-- **Daily Jackpot Tracking**: Monitor for unusual patterns
-- **Weekly Jackpot Monitoring**: Track prize pool changes
-- **Referral Activity**: Monitor referral system usage
-- **Gas Usage Patterns**: Detect unusual transaction patterns
-
-### Security Alerts
-- **Suspicious Transactions**: Automated detection
-- **Blacklist Management**: Track blocked addresses
-- **Emergency Response**: Quick response procedures
-- **Vulnerability Detection**: Regular security scans
-
-## 🧪 Security Testing
-
-### Smart Contract Testing
-```bash
-# Run security tests
-npx hardhat test test/security/
-
-# Gas optimization tests
-REPORT_GAS=true npx hardhat test
-
-# Fuzzing tests (planned)
-npx hardhat test test/fuzzing/
-```
-
-### Test Coverage
-- ✅ Reentrancy attack prevention
-- ✅ Access control validation
-- ✅ Input validation testing
-- ✅ Emergency function testing
-- ✅ Blacklist functionality
-- ✅ Pause/unpause operations
-
-## 🚨 Emergency Procedures
-
-### Contract Pause
-1. **Detection**: Monitor for suspicious activity
-2. **Assessment**: Evaluate threat level
-3. **Action**: Pause contract if necessary
-4. **Communication**: Notify community
-5. **Resolution**: Address issue and unpause
-
-### Blacklist Management
-1. **Identification**: Detect malicious addresses
-2. **Verification**: Confirm malicious activity
-3. **Action**: Add to blacklist
-4. **Monitoring**: Track blacklisted addresses
-5. **Review**: Regular review for removal
-
-### Emergency Withdrawal
-1. **Assessment**: Evaluate emergency situation
-2. **Authorization**: Multi-signature approval
-3. **Execution**: Withdraw funds to safe address
-4. **Documentation**: Record all actions
-5. **Recovery**: Plan for contract recovery
-
-## 🔐 Security Best Practices
-
-### For Developers
-- **Code Review**: All changes security reviewed
-- **Testing**: Comprehensive test coverage
-- **Documentation**: Security decisions documented
-- **Updates**: Regular dependency updates
-
-### For Users
-- **Wallet Security**: Use secure wallet practices
-- **Private Keys**: Never share private keys
-- **Verification**: Verify contract addresses
-- **Updates**: Keep wallet software updated
-
-## 🚨 Bug Bounty Program
-
-### Reward Tiers
-- **Critical**: $10,000 USD
-  - Smart contract vulnerabilities
-  - Fund loss vulnerabilities
-  - Access control bypasses
-
-- **High**: $5,000 USD
-  - Data manipulation
-  - Front-running attacks
-  - Reentrancy vulnerabilities
-
-- **Medium**: $2,000 USD
-  - Input validation issues
-  - Gas optimization problems
-  - UI/UX security issues
-
-- **Low**: $500 USD
-  - Minor security improvements
-  - Documentation issues
-  - Code quality improvements
-
-### Reporting Process
-1. **Discovery**: Find security vulnerability
-2. **Documentation**: Document the issue
-3. **Submission**: Submit via vmf@vmfcoin.com
-4. **Review**: Security team review
-5. **Resolution**: Fix and reward
-
-## 🔍 Security Audits
-
-### Smart Contract Audit
-- **Required**: Before mainnet deployment
-- **Scope**: All smart contract functions
-- **Focus**: Security vulnerabilities
-- **Report**: Public audit report
-
-### Frontend Security Review
-- **Frequency**: Regular reviews
-- **Scope**: UI/UX security
-- **Focus**: User interaction security
-- **Updates**: Continuous improvements
-
-### Penetration Testing
-- **Frequency**: Ongoing testing
-- **Scope**: Full application
-- **Focus**: Real-world attack scenarios
-- **Reporting**: Regular security reports
-
-## 📞 Security Contact
+## 🚨 Reporting Security Issues
 
 ### Primary Contact
 - **Email**: vmf@vmfcoin.com
-- **Response Time**: 24 hours for critical issues
-- **Confidentiality**: All reports kept confidential
+- **GitHub**: Use [Security Report Template](.github/ISSUE_TEMPLATE/security_report.md)
+- **Discord**: VMF Crypto Veterans Hub (for community discussion)
 
-### Secondary Contact
-- **GitHub Issues**: [SECURITY] tag
-- **Discord**: #security channel
-- **Twitter**: @PizzaPartyApp
+### Responsible Disclosure
+- **Private Reporting**: Contact us directly for security issues
+- **No Public Disclosure**: Do not publicly disclose vulnerabilities
+- **Timeline**: Allow 30 days for initial response
+- **Coordination**: Work with our security team
+- **Credit**: Recognition for responsible disclosure
+
+### Security Report Template
+Use our [Security Report Template](.github/ISSUE_TEMPLATE/security_report.md) for structured reporting:
+
+```markdown
+---
+name: Security Report
+about: Report a security vulnerability in Pizza Party
+title: '[SECURITY] '
+labels: ['security', 'high-priority']
+assignees: ''
+---
+```
+
+## 🏆 Bug Bounty Program
+
+### Reward Tiers
+- **Critical**: $10,000 USD
+- **High**: $5,000 USD  
+- **Medium**: $2,000 USD
+- **Low**: $500 USD
+
+### Eligibility
+- **Valid Issues**: Reproducible security vulnerabilities
+- **Responsible Disclosure**: Follow our disclosure policy
+- **First Report**: Only first reporter gets reward
+- **No Duplicates**: Already known issues not eligible
+
+### Scope
+- **Smart Contracts**: PizzaParty.sol and related contracts
+- **Frontend**: Web application and UI
+- **API**: Backend services and endpoints
+- **Infrastructure**: Deployment and hosting
+- **Documentation**: Security-related documentation
+
+## 🔒 Security Features
+
+### Smart Contract Security
+- ✅ **ReentrancyGuard** - Prevents reentrancy attacks
+- ✅ **Access Control** - Admin functions restricted
+- ✅ **Input Validation** - All inputs validated and sanitized
+- ✅ **Emergency Controls** - Pause/stop functionality
+- ✅ **Blacklist System** - Block malicious addresses
+- ✅ **Rate Limiting** - Prevent spam attacks
+- ✅ **State Management** - Atomic operations
+- ✅ **Error Handling** - Graceful failure modes
+
+### Frontend Security
+- ✅ **On-chain Data Only** - No off-chain calculations for critical data
+- ✅ **Input Sanitization** - All user inputs validated
+- ✅ **Secure Wallet Integration** - Multiple wallet support with security checks
+- ✅ **Rate Limiting** - Prevents spam attacks
+- ✅ **Content Security Policy** - XSS protection
+- ✅ **HTTPS Only** - Secure connections
+- ✅ **Error Handling** - No sensitive data exposure
+
+### Infrastructure Security
+- ✅ **Secure Deployment** - Automated security checks
+- ✅ **Environment Variables** - Sensitive data protection
+- ✅ **Access Control** - Limited admin access
+- ✅ **Monitoring** - Real-time security monitoring
+- ✅ **Backup Systems** - Data protection
+- ✅ **Incident Response** - Rapid response procedures
+
+## 🔍 Security Audits
+
+### External Audits
+- **Smart Contract Audit** - Required before mainnet
+- **Penetration Testing** - Regular security assessments
+- **Code Review** - Peer review process
+- **Vulnerability Assessment** - Ongoing security checks
+
+### Internal Audits
+- **Automated Testing** - CI/CD security checks
+- **Manual Review** - Code review process
+- **Security Scanning** - Automated vulnerability scanning
+- **Dependency Checks** - Regular dependency updates
+
+## 🚨 Incident Response
+
+### Response Timeline
+- **Immediate** (0-1 hour): Acknowledge receipt
+- **Assessment** (1-24 hours): Evaluate severity
+- **Mitigation** (24-48 hours): Implement fixes
+- **Communication** (48-72 hours): Public disclosure
+- **Resolution** (1-2 weeks): Complete fix
+
+### Communication Plan
+- **Internal**: Security team notification
+- **Stakeholders**: Key team members
+- **Community**: Transparent communication
+- **Regulators**: Compliance reporting (if required)
+
+### Escalation Procedures
+- **Level 1**: Security team response
+- **Level 2**: Technical leadership
+- **Level 3**: Executive team
+- **Level 4**: External security experts
+
+## 🔧 Security Tools
+
+### Development Tools
+- **Slither** - Static analysis for Solidity
+- **Mythril** - Symbolic execution analysis
+- **Echidna** - Fuzzing for smart contracts
+- **Hardhat Security** - Development security checks
+
+### Testing Tools
+- **Automated Testing** - Comprehensive test suites
+- **Manual Testing** - Security-focused testing
+- **Penetration Testing** - External security assessments
+- **Vulnerability Scanning** - Automated security checks
+
+### Monitoring Tools
+- **Transaction Monitoring** - Real-time blockchain monitoring
+- **Anomaly Detection** - Suspicious activity detection
+- **Alert Systems** - Automated security alerts
+- **Log Analysis** - Security event analysis
 
 ## 📋 Security Checklist
 
-### Pre-deployment
-- [ ] Smart contract audit completed
-- [ ] Security tests passing
-- [ ] Access controls verified
-- [ ] Emergency procedures tested
-- [ ] Documentation updated
+### Smart Contract Security
+- [ ] **Reentrancy Protection** - All external calls protected
+- [ ] **Access Control** - Proper role management
+- [ ] **Input Validation** - All inputs validated
+- [ ] **State Management** - Atomic operations
+- [ ] **Error Handling** - Graceful failures
+- [ ] **Gas Optimization** - Efficient gas usage
+- [ ] **Emergency Controls** - Pause functionality
+- [ ] **Upgradeability** - Secure upgrade patterns
 
-### Post-deployment
-- [ ] Monitoring systems active
-- [ ] Security alerts configured
-- [ ] Response team ready
-- [ ] Backup procedures tested
-- [ ] Recovery plans in place
+### Frontend Security
+- [ ] **Input Sanitization** - Clean user inputs
+- [ ] **XSS Protection** - Content Security Policy
+- [ ] **CSRF Protection** - Cross-site request forgery protection
+- [ ] **Secure Headers** - Security headers implemented
+- [ ] **Error Handling** - No sensitive data exposure
+- [ ] **Wallet Security** - Secure connection protocols
+- [ ] **Rate Limiting** - Prevent abuse
+- [ ] **HTTPS Only** - Secure connections
 
-## 🔄 Security Updates
+### Infrastructure Security
+- [ ] **Environment Variables** - Sensitive data protection
+- [ ] **Access Control** - Limited admin access
+- [ ] **Monitoring** - Real-time security monitoring
+- [ ] **Backup Systems** - Data protection
+- [ ] **Incident Response** - Rapid response procedures
+- [ ] **Security Updates** - Regular updates
+- [ ] **Vulnerability Scanning** - Automated checks
+- [ ] **Penetration Testing** - Regular assessments
 
-### Regular Updates
-- **Monthly**: Security dependency updates
-- **Quarterly**: Security review meetings
-- **Annually**: Comprehensive security audit
-- **As needed**: Emergency security patches
+## 🏆 Security Best Practices
 
-### Update Process
-1. **Assessment**: Evaluate security updates
-2. **Testing**: Test in development environment
-3. **Deployment**: Deploy to testnet first
-4. **Monitoring**: Monitor for issues
-5. **Mainnet**: Deploy to mainnet
+### For Developers
+- **Code Review** - Peer review all changes
+- **Security Testing** - Test security features
+- **Documentation** - Document security measures
+- **Training** - Regular security training
+- **Updates** - Keep dependencies updated
+
+### For Users
+- **Wallet Security** - Secure your private keys
+- **Network Verification** - Verify you're on Base network
+- **Transaction Review** - Review all transactions
+- **Suspicious Activity** - Report suspicious behavior
+- **Updates** - Keep software updated
+
+### For Contributors
+- **Responsible Disclosure** - Report issues privately
+- **Security Focus** - Consider security implications
+- **Testing** - Test security features
+- **Documentation** - Document security measures
+- **Training** - Stay informed on security
+
+## 📞 Security Contact
+
+### Primary Contacts
+- **Security Email**: vmf@vmfcoin.com
+- **Emergency Contact**: vmf@vmfcoin.com
+- **GitHub Security**: Use security template
+- **Discord**: VMF Crypto Veterans Hub
+
+### Response Times
+- **Critical Issues**: 2-4 hours
+- **High Priority**: 24 hours
+- **Medium Priority**: 48 hours
+- **Low Priority**: 72 hours
+
+### Escalation
+- **Technical Issues**: Development team
+- **Security Issues**: Security team
+- **Legal Issues**: Legal team
+- **Community Issues**: Community team
+
+## 🔗 Security Resources
+
+### Documentation
+- **Smart Contract Security**: Solidity best practices
+- **Frontend Security**: Web security guidelines
+- **Infrastructure Security**: Deployment security
+- **Incident Response**: Response procedures
+
+### Tools
+- **Slither**: https://github.com/crytic/slither
+- **Mythril**: https://github.com/ConsenSys/mythril
+- **Echidna**: https://github.com/crytic/echidna
+- **Hardhat Security**: https://hardhat.org/security
+
+### Community
+- **Base Network**: https://base.org
+- **VMF Community**: https://x.com/VMFCryptoHub
+- **Security Discord**: VMF Crypto Veterans Hub
+- **Documentation**: This repository
 
 ---
 
-**Remember**: Security is everyone's responsibility. If you find a security issue, please report it immediately to vmf@vmfcoin.com 
+**Security is everyone's responsibility. Thank you for helping keep Pizza Party secure! 🔒**
+
+*For urgent security issues, contact vmf@vmfcoin.com immediately.* 

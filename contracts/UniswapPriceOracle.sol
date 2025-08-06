@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+
 
 /**
  * @title UniswapPriceOracle
@@ -12,12 +12,12 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
  * Uses Uniswap V3 pool data to calculate current VMF price
  */
 contract UniswapPriceOracle is Ownable {
-    using SafeMath for uint256;
+    
     
     // Uniswap V3 pool for VMF/USDC (assuming USDC is stable)
     address public constant UNISWAP_V3_FACTORY = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
     address public constant VMF_TOKEN = 0x2213414893259b0C48066Acd1763e7fbA97859E5;
-    address public constant USDC_TOKEN = 0xA0b86a33E6441b8C4C8C0C8C0C8C0C8C0C8C0C8C; // USDC on Base
+    address public constant USDC_TOKEN = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913; // USDC on Base
     
     // Pool fee tier (0.05% = 500)
     uint24 public constant POOL_FEE = 500;
@@ -73,7 +73,7 @@ contract UniswapPriceOracle is Ownable {
         }
         
         // Calculate: $1 / VMF_price
-        return PRICE_PRECISION.mul(1e18).div(vmfPrice);
+        return (PRICE_PRECISION * 1e18) / vmfPrice;
     }
     
     /**
@@ -130,7 +130,7 @@ contract UniswapPriceOracle is Ownable {
      */
     function _calculatePriceFromSqrtPriceX96(uint160 sqrtPriceX96) internal pure returns (uint256) {
         uint256 price = uint256(sqrtPriceX96);
-        price = price.mul(price).mul(1e18).div(2**192);
+        price = (price * price * 1e18) / 2**192;
         return price;
     }
     
