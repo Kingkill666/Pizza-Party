@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, Users, Coins, Clock } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Share2, Copy, Users as UsersIcon, ExternalLink } from "lucide-react"
 
 export default function GamePage() {
   const customFontStyle = {
@@ -20,6 +22,75 @@ export default function GamePage() {
     minutes: 53,
     seconds: 16,
   })
+  const [showInviteModal, setShowInviteModal] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [referralCode] = useState("PIZZA123ABC")
+  const [referralLink] = useState("https://pizza.party/?ref=PIZZA123ABC")
+  const [copied, setCopied] = useState(false)
+  // Updated referral stats to be accurate: 1 Used, 0 Joined, 2 Remaining
+  const [referralStats] = useState({ 
+    used: 1,      // 1 code has been used
+    joined: 0,    // 0 people actually joined (maybe they used code but didn't complete registration)
+    remaining: 2, // 2 codes still available
+    totalAllowed: 3 // Total codes per user
+  })
+
+  // Social media platforms for sharing
+  const socialPlatforms = [
+    {
+      name: "X (Twitter)",
+      icon: "𝕏",
+      color: "bg-black hover:bg-gray-800",
+      shareUrl: (url: string, text: string) =>
+        `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+    },
+    {
+      name: "Facebook",
+      icon: "📘",
+      color: "bg-blue-600 hover:bg-blue-700",
+      shareUrl: (url: string) => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+    },
+    {
+      name: "Telegram",
+      icon: "✈️",
+      color: "bg-sky-500 hover:bg-sky-600",
+      shareUrl: (url: string, text: string) =>
+        `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
+    },
+    {
+      name: "Discord",
+      icon: "🎮",
+      color: "bg-indigo-600 hover:bg-indigo-700",
+      action: "copy", // Discord doesn't have direct web sharing
+    },
+    {
+      name: "WhatsApp",
+      icon: "💬",
+      color: "bg-green-500 hover:bg-green-600",
+      shareUrl: (url: string, text: string) => `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`,
+    },
+    {
+      name: "LinkedIn",
+      icon: "💼",
+      color: "bg-blue-700 hover:bg-blue-800",
+      shareUrl: (url: string, text: string) =>
+        `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+    },
+    {
+      name: "Reddit",
+      icon: "🤖",
+      color: "bg-orange-600 hover:bg-orange-700",
+      shareUrl: (url: string, text: string) =>
+        `https://reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(text)}`,
+    },
+    {
+      name: "Farcaster",
+      icon: "🟣",
+      color: "bg-purple-600 hover:bg-purple-700",
+      shareUrl: (url: string, text: string) =>
+        `https://warpcast.com/~/compose?text=${encodeURIComponent(`${text} ${url}`)}`,
+    },
+  ]
 
   // Update countdown timer
   useEffect(() => {
@@ -31,7 +102,7 @@ export default function GamePage() {
           return { ...prev, minutes: prev.minutes - 1, seconds: 59 }
         } else if (prev.hours > 0) {
           return { hours: prev.hours - 1, minutes: 59, seconds: 59 }
-      } else {
+        } else {
           return { hours: 0, minutes: 0, seconds: 0 }
         }
       })
@@ -39,6 +110,34 @@ export default function GamePage() {
 
     return () => clearInterval(timer)
   }, [])
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(referralLink)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {}
+  }
+
+  const shareLink = async () => {
+    setShowShareModal(true)
+  }
+
+  const handleSocialShare = async (platform: any) => {
+    const shareText = "Join me on Pizza Party! 🍕 Play to win a slice of the pie!"
+
+    if (platform.action === "copy") {
+      // For platforms like Discord and Instagram that don't have direct web sharing
+      await copyToClipboard()
+      setShowShareModal(false)
+      // You could show a toast here saying "Link copied! Paste it in Discord/Instagram"
+    } else if (platform.shareUrl) {
+      // Open the social media sharing URL
+      const url = platform.shareUrl(referralLink, shareText)
+      window.open(url, "_blank", "width=600,height=400")
+      setShowShareModal(false)
+    }
+  }
 
   return (
     <div
@@ -218,64 +317,291 @@ export default function GamePage() {
 
             {/* Entry Section */}
             <div className="text-center">
-                <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                  <Button
+              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                <Button
                   className="w-full bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-4 px-8 rounded-xl border-4 border-green-800 shadow-lg"
+                  style={{
+                    ...customFontStyle,
+                    letterSpacing: "1px",
+                    fontSize: "1.25rem",
+                  }}
+                >
+                  <Image
+                    src="/images/star-favicon-original.png"
+                    alt="Star"
+                    width={24}
+                    height={24}
+                    className="inline mr-2 rounded-full"
+                  />
+                  ENTER GAME .001 Base Sepolia
+                  <Image
+                    src="/images/star-favicon-original.png"
+                    alt="Star"
+                    width={24}
+                    height={24}
+                    className="inline ml-2 rounded-full"
+                  />
+                </Button>
+
+                {/* Weekly Jackpot Button */}
+                <Link href="/jackpot">
+                  <Button
+                    className="w-full bg-red-700 hover:bg-red-800 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-red-900 shadow-lg transform hover:scale-105 transition-all"
                     style={{
                       ...customFontStyle,
                       letterSpacing: "1px",
                       fontSize: "1.25rem",
                     }}
                   >
-                    <Image
-                      src="/images/star-favicon-original.png"
-                      alt="Star"
-                      width={24}
-                      height={24}
-                      className="inline mr-2 rounded-full"
-                    />
-                    ENTER GAME .001 Base Sepolia
-                    <Image
-                      src="/images/star-favicon-original.png"
-                      alt="Star"
-                      width={24}
-                      height={24}
-                      className="inline ml-2 rounded-full"
-                    />
+                    🏆 Weekly Jackpot 🏆
                   </Button>
+                </Link>
 
-                  {/* Weekly Jackpot Button */}
-                  <Link href="/jackpot">
-                    <Button
-                      className="w-full bg-red-700 hover:bg-red-800 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-red-900 shadow-lg transform hover:scale-105 transition-all"
-                      style={{
-                        ...customFontStyle,
-                        letterSpacing: "1px",
-                        fontSize: "1.25rem",
-                      }}
-                    >
-                      🏆 Weekly Jackpot 🏆
-                    </Button>
-                  </Link>
+                {/* Invite Friends Button */}
+                <Button
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-blue-800 shadow-lg transform hover:scale-105 transition-all"
+                  style={{ ...customFontStyle, letterSpacing: "1px", fontSize: "1.25rem" }}
+                  onClick={() => setShowInviteModal(true)}
+                >
+                  <UsersIcon className="mr-2 h-5 w-5" />
+                  Invite Friends
+                  <UsersIcon className="ml-2 h-5 w-5" />
+                </Button>
 
-                  {/* Game Rules */}
-                  <div className="bg-gray-50 p-2 rounded-lg border border-gray-200">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <span className="text-sm">🎯</span>
-                      <p className="text-sm font-semibold text-gray-800" style={customFontStyle}>
-                        Game Rules:
-                      </p>
-                    </div>
-                    <ul className="space-y-1 text-xs text-gray-700" style={customFontStyle}>
-                      <li>• One entry per wallet per day</li>
-                      <li>• Equal chance for all players</li>
-                      <li>• New game starts daily at 12pm PST</li>
-                    </ul>
+                {/* Game Rules */}
+                <div className="bg-gray-50 p-2 rounded-lg border border-gray-200">
+                  <div className="flex items-center justify-center gap-1 mb-1">
+                    <span className="text-sm">🎯</span>
+                    <p className="text-sm font-semibold text-gray-800" style={customFontStyle}>
+                      Game Rules:
+                    </p>
                   </div>
+                  <ul className="space-y-1 text-xs text-gray-700" style={customFontStyle}>
+                    <li>• One entry per wallet per day</li>
+                    <li>• Equal chance for all players</li>
+                    <li>• New game starts daily at 12pm PST</li>
+                  </ul>
                 </div>
+              </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* Invite Friends Modal */}
+        <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
+          <DialogContent className="max-w-md mx-auto bg-white border-4 border-blue-800 rounded-3xl">
+            <DialogHeader>
+              <DialogTitle className="text-xl sm:text-2xl text-blue-800 text-center" style={customFontStyle}>
+                🎉 Invite Friends to Pizza Party! 🎉
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 p-4">
+              {/* Referral Stats */}
+              <div className="bg-blue-100 p-4 rounded-xl border-2 border-blue-300">
+                <h3 className="text-lg font-bold text-blue-800 mb-2" style={customFontStyle}>
+                  Your Referral Stats
+                </h3>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <div className="text-2xl font-bold text-blue-600" style={customFontStyle}>{referralStats.used}</div>
+                    <div className="text-sm text-blue-700" style={customFontStyle}>Used</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-green-600" style={customFontStyle}>{referralStats.joined}</div>
+                    <div className="text-sm text-green-700" style={customFontStyle}>Joined</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-orange-600" style={customFontStyle}>{referralStats.remaining}</div>
+                    <div className="text-sm text-orange-700" style={customFontStyle}>Remaining</div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Referral Code */}
+              <div className="bg-yellow-100 p-4 rounded-xl border-2 border-yellow-300">
+                <h3 className="text-lg font-bold text-yellow-800 mb-2" style={customFontStyle}>Your Referral Code</h3>
+                <div className="bg-white p-3 rounded-lg border border-yellow-400">
+                  <p className="text-lg font-mono font-bold text-center text-gray-800" style={customFontStyle}>{referralCode}</p>
+                </div>
+              </div>
+              
+              {/* Share Link */}
+              <div className="bg-green-100 p-4 rounded-xl border-2 border-green-300">
+                <h3 className="text-lg font-bold text-green-800 mb-2" style={customFontStyle}>Share Your Link</h3>
+                <div className="bg-white p-3 rounded-lg border border-green-400 mb-3">
+                  <p className="text-xs font-mono text-gray-800 break-all" style={customFontStyle}>{referralLink}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={copyToClipboard} className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg" style={customFontStyle}>
+                    <Copy className="mr-2 h-4 w-4" />Copy Link
+                  </Button>
+                  <Button onClick={shareLink} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg" style={customFontStyle}>
+                    <Share2 className="mr-2 h-4 w-4" />Share
+                  </Button>
+                </div>
+                {copied && (
+                  <div className="bg-green-100 border-2 border-green-300 rounded-lg p-3 text-center mt-2">
+                    <p className="text-green-800 font-bold" style={customFontStyle}>✅ Link copied to clipboard!</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Referral Rewards */}
+              <div className="bg-purple-100 p-4 rounded-xl border-2 border-purple-300">
+                <h3 className="text-lg font-bold text-purple-800 mb-2 flex items-center" style={customFontStyle}>🎁 Referral Rewards</h3>
+                <ul className="space-y-1 text-sm text-purple-700" style={customFontStyle}>
+                  <li>• 2 Toppings per successful referral</li>
+                  <li>• Higher jackpot chances</li>
+                  <li>• Toppings count toward weekly drawing</li>
+                </ul>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Share Modal */}
+        <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
+          <DialogContent className="max-w-md mx-auto bg-white border-4 border-red-800 rounded-3xl">
+            <DialogHeader>
+              <DialogTitle className="text-xl sm:text-2xl text-red-800 text-center" style={customFontStyle}>
+                🍕 Share on Social Media 🍕
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 p-4">
+              <p className="text-center text-gray-600" style={customFontStyle}>
+                Choose where you'd like to share your referral link.
+              </p>
+
+              <div className="space-y-3">
+                {/* X (Twitter) */}
+                <Button
+                  onClick={() => handleSocialShare({ 
+                    action: "share", 
+                    name: "X (Twitter)",
+                    shareUrl: (link: string, text: string) => `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(link)}`
+                  })}
+                  className="w-full bg-black hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between"
+                  style={customFontStyle}
+                >
+                  <div className="flex items-center">
+                    <span className="text-xl mr-3">𝕏</span>
+                    <span>X (Twitter)</span>
+                  </div>
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+
+                {/* Facebook */}
+                <Button
+                  onClick={() => handleSocialShare({ 
+                    action: "share", 
+                    name: "Facebook",
+                    shareUrl: (link: string, text: string) => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`
+                  })}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between"
+                  style={customFontStyle}
+                >
+                  <div className="flex items-center">
+                    <span className="text-xl mr-3">f</span>
+                    <span>Facebook</span>
+                  </div>
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+
+                {/* Telegram */}
+                <Button
+                  onClick={() => handleSocialShare({ 
+                    action: "share", 
+                    name: "Telegram",
+                    shareUrl: (link: string, text: string) => `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`
+                  })}
+                  className="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between"
+                  style={customFontStyle}
+                >
+                  <div className="flex items-center">
+                    <span className="text-xl mr-3">✈️</span>
+                    <span>Telegram</span>
+                  </div>
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+
+                {/* Discord */}
+                <Button
+                  onClick={() => handleSocialShare({ action: "copy", name: "Discord" })}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between"
+                  style={customFontStyle}
+                >
+                  <div className="flex items-center">
+                    <span className="text-xl mr-3">🎮</span>
+                    <span>Discord</span>
+                  </div>
+                  <Copy className="h-4 w-4" />
+                </Button>
+
+                {/* WhatsApp */}
+                <Button
+                  onClick={() => handleSocialShare({ 
+                    action: "share", 
+                    name: "WhatsApp",
+                    shareUrl: (link: string, text: string) => `https://wa.me/?text=${encodeURIComponent(`${text} ${link}`)}`
+                  })}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between"
+                  style={customFontStyle}
+                >
+                  <div className="flex items-center">
+                    <span className="text-xl mr-3">💬</span>
+                    <span>WhatsApp</span>
+                  </div>
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+
+                {/* Farcaster */}
+                <Button
+                  onClick={() => handleSocialShare({ 
+                    action: "share", 
+                    name: "Farcaster",
+                    shareUrl: (link: string, text: string) => `https://warpcast.com/~/compose?text=${encodeURIComponent(`${text} ${link}`)}`
+                  })}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between"
+                  style={customFontStyle}
+                >
+                  <div className="flex items-center">
+                    <Image
+                      src="/images/farcaster-icon.png"
+                      alt="Farcaster"
+                      width={20}
+                      height={20}
+                      className="mr-3"
+                    />
+                    <span>Farcaster</span>
+                  </div>
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+
+                {/* Copy Link */}
+                <Button
+                  onClick={copyToClipboard}
+                  className="w-full bg-gray-700 hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between"
+                  style={customFontStyle}
+                >
+                  <div className="flex items-center">
+                    <Copy className="h-5 w-5 mr-3" />
+                    <span>Copy Link</span>
+                  </div>
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {copied && (
+                <div className="bg-green-100 border-2 border-green-300 rounded-lg p-3 text-center">
+                  <p className="text-green-800 font-bold" style={customFontStyle}>
+                    ✅ Link copied to clipboard!
+                  </p>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )
