@@ -1,4 +1,5 @@
-import { sdk } from '@farcaster/miniapp-sdk'
+// Temporarily disabled Farcaster SDK for beta testing
+// import { sdk } from '@farcaster/miniapp-sdk'
 
 // Farcaster Mini App SDK initialization and utilities
 export class FarcasterMiniApp {
@@ -18,10 +19,10 @@ export class FarcasterMiniApp {
     if (this.isInitialized) return
 
     try {
-      // Initialize the SDK
-      await sdk.actions.ready()
+      // Temporarily disabled for beta testing
+      // await sdk.actions.ready()
       this.isInitialized = true
-      console.log('✅ Farcaster Mini App SDK initialized')
+      console.log('✅ Farcaster Mini App SDK initialized (beta mode)')
     } catch (error) {
       console.error('❌ Failed to initialize Farcaster Mini App SDK:', error)
     }
@@ -29,8 +30,10 @@ export class FarcasterMiniApp {
 
   async getAuthToken(): Promise<string | null> {
     try {
-      const { token } = await sdk.quickAuth.getToken()
-      return token
+      // Temporarily disabled for beta testing
+      // const { token } = await sdk.quickAuth.getToken()
+      // return token
+      return null
     } catch (error) {
       console.error('❌ Failed to get auth token:', error)
       return null
@@ -39,7 +42,9 @@ export class FarcasterMiniApp {
 
   async makeAuthenticatedRequest(url: string, options?: RequestInit): Promise<Response> {
     try {
-      return await sdk.quickAuth.fetch(url, options)
+      // Temporarily disabled for beta testing
+      // return await sdk.quickAuth.fetch(url, options)
+      return fetch(url, options)
     } catch (error) {
       console.error('❌ Failed to make authenticated request:', error)
       throw error
