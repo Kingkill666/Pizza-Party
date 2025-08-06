@@ -11,6 +11,7 @@ export function FarcasterWrapper({ children }: FarcasterWrapperProps) {
   const [isFarcaster, setIsFarcaster] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
   const [sdkAvailable, setSdkAvailable] = useState(false)
+  const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
     const initializeFarcaster = async () => {
@@ -35,6 +36,9 @@ export function FarcasterWrapper({ children }: FarcasterWrapperProps) {
           console.log('⚠️ Farcaster environment detected but SDK not available')
           // Still mark as initialized to show content
           setIsInitialized(true)
+        } else {
+          // Not in Farcaster environment, mark as initialized
+          setIsInitialized(true)
         }
       } catch (error) {
         console.error('❌ Failed to initialize Farcaster Mini App:', error)
@@ -45,6 +49,27 @@ export function FarcasterWrapper({ children }: FarcasterWrapperProps) {
 
     initializeFarcaster()
   }, [])
+
+  // Call ready() after the app is fully loaded
+  useEffect(() => {
+    if (isInitialized && isFarcaster && sdkAvailable && !isReady) {
+      const callReady = async () => {
+        try {
+          await farcasterApp.ready()
+          setIsReady(true)
+          console.log('✅ Farcaster Mini App ready called successfully')
+        } catch (error) {
+          console.error('❌ Failed to call ready:', error)
+          setIsReady(true) // Still mark as ready to show content
+        }
+      }
+      
+      callReady()
+    } else if (isInitialized && !isFarcaster) {
+      // Not in Farcaster environment, mark as ready
+      setIsReady(true)
+    }
+  }, [isInitialized, isFarcaster, sdkAvailable, isReady])
 
   // Show loading state while initializing in Farcaster
   if (isFarcaster && !isInitialized) {

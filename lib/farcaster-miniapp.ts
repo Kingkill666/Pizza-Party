@@ -48,12 +48,28 @@ export class FarcasterMiniApp {
         return
       }
 
-      // Initialize the SDK - this hides the splash screen and displays content
-      await sdkInstance.actions.ready()
+      // Store SDK instance for later use
       this.isInitialized = true
-      console.log('✅ Farcaster Mini App SDK initialized')
+      console.log('✅ Farcaster Mini App SDK loaded')
     } catch (error) {
       console.error('❌ Failed to initialize Farcaster Mini App SDK:', error)
+    }
+  }
+
+  // Call this after your app is fully loaded and ready to display
+  async ready(): Promise<void> {
+    try {
+      const sdkInstance = await loadSDK()
+      if (!sdkInstance) {
+        console.warn('⚠️ Farcaster SDK not available, skipping ready call')
+        return
+      }
+
+      // This hides the splash screen and displays content
+      await sdkInstance.actions.ready()
+      console.log('✅ Farcaster Mini App ready - splash screen hidden')
+    } catch (error) {
+      console.error('❌ Failed to call ready:', error)
     }
   }
 
@@ -73,20 +89,6 @@ export class FarcasterMiniApp {
     }
   }
 
-  async makeAuthenticatedRequest(url: string, options?: RequestInit): Promise<Response> {
-    try {
-      const sdkInstance = await loadSDK()
-      if (!sdkInstance) {
-        throw new Error('Farcaster SDK not available')
-      }
-
-      return await sdkInstance.quickAuth.fetch(url, options)
-    } catch (error) {
-      console.error('❌ Failed to make authenticated request:', error)
-      throw error
-    }
-  }
-
   isFarcasterEnvironment(): boolean {
     return typeof window !== 'undefined' && (
       window.location.href.includes('farcaster') ||
@@ -95,24 +97,45 @@ export class FarcasterMiniApp {
     )
   }
 
-  getCurrentUser(): Promise<{ fid: number } | null> {
-    return this.getAuthToken().then(token => {
+  // Check if SDK is available
+  async isSDKAvailable(): Promise<boolean> {
+    const sdkInstance = await loadSDK()
+    return sdkInstance !== null
+  }
+
+  // Follow the documentation pattern for making authenticated requests
+  async makeAuthenticatedRequest(url: string, options?: RequestInit): Promise<Response> {
+    try {
+      const sdkInstance = await loadSDK()
+      if (!sdkInstance) {
+        throw new Error('Farcaster SDK not available')
+      }
+
+      // Use the documented pattern from the docs
+      return await sdkInstance.quickAuth.fetch(url, options)
+    } catch (error) {
+      console.error('❌ Failed to make authenticated request:', error)
+      throw error
+    }
+  }
+
+  // Get user information following the documentation pattern
+  async getCurrentUser(): Promise<{ fid: number } | null> {
+    try {
+      const token = await this.getAuthToken()
       if (!token) return null
       
-      // Decode JWT to get FID (this is a simplified version)
+      // Decode JWT to get FID (following the documentation pattern)
       try {
         const payload = JSON.parse(atob(token.split('.')[1]))
         return { fid: payload.sub }
       } catch {
         return null
       }
-    })
-  }
-
-  // Check if SDK is available
-  async isSDKAvailable(): Promise<boolean> {
-    const sdkInstance = await loadSDK()
-    return sdkInstance !== null
+    } catch (error) {
+      console.error('❌ Failed to get current user:', error)
+      return null
+    }
   }
 }
 
