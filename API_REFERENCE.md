@@ -34,7 +34,7 @@ The Pizza Party dApp consists of several key components working together to crea
 ## Data Flow Diagram
 
 ```
-User Action → Wallet Connection → Smart Contract → VMF Transfer → Game Entry
+User Action → Wallet Connection → Smart Contract → Entry Fee (Base Sepolia ETH) → Game Entry
      ↓              ↓                ↓              ↓              ↓
 localStorage ← UI Update ← Event Emission ← Balance Check ← Entry Validation
      ↓              ↓                ↓              ↓              ↓
@@ -119,7 +119,8 @@ function checkAndDistributeDailyPrizes() external {
     if (!currentGame.isCompleted && block.timestamp >= currentGame.endTime) {
         drawDailyWinners();
     }
-}
+
+```
 ```
 
 **Parameters:** None
@@ -190,23 +191,19 @@ function drawDailyWinners() external {
 - ✅ **Immediate Payout**: Winners receive prizes instantly when game ends
 
 ##### `processDailyPayout()`
-Process daily payout and select winners (owner only).
+Process daily payout and select winners (owner only). Payouts are in **Base Sepolia ETH** for beta testing.
 
 ```solidity
 function processDailyPayout() external onlyOwner {
     require(!paused, "Contract is paused");
-    
     // Select 8 winners
     address[] memory winners = selectDailyWinners();
-    
     // Calculate prize per winner
     uint256 prizePerWinner = address(this).balance / DAILY_WINNERS_COUNT;
-    
-    // Distribute prizes
+    // Distribute prizes in Base Sepolia ETH
     for (uint i = 0; i < winners.length; i++) {
         payable(winners[i]).transfer(prizePerWinner);
     }
-    
     emit DailyPayoutProcessed(winners, prizePerWinner);
 }
 ```
@@ -333,16 +330,14 @@ for (const wallet of availableWallets) {
 #### Core Functions
 
 ##### `calculateCommunityJackpot()`
-Calculate current community jackpot based on player activity.
+Calculate current community jackpot based on player activity. **Returns the jackpot in Base Sepolia ETH for beta testing.**
 
 ```typescript
 export const calculateCommunityJackpot = (): number => {
   if (typeof window === "undefined") return 0;
-
   const today = new Date().toDateString();
   const keys = Object.keys(localStorage);
   let todaysPlayers = 0;
-
   keys.forEach((key) => {
     if (key.startsWith("pizza_entry_") && 
         key.includes(today) && 
@@ -350,12 +345,11 @@ export const calculateCommunityJackpot = (): number => {
       todaysPlayers++;
     }
   });
-
-  return todaysPlayers; // Each player pays 1 VMF
+  return todaysPlayers * 0.001; // Each player pays 0.001 Base Sepolia ETH
 };
 ```
 
-**Returns:** `number` - Current jackpot amount in VMF
+**Returns:** `number` - Current jackpot amount in Base Sepolia ETH
 
 ##### `getWeeklyJackpotInfo()`
 Get comprehensive weekly jackpot information.
@@ -462,10 +456,9 @@ export const getWeeklyJackpotInfo = () => {
 **Display Jackpot Information:**
 ```typescript
 import { calculateCommunityJackpot, getWeeklyJackpotInfo } from '@/lib/jackpot-data';
-
 // Get current daily jackpot
 const dailyJackpot = calculateCommunityJackpot();
-console.log('Daily Jackpot:', dailyJackpot, 'VMF');
+console.log('Daily Jackpot:', dailyJackpot, 'Base Sepolia ETH');
 
 // Get weekly information
 const weeklyInfo = getWeeklyJackpotInfo();
@@ -493,7 +486,7 @@ function JackpotDisplay() {
     return () => clearInterval(interval);
   }, []);
 
-  return <div>Current Jackpot: {jackpot} VMF</div>;
+  return <div>Current Jackpot: {jackpot} Base Sepolia ETH</div>;
 }
 ```
 
@@ -689,7 +682,7 @@ const displayPayoutHistory = () => {
     <div key={payout.id}>
       <h3>{payout.type === "daily" ? "🎯 Daily" : "🏆 Weekly"} Payout</h3>
       <p>Time: {formatTimestamp(payout.timestamp)}</p>
-      <p>Jackpot: {payout.jackpotAmount} VMF</p>
+      <p>Jackpot: {payout.jackpotAmount} Base Sepolia ETH</p>
       <p>Winners: {payout.winners.length}</p>
     </div>
   ));
@@ -825,8 +818,8 @@ function GameEntry() {
   return (
     <div>
       <h2>Enter Daily Game</h2>
-      <p>Cost: 1 VMF</p>
-      <p>Balance: {balance} VMF</p>
+      <p>Cost: 0.001 Base Sepolia ETH</p>
+      <p>Balance: {balance} ETH</p>
       
       <input
         type="text"
