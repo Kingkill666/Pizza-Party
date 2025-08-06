@@ -1,7 +1,23 @@
-// Temporarily disabled Farcaster SDK for beta testing
-// import { sdk } from '@farcaster/miniapp-sdk'
-
 // Farcaster Mini App SDK initialization and utilities
+// Based on official documentation: https://miniapps.farcaster.xyz/llms-full.txt
+
+let sdk: any = null
+
+// Try to import the SDK dynamically, but handle cases where it might not be available
+const loadSDK = async () => {
+  if (sdk) return sdk
+  
+  try {
+    const sdkModule = await import('@farcaster/miniapp-sdk')
+    sdk = sdkModule.sdk
+    console.log('✅ Farcaster SDK loaded successfully')
+    return sdk
+  } catch (error) {
+    console.warn('⚠️ Farcaster Mini App SDK not available:', error)
+    return null
+  }
+}
+
 export class FarcasterMiniApp {
   private static instance: FarcasterMiniApp
   private isInitialized = false
@@ -19,10 +35,17 @@ export class FarcasterMiniApp {
     if (this.isInitialized) return
 
     try {
-      // Temporarily disabled for beta testing
-      // await sdk.actions.ready()
+      // Load SDK dynamically
+      const sdkInstance = await loadSDK()
+      if (!sdkInstance) {
+        console.warn('⚠️ Farcaster SDK not available, skipping initialization')
+        return
+      }
+
+      // Initialize the SDK - this hides the splash screen and displays content
+      await sdkInstance.actions.ready()
       this.isInitialized = true
-      console.log('✅ Farcaster Mini App SDK initialized (beta mode)')
+      console.log('✅ Farcaster Mini App SDK initialized')
     } catch (error) {
       console.error('❌ Failed to initialize Farcaster Mini App SDK:', error)
     }
@@ -30,10 +53,14 @@ export class FarcasterMiniApp {
 
   async getAuthToken(): Promise<string | null> {
     try {
-      // Temporarily disabled for beta testing
-      // const { token } = await sdk.quickAuth.getToken()
-      // return token
-      return null
+      const sdkInstance = await loadSDK()
+      if (!sdkInstance) {
+        console.warn('⚠️ Farcaster SDK not available')
+        return null
+      }
+
+      const { token } = await sdkInstance.quickAuth.getToken()
+      return token
     } catch (error) {
       console.error('❌ Failed to get auth token:', error)
       return null
@@ -42,9 +69,12 @@ export class FarcasterMiniApp {
 
   async makeAuthenticatedRequest(url: string, options?: RequestInit): Promise<Response> {
     try {
-      // Temporarily disabled for beta testing
-      // return await sdk.quickAuth.fetch(url, options)
-      return fetch(url, options)
+      const sdkInstance = await loadSDK()
+      if (!sdkInstance) {
+        throw new Error('Farcaster SDK not available')
+      }
+
+      return await sdkInstance.quickAuth.fetch(url, options)
     } catch (error) {
       console.error('❌ Failed to make authenticated request:', error)
       throw error
@@ -52,7 +82,11 @@ export class FarcasterMiniApp {
   }
 
   isFarcasterEnvironment(): boolean {
-    return typeof window !== 'undefined' && window.location.href.includes('farcaster')
+    return typeof window !== 'undefined' && (
+      window.location.href.includes('farcaster') ||
+      window.location.href.includes('warpcast') ||
+      window.location.href.includes('miniapp')
+    )
   }
 
   getCurrentUser(): Promise<{ fid: number } | null> {
@@ -67,6 +101,12 @@ export class FarcasterMiniApp {
         return null
       }
     })
+  }
+
+  // Check if SDK is available
+  async isSDKAvailable(): Promise<boolean> {
+    const sdkInstance = await loadSDK()
+    return sdkInstance !== null
   }
 }
 

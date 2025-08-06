@@ -10,6 +10,7 @@ interface FarcasterWrapperProps {
 export function FarcasterWrapper({ children }: FarcasterWrapperProps) {
   const [isFarcaster, setIsFarcaster] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
+  const [sdkAvailable, setSdkAvailable] = useState(false)
 
   useEffect(() => {
     const initializeFarcaster = async () => {
@@ -18,17 +19,27 @@ export function FarcasterWrapper({ children }: FarcasterWrapperProps) {
         const isFarcasterEnv = farcasterApp.isFarcasterEnvironment()
         setIsFarcaster(isFarcasterEnv)
 
-        if (isFarcasterEnv) {
-          console.log('🍕 Detected Farcaster environment')
+        // Check if SDK is available
+        const sdkAvailable = await farcasterApp.isSDKAvailable()
+        setSdkAvailable(sdkAvailable)
+
+        if (isFarcasterEnv && sdkAvailable) {
+          console.log('🍕 Detected Farcaster environment with SDK available')
           
           // Initialize the Farcaster Mini App SDK
           await farcasterApp.initialize()
           setIsInitialized(true)
           
           console.log('✅ Farcaster Mini App initialized successfully')
+        } else if (isFarcasterEnv && !sdkAvailable) {
+          console.log('⚠️ Farcaster environment detected but SDK not available')
+          // Still mark as initialized to show content
+          setIsInitialized(true)
         }
       } catch (error) {
         console.error('❌ Failed to initialize Farcaster Mini App:', error)
+        // Mark as initialized to show content even if there's an error
+        setIsInitialized(true)
       }
     }
 
@@ -42,7 +53,9 @@ export function FarcasterWrapper({ children }: FarcasterWrapperProps) {
         <div className="bg-white rounded-3xl shadow-2xl p-8 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
           <h2 className="text-xl font-bold text-red-800 mb-2">Loading Pizza Party</h2>
-          <p className="text-gray-600">Initializing Farcaster Mini App...</p>
+          <p className="text-gray-600">
+            {sdkAvailable ? 'Initializing Farcaster Mini App...' : 'Loading Pizza Party...'}
+          </p>
         </div>
       </div>
     )
