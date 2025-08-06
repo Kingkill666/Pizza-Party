@@ -84,8 +84,9 @@ npm run dev
 
 ### 1. Prepare Testnet
 ```bash
-# Get Sepolia ETH from faucet
-# https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet
+# Get Sepolia ETH from faucets:
+# Chainlink Faucet: https://faucets.chain.link/base-sepolia
+# QuickNode Faucet: https://faucet.quicknode.com/base/sepolia
 ```
 
 ### 2. Deploy to Testnet

@@ -48,18 +48,11 @@ npm run dev
 - **Block Explorer**: https://sepolia.basescan.org
 - **Entry Fee**: 0.001 Base Sepolia ETH (for testing)
 
-### Free Base Sepolia ETH Faucets
+### Recommended Base Sepolia ETH Faucets
 For beta testing, you'll need Base Sepolia ETH for gas fees. Get free testnet ETH from:
 
-- **Coinbase Developer Platform**: https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet
-- **thirdweb Faucet**: https://thirdweb.com/faucet/base-sepolia
-- **Superchain Faucet**: https://superchain.com/faucet
-- **Alchemy Faucet**: https://www.alchemy.com/faucets/base-sepolia-faucet
-- **Bware Labs Faucet**: https://faucet.bwarelabs.com/
-- **Chainstack Faucet**: https://faucet.chainstack.com/
-- **QuickNode Faucet**: https://faucet.quicknode.com/base-sepolia
-- **LearnWeb3 Faucet**: https://learnweb3.io/faucets/base-sepolia
-- **Ethereum Ecosystem Faucet**: https://base-sepolia-faucet.pk910.de/
+- **Chainlink Faucet**: https://faucets.chain.link/base-sepolia
+- **QuickNode Faucet**: https://faucet.quicknode.com/base/sepolia
 
 ### Adding Base Sepolia to MetaMask
 1. Open MetaMask

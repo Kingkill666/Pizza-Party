@@ -25,27 +25,22 @@ Thank you for being part of our beta testing program! This guide will help you u
 ### 2. Get Base Sepolia ETH (Free)
 Since we're testing on Base Sepolia testnet, you'll need Base Sepolia ETH for gas fees. Here are free faucets:
 
-#### **Free Base Sepolia ETH Faucets:**
-- **Coinbase Developer Platform Faucet**: https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet
-- **thirdweb Faucet**: https://thirdweb.com/faucet/base-sepolia
-- **Superchain Faucet**: https://superchain.com/faucet
-- **Alchemy Faucet**: https://www.alchemy.com/faucets/base-sepolia-faucet
-- **Bware Labs Faucet**: https://faucet.bwarelabs.com/
-- **Chainstack Faucet**: https://faucet.chainstack.com/
-- **QuickNode Faucet**: https://faucet.quicknode.com/base-sepolia
-- **LearnWeb3 Faucet**: https://learnweb3.io/faucets/base-sepolia
-- **Ethereum Ecosystem Faucet**: https://base-sepolia-faucet.pk910.de/
+#### **Recommended Base Sepolia ETH Faucets:**
+- **Chainlink Faucet**: https://faucets.chain.link/base-sepolia
+- **QuickNode Faucet**: https://faucet.quicknode.com/base/sepolia
 
 #### **How to Get Free Base Sepolia ETH:**
-1. **Visit any faucet above**
+1. **Visit Chainlink Faucet**: https://faucets.chain.link/base-sepolia
 2. **Connect your wallet** (MetaMask recommended)
 3. **Enter your wallet address**
-4. **Complete any verification** (if required)
-5. **Receive 0.1-0.5 Base Sepolia ETH** (usually within minutes)
+4. **Complete verification** (if required)
+5. **Receive Base Sepolia ETH** (usually within minutes)
+
+#### **Alternative Faucet:**
+If Chainlink faucet is busy, try **QuickNode Faucet**: https://faucet.quicknode.com/base/sepolia
 
 #### **Important Notes:**
 - **Base Sepolia ETH has no real value** - it's only for testing
-- **Each faucet has daily limits** - try multiple faucets if needed
 - **Keep some ETH for gas fees** - transactions cost ~0.001-0.01 Base Sepolia ETH
 - **Faucets may require social media verification** - this is normal
 
