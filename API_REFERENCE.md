@@ -78,27 +78,116 @@ Jackpot Calc ← Toppings Award ← Referral Process ← Daily/Weekly Logic
 #### Core Functions
 
 ##### `enterDailyGame()`
-Enter the daily game by paying 1 VMF.
+Enter the daily game by paying 0.001 Base Sepolia ETH (for beta testing).
 
 ```solidity
-function enterDailyGame() external payable {
-    require(msg.value == DAILY_ENTRY_FEE, "Incorrect entry fee");
-    require(!paused, "Contract is paused");
-    require(!blacklisted[msg.sender], "Address is blacklisted");
+function enterDailyGame(string memory referralCode) external nonReentrant whenNotPaused notBlacklisted(msg.sender) rateLimited securityCheck payable {
+    // Fixed entry fee for Base Sepolia testing
+    uint256 requiredETH = 1 * 10**15; // 0.001 Base Sepolia ETH
     
-    // Transfer VMF tokens
-    vmfToken.transferFrom(msg.sender, address(this), DAILY_ENTRY_FEE);
+    require(msg.value >= requiredETH, "Insufficient Base Sepolia ETH balance");
+    require(players[msg.sender].dailyEntries < MAX_DAILY_ENTRIES, "Max daily entries reached");
     
-    // Record entry
-    dailyEntries[msg.sender][block.timestamp] = true;
+    // Update player data
+    players[msg.sender].dailyEntries = players[msg.sender].dailyEntries + 1;
+    players[msg.sender].lastEntryTime = block.timestamp;
+    players[msg.sender].totalToppings = players[msg.sender].totalToppings + DAILY_PLAY_REWARD;
     
-    emit DailyGameEntered(msg.sender, DAILY_ENTRY_FEE);
+    // Add player to current game
+    dailyPlayers[_gameId].push(msg.sender);
+    dailyPlayerCount[_gameId] = dailyPlayerCount[_gameId] + 1;
+    
+    // Update jackpot
+    currentDailyJackpot = currentDailyJackpot + msg.value;
+    
+    emit PlayerEntered(msg.sender, _gameId, msg.value);
+    emit JackpotUpdated(currentDailyJackpot, currentWeeklyJackpot);
+}
+```
+
+**Parameters:** 
+- `referralCode` (string): Optional referral code
+**Returns:** None
+**Events:** `PlayerEntered(address player, uint256 gameId, uint256 amount)`, `JackpotUpdated(uint256 dailyJackpot, uint256 weeklyJackpot)`
+
+##### `checkAndDistributeDailyPrizes()`
+Automatically check if daily game has ended and distribute prizes to 8 random winners.
+
+```solidity
+function checkAndDistributeDailyPrizes() external {
+    Game storage currentGame = games[_gameId];
+    if (!currentGame.isCompleted && block.timestamp >= currentGame.endTime) {
+        drawDailyWinners();
+    }
 }
 ```
 
 **Parameters:** None
 **Returns:** None
-**Events:** `DailyGameEntered(address player, uint256 amount)`
+**Events:** `DailyWinnersSelected(uint256 gameId, address[] winners, uint256 jackpot)`
+
+##### `drawDailyWinners()`
+Select 8 random winners and distribute daily jackpot prizes automatically.
+
+```solidity
+function drawDailyWinners() external {
+    Game storage currentGame = games[_gameId];
+    require(!currentGame.isCompleted, "Game already completed");
+    require(block.timestamp >= currentGame.endTime, "Game not finished");
+    
+    address[] memory winners = _selectWinners(DAILY_WINNERS_COUNT, currentGame.totalEntries);
+    uint256 prizePerWinner = currentDailyJackpot / DAILY_WINNERS_COUNT;
+    
+    // Distribute Base Sepolia ETH prizes automatically
+    for (uint256 i = 0; i < winners.length; i++) {
+        if (winners[i] != address(0)) {
+            (bool success, ) = winners[i].call{value: prizePerWinner}("");
+            require(success, "Prize transfer failed");
+        }
+    }
+    
+    currentGame.winners = winners;
+    currentGame.isCompleted = true;
+    currentGame.jackpotAmount = currentDailyJackpot;
+    
+    emit DailyWinnersSelected(_gameId, winners, currentDailyJackpot);
+    
+    // Start new game automatically
+    _startNewDailyGame();
+}
+```
+
+**Parameters:** None
+**Returns:** None
+**Events:** `DailyWinnersSelected(uint256 gameId, address[] winners, uint256 jackpot)`
+
+### Automatic Jackpot Payout System
+
+#### Winner Selection Process
+1. **Secure Randomness**: Uses FreeRandomness contract with multi-party commit-reveal scheme
+2. **Fair Selection**: Winners selected using cryptographic hash functions
+3. **Transparent**: All randomness generation is verifiable on-chain
+4. **Tamper-Proof**: No single party can influence winner selection
+
+#### Automatic Payout Flow
+1. **Game End Detection**: System automatically detects when daily/weekly games end
+2. **Winner Selection**: 8 daily winners or 10 weekly winners selected randomly
+3. **Prize Calculation**: Total jackpot divided equally among winners
+4. **Automatic Transfer**: Base Sepolia ETH sent directly to winners' wallets
+5. **Transaction Verification**: All transfers verified on-chain
+6. **New Game Start**: New game automatically starts after payout
+
+#### Payout Example
+- **Daily Jackpot**: 100 players × 0.001 ETH = 0.1 ETH total
+- **Prize per Winner**: 0.1 ETH ÷ 8 winners = 0.0125 ETH each
+- **Automatic Transfer**: Each winner receives 0.0125 Base Sepolia ETH directly to their wallet
+
+#### Security Features
+- ✅ **No Manual Intervention**: Fully automated system
+- ✅ **Secure Randomness**: Cryptographic random number generation
+- ✅ **On-chain Verification**: All payouts verified on blockchain
+- ✅ **Equal Distribution**: Fair prize distribution among winners
+- ✅ **Immediate Payout**: Winners receive prizes instantly when game ends
 
 ##### `processDailyPayout()`
 Process daily payout and select winners (owner only).

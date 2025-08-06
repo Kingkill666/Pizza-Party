@@ -33,6 +33,48 @@ npm run dev
 - **Winners**: 10 random weekly winners
 - **Deadline**: Monday 12pm PST
 
+## 🏆 Jackpot Winner Selection & Payout System
+
+### Daily Jackpot Winners
+- **Selection**: 8 random winners selected from all daily players
+- **Randomness**: Secure on-chain randomness using FreeRandomness contract
+- **Payout**: Automatic Base Sepolia ETH distribution to winners' wallets
+- **Timing**: Daily at 12pm PST when game ends
+- **Process**: Fully automated - no manual intervention required
+
+### Weekly Jackpot Winners  
+- **Selection**: 10 random winners selected from all weekly players
+- **Randomness**: Secure on-chain randomness using FreeRandomness contract
+- **Payout**: Automatic Base Sepolia ETH distribution to winners' wallets
+- **Timing**: Weekly on Monday at 12pm PST
+- **Process**: Fully automated - no manual intervention required
+
+### Random Selection Process
+1. **Secure Randomness**: Uses FreeRandomness contract with multi-party commit-reveal scheme
+2. **Fair Selection**: Winners selected using cryptographic hash functions
+3. **Transparent**: All randomness generation is verifiable on-chain
+4. **Tamper-Proof**: No single party can influence winner selection
+
+### Automatic Payout System
+1. **Game End Detection**: System automatically detects when daily/weekly games end
+2. **Winner Selection**: 8 daily winners or 10 weekly winners selected randomly
+3. **Prize Calculation**: Total jackpot divided equally among winners
+4. **Automatic Transfer**: Base Sepolia ETH sent directly to winners' wallets
+5. **Transaction Verification**: All transfers verified on-chain
+6. **New Game Start**: New game automatically starts after payout
+
+### Payout Example
+- **Daily Jackpot**: 100 players × 0.001 ETH = 0.1 ETH total
+- **Prize per Winner**: 0.1 ETH ÷ 8 winners = 0.0125 ETH each
+- **Automatic Transfer**: Each winner receives 0.0125 Base Sepolia ETH directly to their wallet
+
+### Security Features
+- ✅ **No Manual Intervention**: Fully automated system
+- ✅ **Secure Randomness**: Cryptographic random number generation
+- ✅ **On-chain Verification**: All payouts verified on blockchain
+- ✅ **Equal Distribution**: Fair prize distribution among winners
+- ✅ **Immediate Payout**: Winners receive prizes instantly when game ends
+
 ### Toppings System
 - **Daily Play**: 1 topping per day
 - **VMF Holdings**: 2 toppings per 10 VMF
