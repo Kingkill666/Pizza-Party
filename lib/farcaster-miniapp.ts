@@ -7,6 +7,12 @@ let sdk: any = null
 const loadSDK = async () => {
   if (sdk) return sdk
   
+  // Only try to load SDK in browser environment
+  if (typeof window === 'undefined') {
+    console.warn('⚠️ Farcaster SDK not available in server environment')
+    return null
+  }
+  
   try {
     const sdkModule = await import('@farcaster/miniapp-sdk')
     sdk = sdkModule.sdk
