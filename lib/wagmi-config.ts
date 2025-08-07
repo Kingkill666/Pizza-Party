@@ -2,10 +2,10 @@ import { createConfig, http } from 'wagmi'
 import { baseSepolia, base } from 'wagmi/chains'
 import { injected, metaMask, coinbaseWallet, walletConnect } from 'wagmi/connectors'
 
-// WalletConnect v2 configuration with fallback
-const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'default-project-id'
+// WalletConnect v2 configuration with proper project ID
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'c4f79cc821944d9680842e34466bfbd9'
 
-// Create wagmi config with error handling
+// Create wagmi config with mobile-optimized WalletConnect
 export const config = createConfig({
   chains: [baseSepolia, base], // Use Base Sepolia for beta testing
   connectors: [
@@ -15,15 +15,26 @@ export const config = createConfig({
       appName: 'Pizza Party',
       appLogoUrl: 'https://pizza-party.vmfcoin.com/logo.png',
     }),
-    // Only add WalletConnect if projectId is valid
-    ...(projectId !== 'default-project-id' ? [walletConnect({
+    // WalletConnect with mobile-optimized settings
+    walletConnect({
       projectId,
       showQrModal: true,
       qrModalOptions: {
         themeMode: 'dark',
         themeVariables: {
           '--wcm-z-index': '9999',
+          '--wcm-background-color': '#1a1a1a',
+          '--wcm-text-color': '#ffffff',
         },
+        explorerRecommendedWalletIds: [
+          'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', // MetaMask
+          '4622a2b2d6af1c738494851a64cb958218379dfe6ea44443ddf4bf4fd6f6bc71', // Coinbase Wallet
+          '19177a98252e07ddfc9af2083ba8e07ef627cb6103467ffa3c5e3e0b4c0d1d88', // Rainbow
+          '4622a2b2d6af1c738494851a64cb958218379dfe6ea44443ddf4bf4fd6f6bc71', // Trust Wallet
+        ],
+        explorerExcludedWalletIds: 'ALL',
+        privacyPolicyUrl: 'https://pizza-party.vmfcoin.com/privacy',
+        termsOfServiceUrl: 'https://pizza-party.vmfcoin.com/terms',
       },
       metadata: {
         name: 'Pizza Party',
@@ -31,7 +42,7 @@ export const config = createConfig({
         url: 'https://pizza-party.vmfcoin.com',
         icons: ['https://pizza-party.vmfcoin.com/icon.png'],
       },
-    })] : []),
+    }),
   ],
   transports: {
     [baseSepolia.id]: http('https://sepolia.base.org'),

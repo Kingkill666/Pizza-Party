@@ -162,7 +162,7 @@ export const getCurrentPageUrl = (): string => {
   return window.location.href
 }
 
-// Mobile wallet connection with direct wallet detection (no WalletConnect modal)
+// Mobile wallet connection with proper WalletConnect integration
 export const connectMobileWallet = async (walletId: string): Promise<any> => {
   const wallet = WALLETS.find((w) => w.id === walletId)
   if (!wallet) throw new Error("Wallet not found")
@@ -176,9 +176,9 @@ export const connectMobileWallet = async (walletId: string): Promise<any> => {
     return requestWalletConnection(walletId)
   }
 
-  // For mobile, use direct wallet detection and connection
+  // For mobile, use enhanced connection strategies
   if (isMobile()) {
-    // Strategy 1: Check if the specific wallet is available and connect directly
+    // Strategy 1: Try direct wallet detection and connection
     if (walletId === "metamask") {
       return await connectMetaMaskMobile()
     } else if (walletId === "coinbase") {
@@ -189,9 +189,62 @@ export const connectMobileWallet = async (walletId: string): Promise<any> => {
       return await connectTrustMobile()
     }
 
-    // Strategy 2: Try generic Web3 provider if available
-    if (window.ethereum) {
-      return await connectGenericWeb3Mobile()
+    // Strategy 2: Try WalletConnect with proper mobile handling
+    try {
+      console.log("📱 Attempting WalletConnect mobile connection...")
+      
+      // Import WalletConnect dynamically
+      const { EthereumProvider } = await import('@walletconnect/ethereum-provider')
+      
+      const provider = await EthereumProvider.init({
+        projectId: 'c4f79cc821944d9680842e34466bfbd9',
+        chains: [8453], // Base Sepolia
+        showQrModal: true,
+        qrModalOptions: {
+          themeMode: 'dark',
+          themeVariables: {
+            '--wcm-z-index': '9999',
+            '--wcm-background-color': '#1a1a1a',
+            '--wcm-text-color': '#ffffff',
+          },
+          explorerRecommendedWalletIds: [
+            'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', // MetaMask
+            '4622a2b2d6af1c738494851a64cb958218379dfe6ea44443ddf4bf4fd6f6bc71', // Coinbase Wallet
+            '19177a98252e07ddfc9af2083ba8e07ef627cb6103467ffa3c5e3e0b4c0d1d88', // Rainbow
+            '4622a2b2d6af1c738494851a64cb958218379dfe6ea44443ddf4bf4fd6f6bc71', // Trust Wallet
+          ],
+          explorerExcludedWalletIds: 'ALL',
+        },
+        metadata: {
+          name: 'Pizza Party',
+          description: 'Decentralized gaming platform on Base',
+          url: 'https://pizza-party.vmfcoin.com',
+          icons: ['https://pizza-party.vmfcoin.com/icon.png'],
+        },
+      })
+
+      // Connect using WalletConnect
+      await provider.connect()
+      
+      const accounts = await provider.request({ method: 'eth_accounts' })
+      const chainId = await provider.request({ method: 'eth_chainId' })
+      
+      if (accounts && accounts.length > 0) {
+        console.log(`✅ WalletConnect mobile connection successful: ${accounts[0]}`)
+        return {
+          accounts,
+          chainId,
+          provider: provider,
+          walletName: "WalletConnect"
+        }
+      }
+    } catch (error: any) {
+      console.log("❌ WalletConnect mobile connection failed:", error.message)
+      
+      // If WalletConnect fails, try direct wallet detection
+      if (window.ethereum) {
+        return await connectGenericWeb3Mobile()
+      }
     }
 
     // Strategy 3: Show wallet-specific instructions
