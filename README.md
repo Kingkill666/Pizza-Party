@@ -21,7 +21,7 @@ npm run dev
 ## 🎮 Game Overview
 
 ### Daily Game
-- **Entry Fee**: $1 VMF token
+- **Entry Fee**: 0.001 Base Sepolia ETH (for beta testing)
 - **Jackpot**: 100% of daily entry fees
 - **Winners**: 8 random daily winners
 - **Frequency**: One entry per wallet per day
@@ -75,11 +75,50 @@ npm run dev
 - ✅ **Equal Distribution**: Fair prize distribution among winners
 - ✅ **Immediate Payout**: Winners receive prizes instantly when game ends
 
-### Toppings System
-- **Daily Play**: 1 topping per day
-- **VMF Holdings**: 2 toppings per 10 VMF
-- **Referrals**: 2 toppings per accepted referral
-- **7-Day Streak**: 3 toppings bonus
+## 🔧 Technical Architecture
+
+### Smart Contract Security
+- **ReentrancyGuard**: Prevents reentrancy attacks on all payable functions
+- **Ownable**: Access control for admin functions
+- **Pausable**: Emergency pause functionality
+- **Input Validation**: Sanitized inputs with length and format checks
+- **Rate Limiting**: Cooldown periods to prevent abuse
+- **Gas Optimization**: Batch processing for efficient operations
+
+### Prize Distribution Logic
+```solidity
+// Daily jackpot distribution
+function drawDailyWinners() external {
+    address[] memory winners = _selectWinners(DAILY_WINNERS_COUNT, totalEntries);
+    uint256 prizePerWinner = currentDailyJackpot / DAILY_WINNERS_COUNT;
+    
+    // Automatic ETH transfer to winners
+    for (uint256 i = 0; i < winners.length; i++) {
+        (bool success, ) = winners[i].call{value: prizePerWinner}("");
+        require(success, "Prize transfer failed");
+    }
+}
+```
+
+### Event Tracking System
+The contract emits comprehensive events for monitoring:
+- `PlayerEntered`: When players enter the game
+- `DailyWinnersSelected`: When daily winners are chosen
+- `WeeklyWinnersSelected`: When weekly winners are chosen
+- `JackpotUpdated`: When jackpot amounts change
+- `ToppingsAwarded`: When players earn toppings
+
+### Wallet Integration
+- **Multi-Wallet Support**: MetaMask, Coinbase, Trust, Rainbow, Phantom
+- **Mobile Optimization**: Automatic mobile browser detection and deep linking
+- **Security Disconnect**: Complete localStorage cleanup and session management
+- **Network Switching**: Automatic Base Sepolia network detection and switching
+
+### Gas Efficiency Features
+- **Batch Processing**: Gas-optimized operations for multiple players
+- **Storage Pointers**: Efficient data access patterns
+- **Event Optimization**: Minimal event emissions for cost reduction
+- **Memory Management**: Proper cleanup of temporary data structures
 
 ## 🧪 Beta Testing on Base Sepolia
 
