@@ -21,6 +21,35 @@ export default function GamePage() {
   const [claimableToppings, setClaimableToppings] = useState(0)
   const [isClient, setIsClient] = useState(false)
 
+  // SSR PROTECTION: Check if we're on the client side
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // SSR SAFETY: Don't render anything until client-side to prevent SSR issues
+  if (!isClient) {
+    return (
+      <div className="min-h-screen p-4" style={{
+        backgroundImage: "url('/images/rotated-90-pizza-wallpaper.png')",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        backgroundPosition: "center center",
+      }}>
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white/90 backdrop-blur-sm border-4 border-red-800 rounded-3xl shadow-2xl p-6">
+            <h1 className="text-4xl text-center text-red-800 mb-6" style={{
+              fontFamily: '"Comic Sans MS", "Marker Felt", "Chalkduster", "Kalam", "Caveat", cursive',
+              fontWeight: "bold"
+            }}>
+              🍕 Pizza Party 🍕
+            </h1>
+            <p className="text-center text-gray-600">Loading game...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const { 
     address, 
     isConnected, 
@@ -34,11 +63,6 @@ export default function GamePage() {
 
   const errorHandler = ErrorHandler.getInstance()
   const securityMonitor = SecurityMonitor.getInstance()
-
-  // Check if we're on the client side
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
 
   // Safe localStorage access
   const getLocalStorageItem = (key: string): string | null => {
