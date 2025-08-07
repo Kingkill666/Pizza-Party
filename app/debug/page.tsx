@@ -14,6 +14,38 @@ export default function DebugPage() {
     fontWeight: "bold" as const,
   }
 
+  const [ethBalance, setEthBalance] = useState<string>("0")
+  const [isLoadingEth, setIsLoadingEth] = useState(false)
+  const [localStorageData, setLocalStorageData] = useState<{ [key: string]: string }>({})
+  const [isClient, setIsClient] = useState(false)
+
+  // SSR PROTECTION: Check if we're on the client side
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // SSR SAFETY: Don't render anything until client-side to prevent SSR issues
+  if (!isClient) {
+    return (
+      <div className="min-h-screen p-4" style={{
+        backgroundImage: "url('/images/rotated-90-pizza-wallpaper.png')",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        backgroundPosition: "center center",
+      }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white/90 backdrop-blur-sm border-4 border-blue-800 rounded-3xl shadow-2xl p-6">
+            <h1 className="text-3xl text-center text-blue-800 mb-6" style={customFontStyle}>
+              🛠️ Debug Console 🛠️
+            </h1>
+            <p className="text-center text-gray-600">Loading debug console...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // SSR SAFETY: Only call Wagmi hooks after client-side hydration
   const { 
     address, 
     isConnected, 
@@ -21,16 +53,6 @@ export default function DebugPage() {
     getBalance,
     formatAddress 
   } = useWagmiWallet()
-
-  const [ethBalance, setEthBalance] = useState<string>("0")
-  const [isLoadingEth, setIsLoadingEth] = useState(false)
-  const [localStorageData, setLocalStorageData] = useState<{ [key: string]: string }>({})
-  const [isClient, setIsClient] = useState(false)
-
-  // Check if we're on the client side
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
 
   // Safe localStorage access
   const getLocalStorageItem = (key: string): string | null => {
@@ -80,17 +102,6 @@ export default function DebugPage() {
     } finally {
       setIsLoadingEth(false)
     }
-  }
-
-  // Don't render anything until client-side
-  if (!isClient) {
-    return (
-      <div className="min-h-screen p-4 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-lg">Loading debug console...</p>
-        </div>
-      </div>
-    )
   }
 
   return (
