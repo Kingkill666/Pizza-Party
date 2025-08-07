@@ -162,7 +162,7 @@ export const getCurrentPageUrl = (): string => {
   return window.location.href
 }
 
-// Mobile wallet connection with in-app popups (no external redirects)
+// Mobile wallet connection with direct wallet detection (no WalletConnect modal)
 export const connectMobileWallet = async (walletId: string): Promise<any> => {
   const wallet = WALLETS.find((w) => w.id === walletId)
   if (!wallet) throw new Error("Wallet not found")
@@ -176,241 +176,224 @@ export const connectMobileWallet = async (walletId: string): Promise<any> => {
     return requestWalletConnection(walletId)
   }
 
-  // For mobile, use in-app connection strategies
+  // For mobile, use direct wallet detection and connection
   if (isMobile()) {
-    // Strategy 1: Try direct Web3 connection (works if user is in wallet browser)
-    if (window.ethereum) {
-      try {
-        console.log("📱 Attempting direct Web3 connection...")
-
-        const accounts = await window.ethereum.request({
-          method: "eth_requestAccounts",
-        })
-
-        if (accounts && accounts.length > 0) {
-          const chainId = await window.ethereum.request({
-            method: "eth_chainId",
-          })
-
-          console.log(`✅ Direct mobile connection successful: ${accounts[0]}`)
-          return {
-            accounts,
-            chainId,
-            provider: window.ethereum,
-          }
-        }
-      } catch (error: any) {
-        console.log("❌ Direct Web3 connection failed:", error.message)
-
-        // If user rejected, don't continue
-        if (error.code === 4001) {
-          throw new Error("Connection rejected. Please approve the connection in your wallet.")
-        }
-      }
-    }
-
-    // Strategy 2: Try WalletConnect v2 with in-app popup
-    try {
-      console.log("📱 Attempting WalletConnect v2 in-app connection...")
-      
-      // Create WalletConnect URI for in-app connection
-      const currentUrl = getCurrentPageUrl()
-      const wcUri = `wc:${Date.now()}@2?relay-protocol=irn&symKey=${generateSymKey()}&expiry=${Date.now() + 60000}`
-      
-      // Use WalletConnect's in-app connection method
-      const wcClient = await import('@walletconnect/ethereum-provider')
-      
-      if (wcClient && wcClient.default) {
-        const provider = await wcClient.default.init({
-          projectId: 'pizza-party-wc', // Use a simple project ID
-          chains: [8453], // Base network
-          showQrModal: true,
-          qrModalOptions: {
-            themeMode: 'dark',
-            themeVariables: {
-              '--w3m-z-index': '9999'
-            }
-          }
-        })
-
-        // Connect using WalletConnect's built-in modal
-        await provider.connect()
-        
-        const accounts = await provider.request({ method: 'eth_accounts' })
-        const chainId = await provider.request({ method: 'eth_chainId' })
-        
-        if (accounts && accounts.length > 0) {
-          console.log(`✅ WalletConnect in-app connection successful: ${accounts[0]}`)
-          return {
-            accounts,
-            chainId,
-            provider: provider
-          }
-        }
-      }
-    } catch (error: any) {
-      console.log("❌ WalletConnect in-app connection failed:", error.message)
-    }
-
-    // Strategy 3: Try MetaMask's in-app connection
+    // Strategy 1: Check if the specific wallet is available and connect directly
     if (walletId === "metamask") {
-      try {
-        console.log("📱 Attempting MetaMask in-app connection...")
-        
-        // Check if MetaMask is available
-        if (typeof window.ethereum !== 'undefined' && window.ethereum.isMetaMask) {
-          const accounts = await window.ethereum.request({
-            method: "eth_requestAccounts",
-          })
-
-          if (accounts && accounts.length > 0) {
-            const chainId = await window.ethereum.request({
-              method: "eth_chainId",
-            })
-
-            console.log(`✅ MetaMask in-app connection successful: ${accounts[0]}`)
-            return {
-              accounts,
-              chainId,
-              provider: window.ethereum,
-            }
-          }
-        }
-      } catch (error: any) {
-        console.log("❌ MetaMask in-app connection failed:", error.message)
-      }
+      return await connectMetaMaskMobile()
+    } else if (walletId === "coinbase") {
+      return await connectCoinbaseMobile()
+    } else if (walletId === "rainbow") {
+      return await connectRainbowMobile()
+    } else if (walletId === "trust") {
+      return await connectTrustMobile()
     }
 
-    // Strategy 4: Try Coinbase Wallet's in-app connection
-    if (walletId === "coinbase") {
-      try {
-        console.log("📱 Attempting Coinbase Wallet in-app connection...")
-        
-        // Check if Coinbase Wallet is available
-        if (typeof window.ethereum !== 'undefined' && window.ethereum.isCoinbaseWallet) {
-          const accounts = await window.ethereum.request({
-            method: "eth_requestAccounts",
-          })
-
-          if (accounts && accounts.length > 0) {
-            const chainId = await window.ethereum.request({
-              method: "eth_chainId",
-            })
-
-            console.log(`✅ Coinbase Wallet in-app connection successful: ${accounts[0]}`)
-            return {
-              accounts,
-              chainId,
-              provider: window.ethereum,
-            }
-          }
-        }
-      } catch (error: any) {
-        console.log("❌ Coinbase Wallet in-app connection failed:", error.message)
-      }
+    // Strategy 2: Try generic Web3 provider if available
+    if (window.ethereum) {
+      return await connectGenericWeb3Mobile()
     }
 
-    // Strategy 5: Try Rainbow Wallet's in-app connection
-    if (walletId === "rainbow") {
-      try {
-        console.log("📱 Attempting Rainbow Wallet in-app connection...")
-        
-        // Check if Rainbow Wallet is available
-        if (typeof window.ethereum !== 'undefined' && window.ethereum.isRainbow) {
-          const accounts = await window.ethereum.request({
-            method: "eth_requestAccounts",
-          })
-
-          if (accounts && accounts.length > 0) {
-            const chainId = await window.ethereum.request({
-              method: "eth_chainId",
-            })
-
-            console.log(`✅ Rainbow Wallet in-app connection successful: ${accounts[0]}`)
-            return {
-              accounts,
-              chainId,
-              provider: window.ethereum,
-            }
-          }
-        }
-      } catch (error: any) {
-        console.log("❌ Rainbow Wallet in-app connection failed:", error.message)
-      }
-    }
-
-    // Strategy 6: Try Trust Wallet's in-app connection
-    if (walletId === "trust") {
-      try {
-        console.log("📱 Attempting Trust Wallet in-app connection...")
-        
-        // Check if Trust Wallet is available
-        if (typeof window.ethereum !== 'undefined' && window.ethereum.isTrust) {
-          const accounts = await window.ethereum.request({
-            method: "eth_requestAccounts",
-          })
-
-          if (accounts && accounts.length > 0) {
-            const chainId = await window.ethereum.request({
-              method: "eth_chainId",
-            })
-
-            console.log(`✅ Trust Wallet in-app connection successful: ${accounts[0]}`)
-            return {
-              accounts,
-              chainId,
-              provider: window.ethereum,
-            }
-          }
-        }
-      } catch (error: any) {
-        console.log("❌ Trust Wallet in-app connection failed:", error.message)
-      }
-    }
-
-    // Strategy 7: Try any available Web3 provider
-    try {
-      console.log("📱 Attempting generic Web3 connection...")
-      
-      if (typeof window.ethereum !== 'undefined') {
-        const accounts = await window.ethereum.request({
-          method: "eth_requestAccounts",
-        })
-
-        if (accounts && accounts.length > 0) {
-          const chainId = await window.ethereum.request({
-            method: "eth_chainId",
-          })
-
-          console.log(`✅ Generic Web3 connection successful: ${accounts[0]}`)
-          return {
-            accounts,
-            chainId,
-            provider: window.ethereum,
-          }
-        }
-      }
-    } catch (error: any) {
-      console.log("❌ Generic Web3 connection failed:", error.message)
-    }
-
-    // Final fallback: Provide instructions for manual connection
-    const currentUrl = getCurrentPageUrl()
-    const instructions = `To connect your ${wallet.name} on mobile:
-
-1. Make sure your ${wallet.name} app is installed
-2. Open your ${wallet.name} app
-3. Go to the browser/dApp section
-4. Enter this URL: ${currentUrl}
-5. Try connecting again
-
-If you're using a different wallet, try opening this URL directly in your wallet's browser.`
-
-    throw new Error(instructions)
+    // Strategy 3: Show wallet-specific instructions
+    return await showWalletInstructions(walletId)
   }
 
-  // Desktop fallback (unchanged)
+  // Fallback to desktop connection
   return requestWalletConnection(walletId)
+}
+
+// MetaMask mobile connection
+const connectMetaMaskMobile = async (): Promise<any> => {
+  console.log("📱 Connecting to MetaMask mobile...")
+  
+  // Check if MetaMask is available
+  if (typeof window.ethereum !== 'undefined' && window.ethereum.isMetaMask) {
+    try {
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      })
+      
+      if (accounts && accounts.length > 0) {
+        const chainId = await window.ethereum.request({
+          method: "eth_chainId",
+        })
+        
+        console.log(`✅ MetaMask mobile connection successful: ${accounts[0]}`)
+        return {
+          accounts,
+          chainId,
+          provider: window.ethereum,
+          walletName: "MetaMask"
+        }
+      }
+    } catch (error: any) {
+      if (error.code === 4001) {
+        throw new Error("MetaMask connection rejected. Please approve in your wallet.")
+      }
+      throw new Error(`MetaMask connection failed: ${error.message}`)
+    }
+  }
+  
+  // MetaMask not available, show instructions
+  throw new Error("MetaMask not detected. Please install MetaMask or open in MetaMask browser.")
+}
+
+// Coinbase Wallet mobile connection
+const connectCoinbaseMobile = async (): Promise<any> => {
+  console.log("📱 Connecting to Coinbase Wallet mobile...")
+  
+  // Check if Coinbase Wallet is available
+  if (typeof window.ethereum !== 'undefined' && window.ethereum.isCoinbaseWallet) {
+    try {
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      })
+      
+      if (accounts && accounts.length > 0) {
+        const chainId = await window.ethereum.request({
+          method: "eth_chainId",
+        })
+        
+        console.log(`✅ Coinbase Wallet mobile connection successful: ${accounts[0]}`)
+        return {
+          accounts,
+          chainId,
+          provider: window.ethereum,
+          walletName: "Coinbase Wallet"
+        }
+      }
+    } catch (error: any) {
+      if (error.code === 4001) {
+        throw new Error("Coinbase Wallet connection rejected. Please approve in your wallet.")
+      }
+      throw new Error(`Coinbase Wallet connection failed: ${error.message}`)
+    }
+  }
+  
+  // Coinbase Wallet not available, show instructions
+  throw new Error("Coinbase Wallet not detected. Please install Coinbase Wallet or open in Coinbase browser.")
+}
+
+// Rainbow Wallet mobile connection
+const connectRainbowMobile = async (): Promise<any> => {
+  console.log("📱 Connecting to Rainbow Wallet mobile...")
+  
+  // Check if Rainbow Wallet is available
+  if (typeof window.ethereum !== 'undefined' && window.ethereum.isRainbow) {
+    try {
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      })
+      
+      if (accounts && accounts.length > 0) {
+        const chainId = await window.ethereum.request({
+          method: "eth_chainId",
+        })
+        
+        console.log(`✅ Rainbow Wallet mobile connection successful: ${accounts[0]}`)
+        return {
+          accounts,
+          chainId,
+          provider: window.ethereum,
+          walletName: "Rainbow Wallet"
+        }
+      }
+    } catch (error: any) {
+      if (error.code === 4001) {
+        throw new Error("Rainbow Wallet connection rejected. Please approve in your wallet.")
+      }
+      throw new Error(`Rainbow Wallet connection failed: ${error.message}`)
+    }
+  }
+  
+  // Rainbow Wallet not available, show instructions
+  throw new Error("Rainbow Wallet not detected. Please install Rainbow Wallet or open in Rainbow browser.")
+}
+
+// Trust Wallet mobile connection
+const connectTrustMobile = async (): Promise<any> => {
+  console.log("📱 Connecting to Trust Wallet mobile...")
+  
+  // Check if Trust Wallet is available
+  if (typeof window.ethereum !== 'undefined' && window.ethereum.isTrust) {
+    try {
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      })
+      
+      if (accounts && accounts.length > 0) {
+        const chainId = await window.ethereum.request({
+          method: "eth_chainId",
+        })
+        
+        console.log(`✅ Trust Wallet mobile connection successful: ${accounts[0]}`)
+        return {
+          accounts,
+          chainId,
+          provider: window.ethereum,
+          walletName: "Trust Wallet"
+        }
+      }
+    } catch (error: any) {
+      if (error.code === 4001) {
+        throw new Error("Trust Wallet connection rejected. Please approve in your wallet.")
+      }
+      throw new Error(`Trust Wallet connection failed: ${error.message}`)
+    }
+  }
+  
+  // Trust Wallet not available, show instructions
+  throw new Error("Trust Wallet not detected. Please install Trust Wallet or open in Trust browser.")
+}
+
+// Generic Web3 provider connection
+const connectGenericWeb3Mobile = async (): Promise<any> => {
+  console.log("📱 Connecting to generic Web3 provider...")
+  
+  try {
+    const accounts = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    })
+    
+    if (accounts && accounts.length > 0) {
+      const chainId = await window.ethereum.request({
+        method: "eth_chainId",
+      })
+      
+      console.log(`✅ Generic Web3 mobile connection successful: ${accounts[0]}`)
+      return {
+        accounts,
+        chainId,
+        provider: window.ethereum,
+        walletName: "Web3 Wallet"
+      }
+    }
+  } catch (error: any) {
+    if (error.code === 4001) {
+      throw new Error("Wallet connection rejected. Please approve in your wallet.")
+    }
+    throw new Error(`Wallet connection failed: ${error.message}`)
+  }
+  
+  throw new Error("No Web3 provider detected.")
+}
+
+// Show wallet-specific instructions
+const showWalletInstructions = async (walletId: string): Promise<any> => {
+  const wallet = WALLETS.find((w) => w.id === walletId)
+  if (!wallet) throw new Error("Wallet not found")
+  
+  console.log(`📱 Showing instructions for ${walletId}`)
+  
+  // Create a simple instruction modal
+  const instructions = {
+    metamask: "Please install MetaMask or open this site in MetaMask browser",
+    coinbase: "Please install Coinbase Wallet or open this site in Coinbase browser",
+    rainbow: "Please install Rainbow Wallet or open this site in Rainbow browser",
+    trust: "Please install Trust Wallet or open this site in Trust browser"
+  }
+  
+  throw new Error(instructions[walletId as keyof typeof instructions] || "Please install a compatible wallet.")
 }
 
 // Enhanced wallet provider detection for mobile
