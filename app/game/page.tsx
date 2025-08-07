@@ -883,29 +883,6 @@ export default function GamePage() {
                 </div>
               )}
 
-              {/* Mobile-specific instructions */}
-              {deviceInfo.isMobile && (
-                <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
-                  <h3 className="text-lg font-bold text-blue-800 mb-2" style={customFontStyle}>
-                    📱 Mobile Connection Tips
-                  </h3>
-                  <ul className="space-y-1 text-sm text-blue-700" style={customFontStyle}>
-                    <li>• Open your wallet app first</li>
-                    <li>• Use the browser inside your wallet app</li>
-                    <li>• Visit this page from within the wallet</li>
-                    <li>• Then try connecting</li>
-                  </ul>
-                  <div className="mt-3 p-2 bg-white rounded border">
-                    <p className="text-xs text-gray-600 mb-1" style={customFontStyle}>
-                      Current URL to copy:
-                    </p>
-                    <p className="text-xs font-mono text-gray-800 break-all">
-                      {typeof window !== "undefined" ? window.location.href : ""}
-                    </p>
-                  </div>
-                </div>
-              )}
-
               {/* Show all wallets on both mobile and desktop */}
               {WALLETS.map((wallet) => (
                 <Button
