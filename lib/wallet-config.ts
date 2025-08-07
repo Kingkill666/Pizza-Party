@@ -162,7 +162,7 @@ export const getCurrentPageUrl = (): string => {
   return window.location.href
 }
 
-// Improved mobile wallet connection - use WalletConnect and manual instructions
+// Enhanced mobile wallet connection with multiple strategies
 export const connectMobileWallet = async (walletId: string): Promise<any> => {
   const wallet = WALLETS.find((w) => w.id === walletId)
   if (!wallet) throw new Error("Wallet not found")
@@ -176,7 +176,7 @@ export const connectMobileWallet = async (walletId: string): Promise<any> => {
     return requestWalletConnection(walletId)
   }
 
-  // For mobile, use a completely different approach
+  // For mobile, use multiple connection strategies
   if (isMobile()) {
     // Strategy 1: Try direct Web3 connection (works if user is in wallet browser)
     if (window.ethereum) {
@@ -209,17 +209,101 @@ export const connectMobileWallet = async (walletId: string): Promise<any> => {
       }
     }
 
-    // Strategy 2: For mobile browsers, provide specific wallet instructions
-    const currentUrl = getCurrentPageUrl()
+    // Strategy 2: Try WalletConnect for mobile
+    try {
+      console.log("📱 Attempting WalletConnect connection...")
+      
+      // Create WalletConnect URI
+      const currentUrl = getCurrentPageUrl()
+      const wcUri = `wc:${Date.now()}@2?relay-protocol=irn&symKey=${generateSymKey()}&expiry=${Date.now() + 60000}`
+      
+      // Create deep links for different wallets
+      let deepLinkUrl = ""
+      switch (walletId) {
+        case "metamask":
+          deepLinkUrl = `https://metamask.app.link/dapp/${encodeURIComponent(currentUrl)}?uri=${encodeURIComponent(wcUri)}`
+          break
+        case "coinbase":
+          deepLinkUrl = `https://wallet.coinbase.com/dapp/${encodeURIComponent(currentUrl)}?uri=${encodeURIComponent(wcUri)}`
+          break
+        case "rainbow":
+          deepLinkUrl = `https://rainbow.me/dapp/${encodeURIComponent(currentUrl)}?uri=${encodeURIComponent(wcUri)}`
+          break
+        case "trust":
+          deepLinkUrl = `https://link.trustwallet.com/dapp/${encodeURIComponent(currentUrl)}?uri=${encodeURIComponent(wcUri)}`
+          break
+        default:
+          // Universal WalletConnect deep link
+          deepLinkUrl = `https://walletconnect.com/dapp/${encodeURIComponent(currentUrl)}?uri=${encodeURIComponent(wcUri)}`
+      }
 
-    // Create wallet-specific instructions
+      // Try to open the deep link
+      if (deepLinkUrl) {
+        console.log(`🔗 Opening deep link: ${deepLinkUrl}`)
+        
+        // Try to open in new tab/window first
+        const newWindow = window.open(deepLinkUrl, '_blank')
+        
+        if (!newWindow) {
+          // Fallback to direct navigation
+          window.location.href = deepLinkUrl
+        }
+        
+        return new Promise((resolve, reject) => {
+          // Give the user time to switch to the wallet app
+          setTimeout(() => {
+            reject(new Error("Please complete the connection in your wallet app and return to this page."))
+          }, 3000)
+        })
+      }
+    } catch (error: any) {
+      console.log("❌ WalletConnect deep linking failed:", error.message)
+    }
+
+    // Strategy 3: Try universal wallet deep linking
+    try {
+      console.log("📱 Attempting universal wallet deep linking...")
+      
+      const currentUrl = getCurrentPageUrl()
+      const universalLinks = [
+        `https://metamask.app.link/dapp/${encodeURIComponent(currentUrl)}`,
+        `https://wallet.coinbase.com/dapp/${encodeURIComponent(currentUrl)}`,
+        `https://rainbow.me/dapp/${encodeURIComponent(currentUrl)}`,
+        `https://link.trustwallet.com/dapp/${encodeURIComponent(currentUrl)}`,
+        `https://walletconnect.com/dapp/${encodeURIComponent(currentUrl)}`
+      ]
+
+      // Try each universal link
+      for (const link of universalLinks) {
+        try {
+          console.log(`🔗 Trying universal link: ${link}`)
+          window.location.href = link
+          break
+        } catch (error) {
+          console.log(`❌ Universal link failed: ${link}`)
+        }
+      }
+      
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          reject(new Error("Please complete the connection in your wallet app and return to this page."))
+        }, 2000)
+      })
+    } catch (error: any) {
+      console.log("❌ Universal deep linking failed:", error.message)
+    }
+
+    // Strategy 4: Provide manual instructions as final fallback
+    const currentUrl = getCurrentPageUrl()
     const instructions = `To connect your ${wallet.name}:
 
 1. Copy this URL: ${currentUrl}
 2. Open your ${wallet.name} app
 3. Go to the browser/dApp section
 4. Paste the URL and visit this page
-5. Try connecting again`
+5. Try connecting again
+
+If you're using a different wallet, try opening this URL directly in your wallet's browser.`
 
     throw new Error(instructions)
   }
@@ -569,4 +653,11 @@ export const ensureBaseSepoliaNetwork = async (provider?: any): Promise<void> =>
       }
     }
   }
+}
+
+// Helper function to generate a symmetric key for WalletConnect
+function generateSymKey(): string {
+  const array = new Uint8Array(32)
+  crypto.getRandomValues(array)
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')
 }
