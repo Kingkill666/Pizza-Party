@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { FarcasterWrapper } from "@/components/FarcasterWrapper"
+import { WagmiProvider } from "@/components/WagmiProvider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -36,9 +37,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <FarcasterWrapper>
-          {children}
-        </FarcasterWrapper>
+        <WagmiProvider>
+          <FarcasterWrapper>
+            {children}
+          </FarcasterWrapper>
+        </WagmiProvider>
       </body>
     </html>
   )
