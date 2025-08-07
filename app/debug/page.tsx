@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { ArrowLeft, Wallet, Coins, Network, RefreshCw } from "lucide-react"
-import { useWallet } from "@/hooks/useWallet"
-import { useVMFBalance } from "@/hooks/useVMFBalance"
+import { useWagmiWallet } from "@/hooks/useWagmiWallet"
 import { VMFDebugTool } from "@/components/VMFDebugTool"
 
 export default function DebugPage() {
@@ -15,8 +14,13 @@ export default function DebugPage() {
     fontWeight: "bold" as const,
   }
 
-  const { connection, isConnected, error: walletError, getBalance } = useWallet()
-  const { balance, formattedBalance, isLoading: vmfLoading, error: vmfError, refetch } = useVMFBalance()
+  const { 
+    address, 
+    isConnected, 
+    error: walletError, 
+    getBalance,
+    formatAddress 
+  } = useWagmiWallet()
 
   const [ethBalance, setEthBalance] = useState<string>("0")
   const [isLoadingEth, setIsLoadingEth] = useState(false)
@@ -65,7 +69,7 @@ export default function DebugPage() {
   }, [isClient])
 
   const fetchEthBalance = async () => {
-    if (!isConnected) return
+    if (!isConnected || !isClient) return
 
     setIsLoadingEth(true)
     try {
@@ -76,6 +80,17 @@ export default function DebugPage() {
     } finally {
       setIsLoadingEth(false)
     }
+  }
+
+  // Don't render anything until client-side
+  if (!isClient) {
+    return (
+      <div className="min-h-screen p-4 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg">Loading debug console...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -127,13 +142,13 @@ export default function DebugPage() {
                       <strong>Status:</strong> Connected ✅
                     </p>
                     <p className="text-sm text-green-800" style={customFontStyle}>
-                      <strong>Wallet:</strong> {connection?.walletName}
+                      <strong>Wallet:</strong> Connected Wallet
                     </p>
                     <p className="text-sm text-green-800 font-mono">
-                      <strong>Address:</strong> {connection?.address}
+                      <strong>Address:</strong> {address}
                     </p>
                     <p className="text-sm text-green-800" style={customFontStyle}>
-                      <strong>Chain ID:</strong> {connection?.chainId}
+                      <strong>Formatted:</strong> {formatAddress}
                     </p>
                   </div>
                 </div>
@@ -187,36 +202,15 @@ export default function DebugPage() {
                     VMF Token Balance
                   </h3>
                 </div>
-                <Button
-                  onClick={refetch}
-                  disabled={!isConnected || vmfLoading}
-                  size="sm"
-                  variant="outline"
-                  className="border-green-300 bg-transparent"
-                >
-                  <RefreshCw className={`h-4 w-4 ${vmfLoading ? "animate-spin" : ""}`} />
-                </Button>
               </div>
 
               <div className="bg-white p-3 rounded-lg">
-                {vmfLoading ? (
-                  <p className="text-lg font-bold text-green-800" style={customFontStyle}>
-                    Loading...
-                  </p>
-                ) : vmfError ? (
-                  <p className="text-sm text-red-600" style={customFontStyle}>
-                    Error: {vmfError}
-                  </p>
-                ) : (
-                  <div>
-                    <p className="text-lg font-bold text-green-800" style={customFontStyle}>
-                      {formattedBalance} VMF
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {balance >= 1 ? "✅ Sufficient for game entry" : "❌ Need at least $1 worth of VMF to play"}
-                    </p>
-                  </div>
-                )}
+                <p className="text-lg font-bold text-green-800" style={customFontStyle}>
+                  VMF Balance: Not Available
+                </p>
+                <p className="text-sm text-gray-600">
+                  VMF token functionality is not available in this version
+                </p>
               </div>
             </div>
 
@@ -230,28 +224,24 @@ export default function DebugPage() {
               </h3>
 
               <div className="bg-white p-3 rounded-lg">
-                {!isClient ? (
-                  <p className="text-sm text-gray-600">Loading client-side data...</p>
-                ) : (
-                  <div className="space-y-2 text-xs font-mono">
-                    <div>
-                      <strong>Wallet Connection:</strong>
-                      <pre className="mt-1 p-2 bg-gray-100 rounded text-xs overflow-x-auto">
-                        {getLocalStorageItem("wallet_connection") || "None"}
-                      </pre>
-                    </div>
-
-                    <div>
-                      <strong>Today's Entries:</strong>
-                      <pre className="mt-1 p-2 bg-gray-100 rounded text-xs overflow-x-auto">
-                        {Object.keys(localStorageData)
-                          .filter((key) => key.startsWith("pizza_entry_") && key.includes(new Date().toDateString()))
-                          .map((key) => `${key}: ${localStorageData[key]}`)
-                          .join("\n") || "None"}
-                      </pre>
-                    </div>
+                <div className="space-y-2 text-xs font-mono">
+                  <div>
+                    <strong>Wallet Connection:</strong>
+                    <pre className="mt-1 p-2 bg-gray-100 rounded text-xs overflow-x-auto">
+                      {getLocalStorageItem("wallet_connection") || "None"}
+                    </pre>
                   </div>
-                )}
+
+                  <div>
+                    <strong>Today's Entries:</strong>
+                    <pre className="mt-1 p-2 bg-gray-100 rounded text-xs overflow-x-auto">
+                      {Object.keys(localStorageData)
+                        .filter((key) => key.startsWith("pizza_entry_") && key.includes(new Date().toDateString()))
+                        .map((key) => `${key}: ${localStorageData[key]}`)
+                        .join("\n") || "None"}
+                    </pre>
+                  </div>
+                </div>
               </div>
             </div>
 
