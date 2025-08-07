@@ -1,20 +1,21 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
-import { useAccount, useConnect, useDisconnect, useNetwork, useSwitchNetwork } from 'wagmi'
+import { useAccount, useConnect, useDisconnect, useChainId, useSwitchChain } from 'wagmi'
 import { config, persistentConnection, refreshTokenManager, isMobile, isInWalletBrowser, switchToBaseSepolia, handleConnectionError } from '@/lib/wagmi-config'
+import { baseSepolia } from 'wagmi/chains'
 
 export const useWagmiWallet = () => {
   const [isConnecting, setIsConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [sessionToken, setSessionToken] = useState<string | null>(null)
 
-  // Wagmi hooks
+  // Wagmi v2 hooks
   const { address, isConnected, connector } = useAccount()
-  const { connect, connectors, isLoading: isConnectLoading } = useConnect()
+  const { connect, connectors, isPending: isConnectLoading } = useConnect()
   const { disconnect } = useDisconnect()
-  const { chain } = useNetwork()
-  const { switchNetwork } = useSwitchNetwork()
+  const chainId = useChainId()
+  const { switchChain } = useSwitchChain()
 
   // Load persistent connection on mount
   useEffect(() => {
@@ -27,11 +28,11 @@ export const useWagmiWallet = () => {
 
   // Handle network switching
   useEffect(() => {
-    if (isConnected && chain && chain.id !== 84532) { // Base Sepolia
+    if (isConnected && chainId !== baseSepolia.id) {
       console.log('🔄 Switching to Base Sepolia network...')
-      switchNetwork?.(84532)
+      switchChain({ chainId: baseSepolia.id })
     }
-  }, [isConnected, chain, switchNetwork])
+  }, [isConnected, chainId, switchChain])
 
   // Enhanced connect function with mobile support
   const connectWallet = useCallback(async (connectorId: string) => {
@@ -48,18 +49,20 @@ export const useWagmiWallet = () => {
       console.log(`📱 Mobile device: ${isMobile()}`)
       console.log(`🏦 In wallet browser: ${isInWalletBrowser()}`)
 
-      // Connect using Wagmi
+      // Connect using Wagmi v2
       await connect({ connector: targetConnector })
 
       // Switch to Base Sepolia if needed
-      if (chain?.id !== 84532) {
-        await switchToBaseSepolia(targetConnector)
+      if (chainId !== baseSepolia.id) {
+        await switchChain({ chainId: baseSepolia.id })
       }
 
       // Generate session token
       const token = generateSessionToken(address)
       setSessionToken(token)
-      refreshTokenManager.set(address!, token)
+      if (address) {
+        refreshTokenManager.set(address, token)
+      }
 
       // Save persistent connection
       persistentConnection.save({
@@ -80,7 +83,7 @@ export const useWagmiWallet = () => {
     } finally {
       setIsConnecting(false)
     }
-  }, [connect, connectors, chain, address])
+  }, [connect, connectors, chainId, address, switchChain])
 
   // Enhanced disconnect function with cleanup
   const disconnectWallet = useCallback(() => {
@@ -121,8 +124,13 @@ export const useWagmiWallet = () => {
     if (!address) return '0'
 
     try {
-      const balance = await config.publicClient.getBalance({ address })
-      return (Number(balance) / Math.pow(10, 18)).toString()
+      // Use wagmi's built-in balance hook or fetch manually
+      const balance = await fetch(`https://sepolia.base.org/api?module=account&action=balance&address=${address}`)
+        .then(res => res.json())
+        .then(data => data.result)
+      
+      const balanceInEth = Number(balance) / Math.pow(10, 18)
+      return balanceInEth.toString()
     } catch (error) {
       console.error('Error getting balance:', error)
       return '0'
@@ -214,8 +222,8 @@ export const useWagmiWallet = () => {
     refreshSession,
     
     // Network state
-    chain,
-    isCorrectNetwork: chain?.id === 84532,
+    chainId,
+    isCorrectNetwork: chainId === baseSepolia.id,
     
     // Available connectors
     connectors: getAvailableConnectors(),

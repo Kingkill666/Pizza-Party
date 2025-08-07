@@ -1,109 +1,41 @@
-import { createConfig, configureChains } from 'wagmi'
-import { publicProvider } from 'wagmi/providers/public'
-import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
-import { CoinbaseWalletConnector } from 'wagmi/connectors/coinbaseWallet'
-import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
-import { InjectedConnector } from 'wagmi/connectors/injected'
-
-// Base Sepolia testnet configuration
-export const baseSepolia = {
-  id: 84532,
-  name: 'Base Sepolia',
-  network: 'base-sepolia',
-  nativeCurrency: {
-    decimals: 18,
-    name: 'Ethereum',
-    symbol: 'ETH',
-  },
-  rpcUrls: {
-    public: { http: ['https://sepolia.base.org'] },
-    default: { http: ['https://sepolia.base.org'] },
-  },
-  blockExplorers: {
-    etherscan: { name: 'Base Sepolia', url: 'https://sepolia.basescan.org' },
-    default: { name: 'Base Sepolia', url: 'https://sepolia.basescan.org' },
-  },
-  testnet: true,
-} as const
-
-// Base mainnet configuration
-export const base = {
-  id: 8453,
-  name: 'Base',
-  network: 'base',
-  nativeCurrency: {
-    decimals: 18,
-    name: 'Ethereum',
-    symbol: 'ETH',
-  },
-  rpcUrls: {
-    public: { http: ['https://mainnet.base.org'] },
-    default: { http: ['https://mainnet.base.org'] },
-  },
-  blockExplorers: {
-    etherscan: { name: 'Base', url: 'https://basescan.org' },
-    default: { name: 'Base', url: 'https://basescan.org' },
-  },
-} as const
-
-// Configure chains & providers
-export const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [baseSepolia, base], // Use Base Sepolia for beta testing
-  [
-    publicProvider(),
-  ],
-)
+import { createConfig, http } from 'wagmi'
+import { baseSepolia, base } from 'wagmi/chains'
+import { injected, metaMask, coinbaseWallet, walletConnect } from 'wagmi/connectors'
 
 // WalletConnect v2 configuration
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'your-project-id'
 
 // Create wagmi config
 export const config = createConfig({
-  autoConnect: true,
+  chains: [baseSepolia, base], // Use Base Sepolia for beta testing
   connectors: [
-    new MetaMaskConnector({ 
-      chains,
-      options: {
-        shimDisconnect: true,
-        UNSTABLE_shimOnConnectSelectAccount: true,
-      },
+    injected(),
+    metaMask(),
+    coinbaseWallet({
+      appName: 'Pizza Party',
+      appLogoUrl: 'https://your-domain.com/logo.png',
     }),
-    new CoinbaseWalletConnector({
-      chains,
-      options: {
-        appName: 'Pizza Party',
-        appLogoUrl: 'https://your-domain.com/logo.png',
-      },
-    }),
-    new WalletConnectConnector({
-      chains,
-      options: {
-        projectId,
-        showQrModal: true,
-        qrModalOptions: {
-          themeMode: 'dark',
-          themeVariables: {
-            '--w3m-z-index': '9999',
-          },
-        },
-        metadata: {
-          name: 'Pizza Party',
-          description: 'Decentralized gaming platform on Base',
-          url: 'https://your-domain.com',
-          icons: ['https://your-domain.com/icon.png'],
+    walletConnect({
+      projectId,
+      showQrModal: true,
+      qrModalOptions: {
+        themeMode: 'dark',
+        themeVariables: {
+          '--w3m-z-index': '9999',
         },
       },
-    }),
-    new InjectedConnector({
-      chains,
-      options: {
-        name: 'Injected',
-        shimDisconnect: true,
+      metadata: {
+        name: 'Pizza Party',
+        description: 'Decentralized gaming platform on Base',
+        url: 'https://your-domain.com',
+        icons: ['https://your-domain.com/icon.png'],
       },
     }),
   ],
-  publicClient,
-  webSocketPublicClient,
+  transports: {
+    [baseSepolia.id]: http('https://sepolia.base.org'),
+    [base.id]: http('https://mainnet.base.org'),
+  },
 })
 
 // Session management utilities
@@ -254,9 +186,10 @@ export const refreshTokenManager = {
     }
   },
   
-  refresh: async (address: string) => {
+  refresh: async (address: string | undefined) => {
     // Implement token refresh logic here
     // This would typically call your backend to get a new token
+    if (!address) return null
     console.log('Refreshing token for address:', address)
     return null
   },

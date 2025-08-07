@@ -57,6 +57,245 @@ contract SecureReferralSystem is ReentrancyGuard, Ownable, Pausable {
 }
 ```
 
+## 🎯 Prize Pool Tracking & Event Emitters
+
+### Complete Event Tracking System
+
+#### Player Entry & Contribution Events
+```solidity
+// Player enters daily game with ETH contribution
+event PlayerEntered(address indexed player, uint256 indexed gameId, uint256 amount);
+
+// Jackpot entry added to weekly pool
+event JackpotEntryAdded(address indexed player, uint256 amount);
+
+// Jackpot amounts updated
+event JackpotUpdated(uint256 dailyJackpot, uint256 weeklyJackpot);
+
+// Atomic jackpot updates with state tracking
+event JackpotUpdatedAtomic(uint256 indexed gameId, uint256 oldAmount, uint256 newAmount, uint256 nonce);
+```
+
+#### Winner Selection Events
+```solidity
+// Daily winners selected and prizes distributed
+event DailyWinnersSelected(uint256 gameId, address[] winners, uint256 jackpot);
+
+// Weekly winners selected and prizes distributed
+event WeeklyWinnersSelected(uint256 gameId, address[] winners, uint256 jackpot);
+
+// Winners selected with specific randomness
+event WinnersSelectedWithRandomness(uint256 gameId, uint256 randomNumber, address[] winners);
+
+// Randomness requested for winner selection
+event RandomnessRequested(uint256 gameId, uint256 randomnessRoundId);
+```
+
+#### Reward & Toppings Events
+```solidity
+// Toppings awarded to players
+event ToppingsAwarded(address indexed player, uint256 amount, string reason);
+
+// Referral system events
+event ReferralCreated(address indexed player, string code);
+event ReferralProcessed(string code, address player);
+
+// First order reward claimed
+event FirstOrderRewardClaimed(address indexed player, uint256 amount);
+
+// Loyalty points awarded
+event LoyaltyPointsAwarded(address indexed player, uint256 points, string reason);
+
+// Weekly challenge completed
+event WeeklyChallengeCompleted(address indexed player, uint256 challengeId, uint256 reward);
+```
+
+#### Security & Administrative Events
+```solidity
+// Player blacklist status changed
+event PlayerBlacklisted(address indexed player, bool blacklisted);
+
+// Emergency pause activated/deactivated
+event EmergencyPause(bool paused);
+
+// Game state unlocked
+event GameStateUnlocked(uint256 indexed gameId, address indexed sender);
+
+// Batch processing completed
+event BatchPlayersProcessed(uint256 indexed blockNumber, uint256 totalProcessed, uint256 totalPlayers);
+
+// Jackpot update cooldown set
+event JackpotUpdateCooldownSet(uint256 cooldown);
+```
+
+### Prize Pool Contribution Tracking
+
+#### Daily Jackpot Contributions
+```solidity
+function enterDailyGame(string memory referralCode) external nonReentrant whenNotPaused notBlacklisted(msg.sender) rateLimited securityCheck payable {
+    // Fixed entry fee for Base Sepolia testing
+    uint256 requiredETH = 1 * 10**15; // 0.001 Base Sepolia ETH
+    
+    require(msg.value >= requiredETH, "Insufficient Base Sepolia ETH balance");
+    
+    // Update jackpot with player contribution
+    currentDailyJackpot = currentDailyJackpot + msg.value;
+    
+    // Add player to current game tracking
+    dailyPlayers[_gameId].push(msg.sender);
+    dailyPlayerCount[_gameId] = dailyPlayerCount[_gameId] + 1;
+    
+    // Emit events for tracking
+    emit PlayerEntered(msg.sender, _gameId, msg.value);
+    emit JackpotUpdated(currentDailyJackpot, currentWeeklyJackpot);
+}
+```
+
+#### Weekly Jackpot Contributions
+```solidity
+function addJackpotEntry() external nonReentrant whenNotPaused notBlacklisted(msg.sender) payable {
+    require(msg.value >= JACKPOT_ENTRY_COST, "Insufficient Base Sepolia ETH for jackpot entry");
+    
+    // Update weekly jackpot with multiplier
+    currentWeeklyJackpot = currentWeeklyJackpot + msg.value * JACKPOT_MULTIPLIER;
+    
+    // Track player's jackpot entries
+    players[msg.sender].jackpotEntries = players[msg.sender].jackpotEntries + 1;
+    
+    // Emit event for tracking
+    emit JackpotEntryAdded(msg.sender, msg.value);
+}
+```
+
+### Winner Selection & Prize Distribution
+
+#### Daily Winner Selection
+```solidity
+function drawDailyWinners() external onlyOwner {
+    Game storage currentGame = games[_gameId];
+    require(!currentGame.isCompleted, "Game already completed");
+    require(block.timestamp >= currentGame.endTime, "Game not finished");
+    
+    // Select 8 random winners using secure randomness
+    address[] memory winners = _selectWinners(DAILY_WINNERS_COUNT, currentGame.totalEntries);
+    uint256 prizePerWinner = currentDailyJackpot / DAILY_WINNERS_COUNT;
+    
+    // Distribute Base Sepolia ETH prizes automatically
+    for (uint256 i = 0; i < winners.length; i++) {
+        if (winners[i] != address(0)) {
+            (bool success, ) = winners[i].call{value: prizePerWinner}("");
+            require(success, "Prize transfer failed");
+        }
+    }
+    
+    // Update game state
+    currentGame.winners = winners;
+    currentGame.isCompleted = true;
+    currentGame.jackpotAmount = currentDailyJackpot;
+    
+    // Emit winner selection event
+    emit DailyWinnersSelected(_gameId, winners, currentDailyJackpot);
+    
+    // Start new game automatically
+    _startNewDailyGame();
+}
+```
+
+#### Weekly Winner Selection
+```solidity
+function drawWeeklyWinners() external onlyOwner {
+    require(block.timestamp >= lastWeeklyDraw + 7 days, "Weekly draw not ready");
+    
+    // Select 10 random winners
+    address[] memory winners = _selectWeeklyWinners();
+    uint256 prizePerWinner = currentWeeklyJackpot / WEEKLY_WINNERS_COUNT;
+    
+    // Distribute Base Sepolia ETH prizes automatically
+    for (uint256 i = 0; i < winners.length; i++) {
+        if (winners[i] != address(0)) {
+            (bool success, ) = winners[i].call{value: prizePerWinner}("");
+            require(success, "Prize transfer failed");
+        }
+    }
+    
+    // Emit winner selection event
+    emit WeeklyWinnersSelected(_gameId, winners, currentWeeklyJackpot);
+    
+    // Reset weekly jackpot and toppings
+    _resetWeeklyGame();
+}
+```
+
+### Secure Randomness Implementation
+
+#### Multi-Source Randomness Generation
+```solidity
+function generateSecureRandomness() external whenNotPaused returns (uint256) {
+    require(block.timestamp >= lastEntropyUpdate + 1 hours, "Entropy update too frequent");
+    
+    // Combine multiple entropy sources
+    bytes32 seed = keccak256(
+        abi.encodePacked(
+            block.timestamp,
+            block.prevrandao,
+            blockhash(block.number - 1),
+            blockhash(block.number - 2),
+            msg.sender,
+            entropyRoundId,
+            randomnessContract.getCurrentRandomnessRound()
+        )
+    );
+    
+    // Add user-contributed entropy
+    for (uint256 i = 0; i < entropyContributors[entropyRoundId].length; i++) {
+        seed = keccak256(abi.encodePacked(seed, entropyContributors[entropyRoundId][i]));
+    }
+    
+    randomnessSeeds[entropyRoundId] = seed;
+    lastEntropyUpdate = block.timestamp;
+    entropyRoundId = entropyRoundId + 1;
+    
+    emit SecureRandomnessGenerated(entropyRoundId - 1, seed);
+    
+    return uint256(seed);
+}
+```
+
+#### Winner Selection with Secure Randomness
+```solidity
+function _selectWinners(uint256 winnerCount, uint256 gameId) internal view returns (address[] memory) {
+    address[] memory winners = new address[](winnerCount);
+    
+    Game storage game = games[gameId];
+    if (game.randomnessRoundId == 0) {
+        return winners; // No randomness round assigned
+    }
+    
+    // Get the secure random number from our free randomness contract
+    uint256 randomNumber = randomnessContract.getFinalRandomNumber(game.randomnessRoundId);
+    
+    if (randomNumber == 0) {
+        return winners; // Randomness not finalized yet
+    }
+    
+    // Use the secure random number to select winners
+    address[] storage players = dailyPlayers[gameId];
+    uint256 totalPlayers = players.length;
+    
+    if (totalPlayers == 0) {
+        return winners;
+    }
+    
+    // Select winners using the secure random number
+    for (uint256 i = 0; i < winnerCount && i < totalPlayers; i++) {
+        uint256 randomIndex = uint256(keccak256(abi.encodePacked(randomNumber, i))) % totalPlayers;
+        winners[i] = players[randomIndex];
+    }
+    
+    return winners;
+}
+```
+
 ### Gas Efficiency Analysis
 
 #### Batch Processing Implementation
@@ -190,69 +429,6 @@ function setPlayerBlacklist(address player, bool blacklisted) external onlyOwner
     blacklistedAddresses[player] = blacklisted;
     players[player].isBlacklisted = blacklisted;
     emit PlayerBlacklisted(player, blacklisted);
-}
-```
-
-### Randomness Security
-
-#### Multi-Party Commit-Reveal Scheme
-```solidity
-function generateSecureRandomness() external whenNotPaused returns (uint256) {
-    // Combine multiple entropy sources
-    bytes32 seed = keccak256(
-        abi.encodePacked(
-            block.timestamp,
-            block.prevrandao,
-            blockhash(block.number - 1),
-            blockhash(block.number - 2),
-            msg.sender,
-            entropyRoundId,
-            randomnessContract.getCurrentRandomnessRound()
-        )
-    );
-    
-    // Add user-contributed entropy
-    for (uint256 i = 0; i < entropyContributors[entropyRoundId].length; i++) {
-        seed = keccak256(abi.encodePacked(seed, entropyContributors[entropyRoundId][i]));
-    }
-    
-    return uint256(seed);
-}
-```
-
-### Prize Distribution Security
-
-#### Atomic Operations
-```solidity
-function drawDailyWinners() external {
-    // Atomic winner selection and distribution
-    address[] memory winners = _selectWinners(DAILY_WINNERS_COUNT, currentGame.totalEntries);
-    uint256 prizePerWinner = currentDailyJackpot / DAILY_WINNERS_COUNT;
-    
-    // Atomic prize distribution
-    for (uint256 i = 0; i < winners.length; i++) {
-        if (winners[i] != address(0)) {
-            (bool success, ) = winners[i].call{value: prizePerWinner}("");
-            require(success, "Prize transfer failed");
-        }
-    }
-}
-```
-
-#### State Locking
-```solidity
-function updateJackpotAtomic(uint256 gameId, uint256 newAmount, bytes32 expectedStateHash) external onlyRole(OPERATOR_ROLE) whenNotPaused {
-    require(!gameStateLocked[gameId], "Game state is locked");
-    
-    // Lock the game state
-    gameStateLocked[gameId] = true;
-    
-    // Update jackpot with atomic operation
-    uint256 oldAmount = currentDailyJackpot;
-    currentDailyJackpot = newAmount;
-    
-    // Unlock after successful update
-    gameStateLocked[gameId] = false;
 }
 ```
 
