@@ -5,7 +5,9 @@ import "./globals.css"
 import { FarcasterWrapper } from "@/components/FarcasterWrapper"
 import { WagmiProvider } from "@/components/WagmiProvider"
 
-// DEPLOYMENT MARKER: Force Vercel to use latest commit 64ffd58 - URGENT FIX
+// 🚨 URGENT DEPLOYMENT MARKER: Force Vercel to use commit 997ff9e - ALL SSR FIXES INCLUDED
+// This commit includes: Debug page SSR protection, Admin page SSR protection, Game page SSR protection
+// WagmiProvider SSR protection, QueryClient protection, indexedDB protection
 
 const inter = Inter({ subsets: ["latin"] })
 

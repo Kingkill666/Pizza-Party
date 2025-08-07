@@ -8,12 +8,14 @@
   ],
   "build": {
     "env": {
-      "NEXT_PUBLIC_DEPLOYMENT_VERSION": "64ffd58"
+      "NEXT_PUBLIC_DEPLOYMENT_VERSION": "997ff9e",
+      "NEXT_PUBLIC_FORCE_DEPLOYMENT": "true"
     }
   },
   "functions": {
     "app/**/*.tsx": {
       "maxDuration": 30
     }
-  }
+  },
+  "regions": ["iad1"]
 } 
