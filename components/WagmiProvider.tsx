@@ -1,4 +1,5 @@
 "use client"
+// DEPLOYMENT MARKER: Enhanced SSR Protection - Commit 5ff1c13
 
 import { useState, useEffect } from 'react'
 import { WagmiConfig } from 'wagmi'
@@ -26,7 +27,7 @@ export const WagmiProvider = ({ children }: WagmiProviderProps) => {
     setIsClient(true)
   }, [])
 
-  // Don't render anything until client-side to prevent SSR issues
+  // SSR SAFETY: Don't render anything until client-side to prevent SSR issues
   if (!isClient) {
     return (
       <div style={{ visibility: 'hidden' }}>
@@ -35,6 +36,7 @@ export const WagmiProvider = ({ children }: WagmiProviderProps) => {
     )
   }
 
+  // SSR SAFETY: Only render Wagmi components after client-side hydration
   return (
     <QueryClientProvider client={queryClient}>
       <WagmiConfig config={config}>
