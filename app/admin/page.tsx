@@ -40,8 +40,6 @@ export default function AdminPage() {
   })
   const [isClient, setIsClient] = useState(false)
 
-  const { isConnected, address } = useWagmiWallet()
-
   // SSR PROTECTION: Check if we're on the client side
   useEffect(() => {
     setIsClient(true)
@@ -67,6 +65,9 @@ export default function AdminPage() {
       </div>
     )
   }
+
+  // SSR SAFETY: Only call Wagmi hooks after client-side hydration
+  const { isConnected, address } = useWagmiWallet()
 
   // Safe localStorage access
   const getLocalStorageItem = (key: string): string | null => {
