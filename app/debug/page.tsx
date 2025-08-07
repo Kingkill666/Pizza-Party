@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
@@ -20,6 +20,49 @@ export default function DebugPage() {
 
   const [ethBalance, setEthBalance] = useState<string>("0")
   const [isLoadingEth, setIsLoadingEth] = useState(false)
+  const [localStorageData, setLocalStorageData] = useState<{ [key: string]: string }>({})
+  const [isClient, setIsClient] = useState(false)
+
+  // Check if we're on the client side
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // Safe localStorage access
+  const getLocalStorageItem = (key: string): string | null => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return localStorage.getItem(key)
+    }
+    return null
+  }
+
+  const getAllLocalStorageData = () => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const data: { [key: string]: string } = {}
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key) {
+          data[key] = localStorage.getItem(key) || ''
+        }
+      }
+      return data
+    }
+    return {}
+  }
+
+  const clearLocalStorage = () => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.clear()
+      window.location.reload()
+    }
+  }
+
+  // Update localStorage data when component mounts
+  useEffect(() => {
+    if (isClient) {
+      setLocalStorageData(getAllLocalStorageData())
+    }
+  }, [isClient])
 
   const fetchEthBalance = async () => {
     if (!isConnected) return
@@ -187,37 +230,39 @@ export default function DebugPage() {
               </h3>
 
               <div className="bg-white p-3 rounded-lg">
-                <div className="space-y-2 text-xs font-mono">
-                  <div>
-                    <strong>Wallet Connection:</strong>
-                    <pre className="mt-1 p-2 bg-gray-100 rounded text-xs overflow-x-auto">
-                      {localStorage.getItem("wallet_connection") || "None"}
-                    </pre>
-                  </div>
+                {!isClient ? (
+                  <p className="text-sm text-gray-600">Loading client-side data...</p>
+                ) : (
+                  <div className="space-y-2 text-xs font-mono">
+                    <div>
+                      <strong>Wallet Connection:</strong>
+                      <pre className="mt-1 p-2 bg-gray-100 rounded text-xs overflow-x-auto">
+                        {getLocalStorageItem("wallet_connection") || "None"}
+                      </pre>
+                    </div>
 
-                  <div>
-                    <strong>Today's Entries:</strong>
-                    <pre className="mt-1 p-2 bg-gray-100 rounded text-xs overflow-x-auto">
-                      {Object.keys(localStorage)
-                        .filter((key) => key.startsWith("pizza_entry_") && key.includes(new Date().toDateString()))
-                        .map((key) => `${key}: ${localStorage.getItem(key)}`)
-                        .join("\n") || "None"}
-                    </pre>
+                    <div>
+                      <strong>Today's Entries:</strong>
+                      <pre className="mt-1 p-2 bg-gray-100 rounded text-xs overflow-x-auto">
+                        {Object.keys(localStorageData)
+                          .filter((key) => key.startsWith("pizza_entry_") && key.includes(new Date().toDateString()))
+                          .map((key) => `${key}: ${localStorageData[key]}`)
+                          .join("\n") || "None"}
+                      </pre>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
             {/* Clear Data Button */}
             <div className="text-center">
               <Button
-                onClick={() => {
-                  localStorage.clear()
-                  window.location.reload()
-                }}
+                onClick={clearLocalStorage}
                 variant="destructive"
                 className="bg-red-600 hover:bg-red-700"
                 style={customFontStyle}
+                disabled={!isClient}
               >
                 🗑️ Clear All Data & Refresh
               </Button>

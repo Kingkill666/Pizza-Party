@@ -9,10 +9,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Explicitly disable Turbopack
-  experimental: {
-    turbo: false,
-  },
   // Optimize for development
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,13 +16,39 @@ export function VMFDebugTool() {
   const { connection, isConnected } = useWallet()
   const [customBalance, setCustomBalance] = useState<string>("")
   const [isUpdating, setIsUpdating] = useState(false)
+  const [isClient, setIsClient] = useState(false)
+
+  // Check if we're on the client side
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // Safe localStorage access
+  const getLocalStorageItem = (key: string): string | null => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return localStorage.getItem(key)
+    }
+    return null
+  }
+
+  const setLocalStorageItem = (key: string, value: string): void => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem(key, value)
+    }
+  }
+
+  const removeLocalStorageItem = (key: string): void => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.removeItem(key)
+    }
+  }
 
   const getCurrentSimulatedBalance = (): number => {
-    if (!isConnected || !connection?.address) return 0
+    if (!isConnected || !connection?.address || !isClient) return 0
 
     // Get the current simulated balance from localStorage or calculate it
     const balanceKey = `vmf_balance_${connection.address}`
-    const stored = localStorage.getItem(balanceKey)
+    const stored = getLocalStorageItem(balanceKey)
 
     if (stored) {
       return Number.parseInt(stored)
@@ -47,7 +73,7 @@ export function VMFDebugTool() {
   }
 
   const updateVMFBalance = async () => {
-    if (!isConnected || !connection?.address || !customBalance) return
+    if (!isConnected || !connection?.address || !customBalance || !isClient) return
 
     setIsUpdating(true)
 
@@ -60,7 +86,7 @@ export function VMFDebugTool() {
 
       // Store the custom balance in localStorage
       const balanceKey = `vmf_balance_${connection.address}`
-      localStorage.setItem(balanceKey, newBalance.toString())
+      setLocalStorageItem(balanceKey, newBalance.toString())
 
       console.log(`🔧 Updated VMF balance for ${connection.address} to ${newBalance}`)
 
@@ -80,11 +106,11 @@ export function VMFDebugTool() {
   }
 
   const resetToDefault = () => {
-    if (!isConnected || !connection?.address) return
+    if (!isConnected || !connection?.address || !isClient) return
 
     // Remove custom balance from localStorage
     const balanceKey = `vmf_balance_${connection.address}`
-    localStorage.removeItem(balanceKey)
+    removeLocalStorageItem(balanceKey)
 
     console.log(`🔧 Reset VMF balance for ${connection.address} to default`)
 
@@ -150,7 +176,7 @@ export function VMFDebugTool() {
             />
             <Button
               onClick={updateVMFBalance}
-              disabled={isUpdating || !customBalance}
+              disabled={isUpdating || !customBalance || !isClient}
               className="bg-orange-600 hover:bg-orange-700 text-white"
               style={customFontStyle}
             >
@@ -203,6 +229,7 @@ export function VMFDebugTool() {
           variant="outline"
           className="w-full border-orange-300 text-orange-700 hover:bg-orange-100 bg-transparent"
           style={customFontStyle}
+          disabled={!isClient}
         >
           Reset to Default Balance
         </Button>
