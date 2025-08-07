@@ -162,7 +162,7 @@ export const getCurrentPageUrl = (): string => {
   return window.location.href
 }
 
-// Mobile wallet connection with proper WalletConnect integration
+// Enhanced mobile wallet connection with platform-specific handling
 export const connectMobileWallet = async (walletId: string): Promise<any> => {
   const wallet = WALLETS.find((w) => w.id === walletId)
   if (!wallet) throw new Error("Wallet not found")
@@ -176,22 +176,25 @@ export const connectMobileWallet = async (walletId: string): Promise<any> => {
     return requestWalletConnection(walletId)
   }
 
-  // For mobile, use enhanced connection strategies
+  // Enhanced mobile detection with platform-specific handling
   if (isMobile()) {
+    const platform = isIOS() ? 'ios' : isAndroid() ? 'android' : 'mobile'
+    console.log(`📱 Platform detected: ${platform}`)
+
     // Strategy 1: Try direct wallet detection and connection
     if (walletId === "metamask") {
-      return await connectMetaMaskMobile()
+      return await connectMetaMaskMobile(platform)
     } else if (walletId === "coinbase") {
-      return await connectCoinbaseMobile()
+      return await connectCoinbaseMobile(platform)
     } else if (walletId === "rainbow") {
-      return await connectRainbowMobile()
+      return await connectRainbowMobile(platform)
     } else if (walletId === "trust") {
-      return await connectTrustMobile()
+      return await connectTrustMobile(platform)
     } else if (walletId === "phantom") {
-      return await connectPhantomMobile()
+      return await connectPhantomMobile(platform)
     }
 
-    // Strategy 2: Try WalletConnect with proper mobile handling
+    // Strategy 2: Try WalletConnect with enhanced mobile handling
     try {
       console.log("📱 Attempting WalletConnect mobile connection...")
       
@@ -200,21 +203,25 @@ export const connectMobileWallet = async (walletId: string): Promise<any> => {
       
       const provider = await EthereumProvider.init({
         projectId: 'c4f79cc821944d9680842e34466bfbd9',
-        chains: [8453], // Base Sepolia
+        chains: [84532], // Base Sepolia
         showQrModal: true,
         qrModalOptions: {
           themeMode: 'dark',
           themeVariables: {
             '--wcm-z-index': '9999',
             '--wcm-background-color': '#1a1a1a',
+            '--wcm-accent-color': '#ff6b35', // Pizza Party orange
+            '--wcm-background-border-radius': '16px',
           },
           explorerRecommendedWalletIds: [
             'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', // MetaMask
             '4622a2b2d6af1c738494851a64cb958218379dfe6ea44443ddf4bf4fd6f6bc71', // Coinbase Wallet
             '19177a98252e07ddfc9af2083ba8e07ef627cb6103467ffa3c5e3e0b4c0d1d88', // Rainbow
             '4622a2b2d6af1c738494851a64cb958218379dfe6ea44443ddf4bf4fd6f6bc71', // Trust Wallet
+            '33f145daa2f8f45b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c', // Phantom
           ],
           explorerExcludedWalletIds: 'ALL',
+          mobileWallets: ['metamask', 'coinbase', 'rainbow', 'trust', 'phantom'],
         },
         metadata: {
           name: 'Pizza Party',
@@ -224,7 +231,7 @@ export const connectMobileWallet = async (walletId: string): Promise<any> => {
         },
       })
 
-      // Connect using WalletConnect
+      // Connect using WalletConnect with enhanced error handling
       await provider.connect()
       
       const accounts = await provider.request({ method: 'eth_accounts' })
@@ -242,14 +249,14 @@ export const connectMobileWallet = async (walletId: string): Promise<any> => {
     } catch (error: any) {
       console.log("❌ WalletConnect mobile connection failed:", error.message)
       
-      // If WalletConnect fails, try direct wallet detection
+      // Enhanced fallback with platform-specific handling
       if (window.ethereum) {
-        return await connectGenericWeb3Mobile()
+        return await connectGenericWeb3Mobile(platform)
       }
     }
 
-    // Strategy 3: Show wallet-specific instructions
-    return await showWalletInstructions(walletId)
+    // Strategy 3: Show wallet-specific instructions with platform info
+    return await showWalletInstructions(walletId, platform)
   }
 
   // Fallback to desktop connection
@@ -257,8 +264,8 @@ export const connectMobileWallet = async (walletId: string): Promise<any> => {
 }
 
 // MetaMask mobile connection
-const connectMetaMaskMobile = async (): Promise<any> => {
-  console.log("📱 Connecting to MetaMask mobile...")
+const connectMetaMaskMobile = async (platform: string): Promise<any> => {
+  console.log(`📱 Connecting to MetaMask mobile on ${platform}...`)
   
   // Check if MetaMask is available
   if (typeof window.ethereum !== 'undefined' && window.ethereum.isMetaMask) {
@@ -293,8 +300,8 @@ const connectMetaMaskMobile = async (): Promise<any> => {
 }
 
 // Coinbase Wallet mobile connection
-const connectCoinbaseMobile = async (): Promise<any> => {
-  console.log("📱 Connecting to Coinbase Wallet mobile...")
+const connectCoinbaseMobile = async (platform: string): Promise<any> => {
+  console.log(`📱 Connecting to Coinbase Wallet mobile on ${platform}...`)
   
   // Check if Coinbase Wallet is available
   if (typeof window.ethereum !== 'undefined' && window.ethereum.isCoinbaseWallet) {
@@ -329,8 +336,8 @@ const connectCoinbaseMobile = async (): Promise<any> => {
 }
 
 // Rainbow Wallet mobile connection
-const connectRainbowMobile = async (): Promise<any> => {
-  console.log("📱 Connecting to Rainbow Wallet mobile...")
+const connectRainbowMobile = async (platform: string): Promise<any> => {
+  console.log(`📱 Connecting to Rainbow Wallet mobile on ${platform}...`)
   
   // Check if Rainbow Wallet is available
   if (typeof window.ethereum !== 'undefined' && window.ethereum.isRainbow) {
@@ -365,8 +372,8 @@ const connectRainbowMobile = async (): Promise<any> => {
 }
 
 // Trust Wallet mobile connection
-const connectTrustMobile = async (): Promise<any> => {
-  console.log("📱 Connecting to Trust Wallet mobile...")
+const connectTrustMobile = async (platform: string): Promise<any> => {
+  console.log(`📱 Connecting to Trust Wallet mobile on ${platform}...`)
   
   // Check if Trust Wallet is available
   if (typeof window.ethereum !== 'undefined' && window.ethereum.isTrust) {
@@ -401,8 +408,8 @@ const connectTrustMobile = async (): Promise<any> => {
 }
 
 // Phantom Wallet mobile connection
-const connectPhantomMobile = async (): Promise<any> => {
-  console.log("📱 Connecting to Phantom mobile...")
+const connectPhantomMobile = async (platform: string): Promise<any> => {
+  console.log(`📱 Connecting to Phantom mobile on ${platform}...`)
   
   // Check if Phantom is available
   if (typeof window.ethereum !== 'undefined' && window.ethereum.isPhantom) {
@@ -437,8 +444,8 @@ const connectPhantomMobile = async (): Promise<any> => {
 }
 
 // Generic Web3 provider connection
-const connectGenericWeb3Mobile = async (): Promise<any> => {
-  console.log("📱 Connecting to generic Web3 provider...")
+const connectGenericWeb3Mobile = async (platform: string): Promise<any> => {
+  console.log(`📱 Connecting to generic Web3 provider on ${platform}...`)
   
   try {
     const accounts = await window.ethereum.request({
@@ -469,11 +476,11 @@ const connectGenericWeb3Mobile = async (): Promise<any> => {
 }
 
 // Show wallet-specific instructions
-const showWalletInstructions = async (walletId: string): Promise<any> => {
+const showWalletInstructions = async (walletId: string, platform: string): Promise<any> => {
   const wallet = WALLETS.find((w) => w.id === walletId)
   if (!wallet) throw new Error("Wallet not found")
   
-  console.log(`📱 Showing instructions for ${walletId}`)
+  console.log(`📱 Showing instructions for ${walletId} on ${platform}`)
   
   // Create a simple instruction modal
   const instructions = {

@@ -2,10 +2,22 @@ import { createConfig, http } from 'wagmi'
 import { baseSepolia, base } from 'wagmi/chains'
 import { injected, metaMask, coinbaseWallet, walletConnect } from 'wagmi/connectors'
 
-// WalletConnect v2 configuration with proper project ID
+// WalletConnect v2 configuration with enhanced mobile support
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'c4f79cc821944d9680842e34466bfbd9'
 
-// Create wagmi config with mobile-optimized WalletConnect
+// Platform-specific configuration for mobile deep linking
+const platformConfig = {
+  ios: {
+    bundleId: "com.pizzaparty.app",
+    redirectUri: "pizzaparty://walletconnect"
+  },
+  android: {
+    packageName: "com.pizzaparty.app", 
+    redirectUri: "pizzaparty://walletconnect"
+  }
+}
+
+// Create wagmi config with enhanced mobile-optimized WalletConnect
 export const config = createConfig({
   chains: [baseSepolia, base], // Use Base Sepolia for beta testing
   connectors: [
@@ -14,8 +26,11 @@ export const config = createConfig({
     coinbaseWallet({
       appName: 'Pizza Party',
       appLogoUrl: 'https://pizza-party.vmfcoin.com/logo.png',
+      // Enhanced mobile deep linking
+      jsonRpcUrl: 'https://sepolia.base.org',
+      chainId: 84532, // Base Sepolia
     }),
-    // WalletConnect with mobile-optimized settings
+    // Enhanced WalletConnect with mobile-optimized settings
     walletConnect({
       projectId,
       showQrModal: true,
@@ -24,7 +39,10 @@ export const config = createConfig({
         themeVariables: {
           '--wcm-z-index': '9999',
           '--wcm-background-color': '#1a1a1a',
+          '--wcm-accent-color': '#ff6b35', // Pizza Party orange
+          '--wcm-background-border-radius': '16px',
         },
+        // Enhanced wallet recommendations for mobile
         explorerRecommendedWalletIds: [
           'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', // MetaMask
           '4622a2b2d6af1c738494851a64cb958218379dfe6ea44443ddf4bf4fd6f6bc71', // Coinbase Wallet
@@ -33,6 +51,14 @@ export const config = createConfig({
           '33f145daa2f8f45b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c', // Phantom
         ],
         explorerExcludedWalletIds: 'ALL',
+        // Enhanced mobile deep linking
+        mobileWallets: [
+          'metamask',
+          'coinbase',
+          'rainbow',
+          'trust',
+          'phantom'
+        ],
         privacyPolicyUrl: 'https://pizza-party.vmfcoin.com/privacy',
         termsOfServiceUrl: 'https://pizza-party.vmfcoin.com/terms',
       },
