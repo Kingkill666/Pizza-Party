@@ -36,7 +36,7 @@ export default function AdminPage() {
     contractPaused: false,
     blacklistedAddresses: 0,
     suspiciousTransactions: 0,
-    lastSecurityCheck: new Date(),
+    lastSecurityCheck: null as Date | null,
   })
   const [isClient, setIsClient] = useState(false)
 
@@ -343,7 +343,7 @@ export default function AdminPage() {
                 <strong>Suspicious Transactions:</strong> {securityStatus.suspiciousTransactions}
               </p>
               <p className="text-sm text-gray-800">
-                <strong>Last Security Check:</strong> {securityStatus.lastSecurityCheck.toLocaleString()}
+                <strong>Last Security Check:</strong> {securityStatus.lastSecurityCheck?.toLocaleString() || 'Not available'}
               </p>
             </div>
           </div>

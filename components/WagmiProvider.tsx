@@ -16,17 +16,23 @@ export const WagmiProvider = ({ children }: WagmiProviderProps) => {
       queries: {
         retry: false,
         refetchOnWindowFocus: false,
+        staleTime: 5 * 60 * 1000, // 5 minutes
       },
     },
   }))
 
   useEffect(() => {
+    // Only set client-side after hydration
     setIsClient(true)
   }, [])
 
-  // Don't render Wagmi until client-side
+  // Don't render anything until client-side to prevent SSR issues
   if (!isClient) {
-    return <>{children}</>
+    return (
+      <div style={{ visibility: 'hidden' }}>
+        {children}
+      </div>
+    )
   }
 
   return (
