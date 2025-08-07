@@ -21,11 +21,49 @@ export default function GamePage() {
   const [weeklyPlayers, setWeeklyPlayers] = useState(0)
   const [claimableToppings, setClaimableToppings] = useState(0)
   const [isClient, setIsClient] = useState(false)
+  const [hasError, setHasError] = useState(false)
 
   // SSR PROTECTION: Check if we're on the client side
   useEffect(() => {
-    setIsClient(true)
+    try {
+      setIsClient(true)
+    } catch (error) {
+      console.error('Client-side initialization error:', error)
+      setHasError(true)
+    }
   }, [])
+
+  // Error boundary for client-side errors
+  if (hasError) {
+    return (
+      <div className="min-h-screen p-4" style={{
+        backgroundImage: "url('/images/rotated-90-pizza-wallpaper.png')",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        backgroundPosition: "center center",
+      }}>
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white/90 backdrop-blur-sm border-4 border-red-800 rounded-3xl shadow-2xl p-6">
+            <h1 className="text-4xl text-center text-red-800 mb-6" style={{
+              fontFamily: '"Comic Sans MS", "Marker Felt", "Chalkduster", "Kalam", "Caveat", cursive',
+              fontWeight: "bold"
+            }}>
+              🍕 Pizza Party 🍕
+            </h1>
+            <p className="text-center text-gray-600 mb-4">Something went wrong loading the game.</p>
+            <div className="text-center">
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="bg-red-800 hover:bg-red-900 text-white"
+              >
+                🔄 Reload Game
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // SSR SAFETY: Don't render anything until client-side to prevent SSR issues
   if (!isClient) {
@@ -52,6 +90,15 @@ export default function GamePage() {
   }
 
   // SSR SAFETY: Only call Wagmi hooks after client-side hydration
+  let wagmiWallet = null
+  try {
+    wagmiWallet = useWagmiWallet()
+  } catch (error) {
+    console.error('Wagmi wallet hook error:', error)
+    setHasError(true)
+    return null
+  }
+
   const { 
     address, 
     isConnected, 
@@ -61,7 +108,7 @@ export default function GamePage() {
     error: walletError, 
     setError: setWalletError, 
     formatAddress 
-  } = useWagmiWallet()
+  } = wagmiWallet
 
   const errorHandler = ErrorHandler.getInstance()
   const securityMonitor = SecurityMonitor.getInstance()
@@ -289,7 +336,8 @@ export default function GamePage() {
     console.log('Can Enter Today:', checkDailyEntry())
   }
 
-  return (
+  try {
+    return (
     <div
       className="min-h-screen p-4"
       style={{
@@ -458,4 +506,35 @@ export default function GamePage() {
       </div>
     </div>
   )
+  } catch (error) {
+    console.error('Game page rendering error:', error)
+    return (
+      <div className="min-h-screen p-4" style={{
+        backgroundImage: "url('/images/rotated-90-pizza-wallpaper.png')",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        backgroundPosition: "center center",
+      }}>
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white/90 backdrop-blur-sm border-4 border-red-800 rounded-3xl shadow-2xl p-6">
+            <h1 className="text-4xl text-center text-red-800 mb-6" style={{
+              fontFamily: '"Comic Sans MS", "Marker Felt", "Chalkduster", "Kalam", "Caveat", cursive',
+              fontWeight: "bold"
+            }}>
+              🍕 Pizza Party 🍕
+            </h1>
+            <p className="text-center text-gray-600 mb-4">Something went wrong rendering the game.</p>
+            <div className="text-center">
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="bg-red-800 hover:bg-red-900 text-white"
+              >
+                🔄 Reload Game
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 }
