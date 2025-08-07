@@ -8,8 +8,9 @@
   ],
   "build": {
     "env": {
-      "NEXT_PUBLIC_DEPLOYMENT_VERSION": "37670ea",
-      "NEXT_PUBLIC_FORCE_DEPLOYMENT": "true"
+      "NEXT_PUBLIC_DEPLOYMENT_VERSION": "ae22e86",
+      "NEXT_PUBLIC_FORCE_DEPLOYMENT": "true",
+      "NEXT_PUBLIC_CACHE_BUST": "true"
     }
   },
   "regions": ["iad1"]
