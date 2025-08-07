@@ -1,15 +1,28 @@
-import { createStorage } from '@rainbow-me/rainbowkit/storage'
-
-export const storage = createStorage({
-  storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-  getKeyName: (key) => `pizza-party-${key}`,
-  onError: (error) => {
-    console.error('Storage error:', error)
-    // Fallback to memory storage if localStorage fails
-    return {
-      get: () => null,
-      set: () => {},
-      remove: () => {},
+// Simple storage implementation for wallet connections
+export const storage = {
+  get: (key: string) => {
+    if (typeof window === 'undefined') return null
+    try {
+      const item = localStorage.getItem(`pizza-party-${key}`)
+      return item ? JSON.parse(item) : null
+    } catch {
+      return null
     }
   },
-}) 
+  set: (key: string, value: any) => {
+    if (typeof window === 'undefined') return
+    try {
+      localStorage.setItem(`pizza-party-${key}`, JSON.stringify(value))
+    } catch {
+      // Handle storage errors
+    }
+  },
+  remove: (key: string) => {
+    if (typeof window === 'undefined') return
+    try {
+      localStorage.removeItem(`pizza-party-${key}`)
+    } catch {
+      // Handle storage errors
+    }
+  },
+} 
