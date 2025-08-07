@@ -1,5 +1,4 @@
 "use client"
-// DEPLOYMENT MARKER: SSR Protection Update - Commit 4dbddf0
 
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
@@ -20,141 +19,7 @@ export default function GamePage() {
   const [dailyPlayers, setDailyPlayers] = useState(0)
   const [weeklyPlayers, setWeeklyPlayers] = useState(0)
   const [claimableToppings, setClaimableToppings] = useState(0)
-  const [isClient, setIsClient] = useState(false)
-  const [hasError, setHasError] = useState(false)
-
-  // SSR PROTECTION: Check if we're on the client side
-  useEffect(() => {
-    try {
-      setIsClient(true)
-    } catch (error) {
-      console.error('Client-side initialization error:', error)
-      setHasError(true)
-    }
-  }, [])
-
-  // Safe window access functions (defined before use)
-  const getWindowLocation = (): string => {
-    if (!isClient || typeof window === 'undefined') {
-      return ''
-    }
-    return window.location.href
-  }
-
-  const openWindow = (url: string): void => {
-    if (!isClient || typeof window === 'undefined') {
-      return
-    }
-    try {
-      window.open(url, '_blank')
-    } catch (error) {
-      console.error('Window open error:', error)
-    }
-  }
-
-  const reloadWindow = (): void => {
-    if (!isClient || typeof window === 'undefined') {
-      return
-    }
-    try {
-      window.location.reload()
-    } catch (error) {
-      console.error('Window reload error:', error)
-    }
-  }
-
-  // Error boundary for client-side errors
-  if (hasError) {
-    return (
-      <div className="min-h-screen p-4" style={{
-        backgroundImage: "url('/images/rotated-90-pizza-wallpaper.png')",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
-        backgroundPosition: "center center",
-      }}>
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white/90 backdrop-blur-sm border-4 border-red-800 rounded-3xl shadow-2xl p-6">
-            <h1 className="text-4xl text-center text-red-800 mb-6" style={{
-              fontFamily: '"Comic Sans MS", "Marker Felt", "Chalkduster", "Kalam", "Caveat", cursive',
-              fontWeight: "bold"
-            }}>
-              🍕 Pizza Party 🍕
-            </h1>
-            <p className="text-center text-gray-600 mb-4">Something went wrong loading the game.</p>
-            <div className="text-center">
-              <Button 
-                onClick={reloadWindow} 
-                className="bg-red-800 hover:bg-red-900 text-white"
-              >
-                🔄 Reload Game
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // SSR SAFETY: Don't render anything until client-side to prevent SSR issues
-  if (!isClient) {
-    return (
-      <div className="min-h-screen p-4" style={{
-        backgroundImage: "url('/images/rotated-90-pizza-wallpaper.png')",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
-        backgroundPosition: "center center",
-      }}>
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white/90 backdrop-blur-sm border-4 border-red-800 rounded-3xl shadow-2xl p-6">
-            <h1 className="text-4xl text-center text-red-800 mb-6" style={{
-              fontFamily: '"Comic Sans MS", "Marker Felt", "Chalkduster", "Kalam", "Caveat", cursive',
-              fontWeight: "bold"
-            }}>
-              🍕 Pizza Party 🍕
-            </h1>
-            <p className="text-center text-gray-600">Loading game...</p>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // SSR SAFETY: Only call Wagmi hooks after client-side hydration
-  let wagmiWallet = null
-  try {
-    wagmiWallet = useWagmiWallet()
-  } catch (error) {
-    console.error('Wagmi wallet hook error:', error)
-    // Don't set hasError here - just return a simple fallback
-    return (
-      <div className="min-h-screen p-4" style={{
-        backgroundImage: "url('/images/rotated-90-pizza-wallpaper.png')",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
-        backgroundPosition: "center center",
-      }}>
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white/90 backdrop-blur-sm border-4 border-red-800 rounded-3xl shadow-2xl p-6">
-            <h1 className="text-4xl text-center text-red-800 mb-6" style={{
-              fontFamily: '"Comic Sans MS", "Marker Felt", "Chalkduster", "Kalam", "Caveat", cursive',
-              fontWeight: "bold"
-            }}>
-              🍕 Pizza Party 🍕
-            </h1>
-            <p className="text-center text-gray-600 mb-4">Wallet connection error. Please refresh the page.</p>
-            <div className="text-center">
-              <Button 
-                onClick={() => window.location.reload()} 
-                className="bg-red-800 hover:bg-red-900 text-white"
-              >
-                🔄 Refresh Page
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const [timeLeft, setTimeLeft] = useState({ hours: 14, minutes: 39, seconds: 46 })
 
   const { 
     address, 
@@ -165,38 +30,28 @@ export default function GamePage() {
     error: walletError, 
     setError: setWalletError, 
     formatAddress 
-  } = wagmiWallet
+  } = useWagmiWallet()
 
   const errorHandler = ErrorHandler.getInstance()
   const securityMonitor = SecurityMonitor.getInstance()
 
-  // Safe localStorage access with better error handling
+  // Safe localStorage access
   const getLocalStorageItem = (key: string): string | null => {
-    if (!isClient || typeof window === 'undefined' || !window.localStorage) {
-      return null
-    }
-    try {
+    if (typeof window !== 'undefined' && window.localStorage) {
       return localStorage.getItem(key)
-    } catch (error) {
-      console.error('localStorage get error:', error)
-      return null
     }
+    return null
   }
 
   const setLocalStorageItem = (key: string, value: string): void => {
-    if (!isClient || typeof window === 'undefined' || !window.localStorage) {
-      return
-    }
-    try {
+    if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem(key, value)
-    } catch (error) {
-      console.error('localStorage set error:', error)
     }
   }
 
   // Check daily entry eligibility
   const checkDailyEntry = useCallback(() => {
-    if (!address || !isClient) return false
+    if (!address) return false
     
     const today = new Date()
     today.setHours(12, 0, 0, 0) // Reset at 12pm PST
@@ -208,7 +63,7 @@ export default function GamePage() {
     }
     
     return true
-  }, [address, isClient])
+  }, [address])
 
   // Handle game entry with enhanced security
   const handleEnterGame = useCallback(async () => {
@@ -264,48 +119,27 @@ export default function GamePage() {
 
     try {
       // Track user action for security monitoring
-      securityMonitor.trackUserAction({
-        type: 'GAME_ENTRY',
-        userId: address,
-        userAgent: navigator.userAgent,
-        metadata: { timestamp: Date.now() }
+      securityMonitor.trackUserAction(address, 'GAME_ENTRY', {
+        timestamp: Date.now(),
+        gameType: 'daily',
+        entryFee: '0.001'
       })
 
-      // For now, simulate contract interaction since we don't have a provider
-      // In a real implementation, you would use the actual contract
-      console.log('🎮 Entering game with 0.001 Base Sepolia ETH...')
-      
-      // Simulate transaction
-      const txHash = `0x${Math.random().toString(16).substring(2, 66)}`
-      
-      // Record successful entry
+      // Record daily entry
       setLocalStorageItem(`daily_entry_${address}`, Date.now().toString())
-      
+
       // Update player count
       updatePlayerCount()
+
+      setSuccess('Successfully entered the game! Good luck! 🍕')
       
-      setSuccess(`✅ Successfully entered game! Transaction: ${txHash}`)
-      
-      // Track successful action
-      securityMonitor.trackUserAction({
-        type: 'GAME_ENTRY_SUCCESS',
-        userId: address,
-        metadata: { transactionHash: txHash }
-      })
+      // Clear success message after 5 seconds
+      setTimeout(() => setSuccess(null), 5000)
 
     } catch (error: any) {
       console.error('Game entry error:', error)
-      
-      // Enhanced error handling
       const userMessage = errorHandler.handleError(error, 'GamePage.handleEnterGame', 'HIGH')
       setGameError(userMessage)
-      
-      // Track failed action
-      securityMonitor.trackUserAction({
-        type: 'GAME_ENTRY_FAILED',
-        userId: address,
-        metadata: { error: error.message }
-      })
     } finally {
       setIsProcessing(false)
     }
@@ -313,7 +147,7 @@ export default function GamePage() {
 
   // Calculate claimable toppings
   const calculateClaimableToppings = useCallback(() => {
-    if (!address || !isClient) return 0
+    if (!address) return 0
 
     let toppings = 0
 
@@ -345,38 +179,36 @@ export default function GamePage() {
     }
 
     return toppings
-  }, [address, isClient])
+  }, [address])
 
   // Update player counts
   const updatePlayerCount = useCallback(async () => {
     try {
       // For now, use localStorage fallback since we don't have contract methods
-      if (isClient) {
-        const dailyEntries = Object.keys(localStorage)
-          .filter(key => key.startsWith('daily_entry_'))
-          .filter(key => {
-            const entryDate = new Date(parseInt(getLocalStorageItem(key) || '0'))
-            const today = new Date()
-            today.setHours(12, 0, 0, 0)
-            return entryDate >= today
-          }).length
-        setDailyPlayers(dailyEntries)
-        
-        // Weekly players (last 7 days)
-        const weeklyEntries = Object.keys(localStorage)
-          .filter(key => key.startsWith('daily_entry_'))
-          .filter(key => {
-            const entryDate = new Date(parseInt(getLocalStorageItem(key) || '0'))
-            const weekAgo = new Date()
-            weekAgo.setDate(weekAgo.getDate() - 7)
-            return entryDate >= weekAgo
-          }).length
-        setWeeklyPlayers(weeklyEntries)
-      }
+      const dailyEntries = Object.keys(localStorage)
+        .filter(key => key.startsWith('daily_entry_'))
+        .filter(key => {
+          const entryDate = new Date(parseInt(localStorage.getItem(key) || '0'))
+          const today = new Date()
+          today.setHours(12, 0, 0, 0)
+          return entryDate >= today
+        }).length
+      setDailyPlayers(dailyEntries)
+      
+      // Weekly players (last 7 days)
+      const weeklyEntries = Object.keys(localStorage)
+        .filter(key => key.startsWith('daily_entry_'))
+        .filter(key => {
+          const entryDate = new Date(parseInt(localStorage.getItem(key) || '0'))
+          const weekAgo = new Date()
+          weekAgo.setDate(weekAgo.getDate() - 7)
+          return entryDate >= weekAgo
+        }).length
+      setWeeklyPlayers(weeklyEntries)
     } catch (error) {
       console.error('Error updating player count:', error)
     }
-  }, [isClient, getLocalStorageItem])
+  }, [])
 
   // Update claimable toppings
   const updateClaimableToppings = useCallback(() => {
@@ -386,48 +218,94 @@ export default function GamePage() {
 
   // Initialize data
   useEffect(() => {
-    if (isClient) {
-      updatePlayerCount()
-      updateClaimableToppings()
-    }
-  }, [isClient, updatePlayerCount, updateClaimableToppings])
+    updatePlayerCount()
+    updateClaimableToppings()
+  }, [updatePlayerCount, updateClaimableToppings])
 
-  // Debug daily tracking
-  const debugDailyTracking = () => {
-    if (!address || !isClient) return
+  // Countdown timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev.seconds > 0) {
+          return { ...prev, seconds: prev.seconds - 1 }
+        } else if (prev.minutes > 0) {
+          return { ...prev, minutes: prev.minutes - 1, seconds: 59 }
+        } else if (prev.hours > 0) {
+          return { hours: prev.hours - 1, minutes: 59, seconds: 59 }
+        }
+        return prev
+      })
+    }, 1000)
 
-    console.log('🔍 Daily Entry Debug:')
-    console.log('Address:', address)
-    console.log('Today (12pm PST):', new Date().setHours(12, 0, 0, 0))
-    console.log('Last Entry:', getLocalStorageItem(`daily_entry_${address}`))
-    console.log('Can Enter Today:', checkDailyEntry())
-  }
+    return () => clearInterval(timer)
+  }, [])
 
-  try {
-    return (
-    <div
-      className="min-h-screen p-4"
-      style={{
-        backgroundImage: "url('/images/rotated-90-pizza-wallpaper.png')",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
-        backgroundPosition: "center center",
-      }}
-    >
+  return (
+    <div className="min-h-screen p-4" style={{
+      backgroundImage: "url('/images/rotated-90-pizza-wallpaper.png')",
+      backgroundRepeat: "no-repeat",
+      backgroundSize: "cover",
+      backgroundPosition: "center center",
+    }}>
       <div className="max-w-2xl mx-auto">
         <div className="bg-white/90 backdrop-blur-sm border-4 border-red-800 rounded-3xl shadow-2xl p-6 mb-6">
           <h1 className="text-4xl text-center text-red-800 mb-6" style={{
             fontFamily: '"Comic Sans MS", "Marker Felt", "Chalkduster", "Kalam", "Caveat", cursive',
             fontWeight: "bold"
           }}>
-            🍕 Pizza Party 🍕
+            🍕 PIZZA PARTY 🍕
           </h1>
+
+          <div className="text-center mb-6">
+            <p className="text-xl font-bold text-red-800 mb-2">8 Slices, 8 Winners!</p>
+            <p className="text-lg text-gray-700 mb-2">Jackpot split 8 ways!</p>
+            <p className="text-lg text-gray-700 mb-4">Winners picked every 24 hrs!</p>
+          </div>
+
+          {/* Countdown Timer */}
+          <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 mb-6">
+            <h3 className="text-lg font-bold text-blue-800 mb-2 text-center">
+              Current Game Window Ends In:
+            </h3>
+            <div className="flex justify-center space-x-4 mb-2">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">{timeLeft.hours}</div>
+                <div className="text-sm text-blue-800">HRS</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">{timeLeft.minutes}</div>
+                <div className="text-sm text-blue-800">MIN</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">{timeLeft.seconds}</div>
+                <div className="text-sm text-blue-800">SEC</div>
+              </div>
+            </div>
+            <p className="text-sm text-blue-600 text-center">New game starts daily at 12pm PST</p>
+          </div>
+
+          {/* Player Stats */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
+              <h3 className="text-lg font-bold text-blue-800 mb-2 text-center">Players Today</h3>
+              <p className="text-2xl font-bold text-blue-600 text-center">{dailyPlayers}</p>
+            </div>
+            <div className="bg-green-50 p-4 rounded-xl border-2 border-green-200">
+              <h3 className="text-lg font-bold text-green-800 mb-2 text-center">Jackpot</h3>
+              <p className="text-2xl font-bold text-green-600 text-center">$0</p>
+            </div>
+          </div>
+
+          {/* Pizza Image */}
+          <div className="text-center mb-6">
+            <p className="text-gray-700 mb-4">Delicious pizza with pepperoni, green peppers, and olives</p>
+          </div>
 
           {/* Game Entry Section */}
           <div className="text-center mb-8">
             <Button
               onClick={handleEnterGame}
-              disabled={isProcessing || !isClient}
+              disabled={isProcessing}
               className="bg-green-600 hover:bg-green-700 text-white text-xl px-8 py-4 rounded-2xl shadow-lg transform hover:scale-105 transition-all"
               style={{
                 fontFamily: '"Comic Sans MS", "Marker Felt", "Chalkduster", "Kalam", "Caveat", cursive',
@@ -460,20 +338,13 @@ export default function GamePage() {
             )}
           </div>
 
-          {/* Player Stats */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
-              <h3 className="text-lg font-bold text-blue-800 mb-2">Players Today</h3>
-              <p className="text-2xl font-bold text-blue-600">{dailyPlayers}</p>
-            </div>
-            <div className="bg-purple-50 p-4 rounded-xl border-2 border-purple-200">
-              <h3 className="text-lg font-bold text-purple-800 mb-2">Claimable Toppings</h3>
-              <p className="text-2xl font-bold text-purple-600">{claimableToppings}</p>
-            </div>
+          {/* Weekly Jackpot Section */}
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-purple-800 mb-4">🏆 Weekly Jackpot 🏆</h2>
           </div>
 
           {/* Invite Friends Button */}
-          <div className="text-center">
+          <div className="text-center mb-6">
             <Button
               onClick={() => {
                 if (!isConnected) {
@@ -496,6 +367,16 @@ export default function GamePage() {
                 Connect wallet to invite friends
               </p>
             )}
+          </div>
+
+          {/* Game Rules */}
+          <div className="bg-gray-50 p-4 rounded-xl border-2 border-gray-200">
+            <h3 className="text-lg font-bold text-gray-800 mb-2">🎯 Game Rules:</h3>
+            <ul className="text-sm text-gray-700 space-y-1">
+              <li>• One entry per wallet per day</li>
+              <li>• Equal chance for all players</li>
+              <li>• New game starts daily at 12pm PST</li>
+            </ul>
           </div>
         </div>
 
@@ -524,9 +405,9 @@ export default function GamePage() {
               <div className="grid grid-cols-2 gap-4">
                 <Button
                   onClick={() => {
-                    const url = getWindowLocation()
+                    const url = window.location.href
                     const text = "🍕 Join me in Pizza Party! A fun decentralized game on Base Sepolia! 🎮"
-                    openWindow(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`)
+                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank')
                   }}
                   className="bg-blue-500 hover:bg-blue-600 text-white"
                 >
@@ -535,9 +416,9 @@ export default function GamePage() {
                 
                 <Button
                   onClick={() => {
-                    const url = getWindowLocation()
+                    const url = window.location.href
                     const text = "🍕 Join me in Pizza Party! A fun decentralized game on Base Sepolia! 🎮"
-                    openWindow(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`)
+                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank')
                   }}
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
@@ -546,9 +427,9 @@ export default function GamePage() {
                 
                 <Button
                   onClick={() => {
-                    const url = getWindowLocation()
+                    const url = window.location.href
                     const text = "🍕 Join me in Pizza Party! A fun decentralized game on Base Sepolia! 🎮"
-                    openWindow(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`)
+                    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank')
                   }}
                   className="bg-blue-700 hover:bg-blue-800 text-white"
                 >
@@ -557,7 +438,7 @@ export default function GamePage() {
                 
                 <Button
                   onClick={() => {
-                    const url = getWindowLocation()
+                    const url = window.location.href
                     const text = "🍕 Join me in Pizza Party! A fun decentralized game on Base Sepolia! 🎮"
                     navigator.clipboard.writeText(`${text}\n${url}`)
                     alert("Link copied to clipboard!")
@@ -573,35 +454,4 @@ export default function GamePage() {
       </div>
     </div>
   )
-  } catch (error) {
-    console.error('Game page rendering error:', error)
-    return (
-      <div className="min-h-screen p-4" style={{
-        backgroundImage: "url('/images/rotated-90-pizza-wallpaper.png')",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
-        backgroundPosition: "center center",
-      }}>
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white/90 backdrop-blur-sm border-4 border-red-800 rounded-3xl shadow-2xl p-6">
-            <h1 className="text-4xl text-center text-red-800 mb-6" style={{
-              fontFamily: '"Comic Sans MS", "Marker Felt", "Chalkduster", "Kalam", "Caveat", cursive',
-              fontWeight: "bold"
-            }}>
-              🍕 Pizza Party 🍕
-            </h1>
-            <p className="text-center text-gray-600 mb-4">Something went wrong rendering the game.</p>
-            <div className="text-center">
-              <Button 
-                onClick={() => window.location.reload()} 
-                className="bg-red-800 hover:bg-red-900 text-white"
-              >
-                🔄 Reload Game
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
 }
