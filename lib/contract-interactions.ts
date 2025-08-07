@@ -203,6 +203,40 @@ export class PizzaPartyContract {
     }
   }
 
+  // Get daily player count
+  async getDailyPlayerCount(): Promise<number> {
+    try {
+      const data = await this.provider.request({
+        method: 'eth_call',
+        params: [{
+          to: this.pizzaPartyAddress,
+          data: this.encodeFunctionCall('dailyPlayerCount', ['1'])
+        }, 'latest']
+      })
+      return this.decodeUint256(data)
+    } catch (error) {
+      console.error('Error getting daily player count:', error)
+      return 0
+    }
+  }
+
+  // Get weekly player count
+  async getWeeklyPlayerCount(): Promise<number> {
+    try {
+      const data = await this.provider.request({
+        method: 'eth_call',
+        params: [{
+          to: this.pizzaPartyAddress,
+          data: this.encodeFunctionCall('weeklyPlayerCount', ['1'])
+        }, 'latest']
+      })
+      return this.decodeUint256(data)
+    } catch (error) {
+      console.error('Error getting weekly player count:', error)
+      return 0
+    }
+  }
+
   // Award streak bonus
   async awardStreakBonus() {
     try {
