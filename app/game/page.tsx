@@ -33,6 +33,36 @@ export default function GamePage() {
     }
   }, [])
 
+  // Safe window access functions (defined before use)
+  const getWindowLocation = (): string => {
+    if (!isClient || typeof window === 'undefined') {
+      return ''
+    }
+    return window.location.href
+  }
+
+  const openWindow = (url: string): void => {
+    if (!isClient || typeof window === 'undefined') {
+      return
+    }
+    try {
+      window.open(url, '_blank')
+    } catch (error) {
+      console.error('Window open error:', error)
+    }
+  }
+
+  const reloadWindow = (): void => {
+    if (!isClient || typeof window === 'undefined') {
+      return
+    }
+    try {
+      window.location.reload()
+    } catch (error) {
+      console.error('Window reload error:', error)
+    }
+  }
+
   // Error boundary for client-side errors
   if (hasError) {
     return (
@@ -53,7 +83,7 @@ export default function GamePage() {
             <p className="text-center text-gray-600 mb-4">Something went wrong loading the game.</p>
             <div className="text-center">
               <Button 
-                onClick={() => window.location.reload()} 
+                onClick={reloadWindow} 
                 className="bg-red-800 hover:bg-red-900 text-white"
               >
                 🔄 Reload Game
@@ -113,17 +143,27 @@ export default function GamePage() {
   const errorHandler = ErrorHandler.getInstance()
   const securityMonitor = SecurityMonitor.getInstance()
 
-  // Safe localStorage access
+  // Safe localStorage access with better error handling
   const getLocalStorageItem = (key: string): string | null => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      return localStorage.getItem(key)
+    if (!isClient || typeof window === 'undefined' || !window.localStorage) {
+      return null
     }
-    return null
+    try {
+      return localStorage.getItem(key)
+    } catch (error) {
+      console.error('localStorage get error:', error)
+      return null
+    }
   }
 
   const setLocalStorageItem = (key: string, value: string): void => {
-    if (typeof window !== 'undefined' && window.localStorage) {
+    if (!isClient || typeof window === 'undefined' || !window.localStorage) {
+      return
+    }
+    try {
       localStorage.setItem(key, value)
+    } catch (error) {
+      console.error('localStorage set error:', error)
     }
   }
 
@@ -288,7 +328,7 @@ export default function GamePage() {
         const dailyEntries = Object.keys(localStorage)
           .filter(key => key.startsWith('daily_entry_'))
           .filter(key => {
-            const entryDate = new Date(parseInt(localStorage.getItem(key) || '0'))
+            const entryDate = new Date(parseInt(getLocalStorageItem(key) || '0'))
             const today = new Date()
             today.setHours(12, 0, 0, 0)
             return entryDate >= today
@@ -299,7 +339,7 @@ export default function GamePage() {
         const weeklyEntries = Object.keys(localStorage)
           .filter(key => key.startsWith('daily_entry_'))
           .filter(key => {
-            const entryDate = new Date(parseInt(localStorage.getItem(key) || '0'))
+            const entryDate = new Date(parseInt(getLocalStorageItem(key) || '0'))
             const weekAgo = new Date()
             weekAgo.setDate(weekAgo.getDate() - 7)
             return entryDate >= weekAgo
@@ -309,7 +349,7 @@ export default function GamePage() {
     } catch (error) {
       console.error('Error updating player count:', error)
     }
-  }, [isClient])
+  }, [isClient, getLocalStorageItem])
 
   // Update claimable toppings
   const updateClaimableToppings = useCallback(() => {
@@ -457,9 +497,9 @@ export default function GamePage() {
               <div className="grid grid-cols-2 gap-4">
                 <Button
                   onClick={() => {
-                    const url = window.location.href
+                    const url = getWindowLocation()
                     const text = "🍕 Join me in Pizza Party! A fun decentralized game on Base Sepolia! 🎮"
-                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank')
+                    openWindow(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`)
                   }}
                   className="bg-blue-500 hover:bg-blue-600 text-white"
                 >
@@ -468,9 +508,9 @@ export default function GamePage() {
                 
                 <Button
                   onClick={() => {
-                    const url = window.location.href
+                    const url = getWindowLocation()
                     const text = "🍕 Join me in Pizza Party! A fun decentralized game on Base Sepolia! 🎮"
-                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank')
+                    openWindow(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`)
                   }}
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
@@ -479,9 +519,9 @@ export default function GamePage() {
                 
                 <Button
                   onClick={() => {
-                    const url = window.location.href
+                    const url = getWindowLocation()
                     const text = "🍕 Join me in Pizza Party! A fun decentralized game on Base Sepolia! 🎮"
-                    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank')
+                    openWindow(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`)
                   }}
                   className="bg-blue-700 hover:bg-blue-800 text-white"
                 >
@@ -490,7 +530,7 @@ export default function GamePage() {
                 
                 <Button
                   onClick={() => {
-                    const url = window.location.href
+                    const url = getWindowLocation()
                     const text = "🍕 Join me in Pizza Party! A fun decentralized game on Base Sepolia! 🎮"
                     navigator.clipboard.writeText(`${text}\n${url}`)
                     alert("Link copied to clipboard!")
