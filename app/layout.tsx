@@ -1,5 +1,5 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { FarcasterWrapper } from "@/components/FarcasterWrapper"
@@ -15,7 +15,6 @@ export const metadata: Metadata = {
     icon: "/images/star-favicon.png",
     apple: "/images/star-favicon.png",
   },
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
   generator: 'v0.dev',
   // Farcaster Frame metadata
   other: {
@@ -27,6 +26,13 @@ export const metadata: Metadata = {
     'fc:frame:button:4': 'Share Pizza Party',
     'fc:frame:post_url': 'https://pizzaparty.app/api/frame',
   },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({
