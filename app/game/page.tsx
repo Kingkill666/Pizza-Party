@@ -125,8 +125,35 @@ export default function GamePage() {
     wagmiWallet = useWagmiWallet()
   } catch (error) {
     console.error('Wagmi wallet hook error:', error)
-    setHasError(true)
-    return null
+    // Don't set hasError here - just return a simple fallback
+    return (
+      <div className="min-h-screen p-4" style={{
+        backgroundImage: "url('/images/rotated-90-pizza-wallpaper.png')",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        backgroundPosition: "center center",
+      }}>
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white/90 backdrop-blur-sm border-4 border-red-800 rounded-3xl shadow-2xl p-6">
+            <h1 className="text-4xl text-center text-red-800 mb-6" style={{
+              fontFamily: '"Comic Sans MS", "Marker Felt", "Chalkduster", "Kalam", "Caveat", cursive',
+              fontWeight: "bold"
+            }}>
+              🍕 Pizza Party 🍕
+            </h1>
+            <p className="text-center text-gray-600 mb-4">Wallet connection error. Please refresh the page.</p>
+            <div className="text-center">
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="bg-red-800 hover:bg-red-900 text-white"
+              >
+                🔄 Refresh Page
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const { 

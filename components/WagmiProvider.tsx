@@ -12,7 +12,6 @@ interface WagmiProviderProps {
 
 export const WagmiProvider = ({ children }: WagmiProviderProps) => {
   const [isClient, setIsClient] = useState(false)
-  const [hasError, setHasError] = useState(false)
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
@@ -29,27 +28,9 @@ export const WagmiProvider = ({ children }: WagmiProviderProps) => {
       setIsClient(true)
     } catch (error) {
       console.error('WagmiProvider client-side initialization error:', error)
-      setHasError(true)
+      // Don't set error state - just continue
     }
   }, [])
-
-  // Error boundary for WagmiProvider
-  if (hasError) {
-    return (
-      <div className="min-h-screen p-4 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-800 mb-4">🍕 Pizza Party 🍕</h1>
-          <p className="text-gray-600 mb-4">Wallet connection error. Please refresh the page.</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded"
-          >
-            🔄 Refresh Page
-          </button>
-        </div>
-      </div>
-    )
-  }
 
   // SSR SAFETY: Don't render anything until client-side to prevent SSR issues
   if (!isClient) {
@@ -71,20 +52,7 @@ export const WagmiProvider = ({ children }: WagmiProviderProps) => {
     )
   } catch (error) {
     console.error('WagmiProvider rendering error:', error)
-    setHasError(true)
-    return (
-      <div className="min-h-screen p-4 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-800 mb-4">🍕 Pizza Party 🍕</h1>
-          <p className="text-gray-600 mb-4">Wallet configuration error. Please refresh the page.</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded"
-          >
-            🔄 Refresh Page
-          </button>
-        </div>
-      </div>
-    )
+    // Return children without Wagmi wrapper as fallback
+    return <>{children}</>
   }
 } 
