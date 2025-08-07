@@ -2,10 +2,10 @@ import { createConfig, http } from 'wagmi'
 import { baseSepolia, base } from 'wagmi/chains'
 import { injected, metaMask, coinbaseWallet, walletConnect } from 'wagmi/connectors'
 
-// WalletConnect v2 configuration
-const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'your-project-id'
+// WalletConnect v2 configuration with fallback
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'default-project-id'
 
-// Create wagmi config
+// Create wagmi config with error handling
 export const config = createConfig({
   chains: [baseSepolia, base], // Use Base Sepolia for beta testing
   connectors: [
@@ -13,24 +13,25 @@ export const config = createConfig({
     metaMask(),
     coinbaseWallet({
       appName: 'Pizza Party',
-      appLogoUrl: 'https://your-domain.com/logo.png',
+      appLogoUrl: 'https://pizza-party.vmfcoin.com/logo.png',
     }),
-    walletConnect({
+    // Only add WalletConnect if projectId is valid
+    ...(projectId !== 'default-project-id' ? [walletConnect({
       projectId,
       showQrModal: true,
       qrModalOptions: {
         themeMode: 'dark',
         themeVariables: {
-          '--w3m-z-index': '9999',
+          '--wcm-z-index': '9999',
         },
       },
       metadata: {
         name: 'Pizza Party',
         description: 'Decentralized gaming platform on Base',
-        url: 'https://your-domain.com',
-        icons: ['https://your-domain.com/icon.png'],
+        url: 'https://pizza-party.vmfcoin.com',
+        icons: ['https://pizza-party.vmfcoin.com/icon.png'],
       },
-    }),
+    })] : []),
   ],
   transports: {
     [baseSepolia.id]: http('https://sepolia.base.org'),
