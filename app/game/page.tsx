@@ -1,4 +1,5 @@
 "use client"
+// DEPLOYMENT MARKER: SSR Protection Update - Commit 4dbddf0
 
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
@@ -50,6 +51,7 @@ export default function GamePage() {
     )
   }
 
+  // SSR SAFETY: Only call Wagmi hooks after client-side hydration
   const { 
     address, 
     isConnected, 
