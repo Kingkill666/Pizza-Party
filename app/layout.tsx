@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { FarcasterWrapper } from "@/components/FarcasterWrapper"
 import { WagmiProvider } from "@/components/WagmiProvider"
+import { Analytics } from "@vercel/analytics/next"
 
 // 🚨 URGENT DEPLOYMENT MARKER: Force Vercel to use commit ae22e86 - ALL SSR FIXES INCLUDED
 // This commit includes: Debug page SSR protection, Admin page SSR protection, Game page SSR protection
@@ -57,6 +58,7 @@ export default function RootLayout({
             {children}
           </FarcasterWrapper>
         </WagmiProvider>
+        <Analytics />
       </body>
     </html>
   )
