@@ -1,58 +1,42 @@
-"use client"
-// DEPLOYMENT MARKER: Enhanced SSR Protection - Commit 5ff1c13
+'use client'
 
 import { useState, useEffect } from 'react'
 import { WagmiConfig } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { config } from '@/lib/wagmi-config'
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
+import '@rainbow-me/rainbowkit/styles.css'
 
-interface WagmiProviderProps {
-  children: React.ReactNode
-}
+// Create a client
+const queryClient = new QueryClient()
 
-export const WagmiProvider = ({ children }: WagmiProviderProps) => {
-  const [isClient, setIsClient] = useState(false)
-  const [queryClient] = useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-        refetchOnWindowFocus: false,
-        staleTime: 5 * 60 * 1000, // 5 minutes
-      },
-    },
-  }))
+export function WagmiProvider({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    // Only set client-side after hydration
-    try {
-      setIsClient(true)
-    } catch (error) {
-      console.error('WagmiProvider client-side initialization error:', error)
-      // Don't set error state - just continue
-    }
+    setMounted(true)
   }, [])
 
-  // SSR SAFETY: Don't render anything until client-side to prevent SSR issues
-  if (!isClient) {
-    return (
-      <div style={{ visibility: 'hidden' }}>
-        {children}
-      </div>
-    )
+  if (!mounted) {
+    return null
   }
 
-  // SSR SAFETY: Only render Wagmi components after client-side hydration
-  try {
-    return (
+  return (
+    <WagmiConfig config={config}>
       <QueryClientProvider client={queryClient}>
-        <WagmiConfig config={config}>
+        <RainbowKitProvider
+          chains={config.chains}
+          initialChain={config.chains[0]}
+          theme={{
+            accentColor: '#ff6b35', // Pizza Party orange
+            borderRadius: 'medium',
+            fontStack: 'system',
+            overlayBlur: 'small',
+          }}
+        >
           {children}
-        </WagmiConfig>
+        </RainbowKitProvider>
       </QueryClientProvider>
-    )
-  } catch (error) {
-    console.error('WagmiProvider rendering error:', error)
-    // Return children without Wagmi wrapper as fallback
-    return <>{children}</>
-  }
+    </WagmiConfig>
+  )
 } 

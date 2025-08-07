@@ -1,75 +1,62 @@
-import { createConfig, http } from 'wagmi'
+import { getDefaultConfig } from 'wagmi'
 import { baseSepolia, base } from 'wagmi/chains'
-import { injected, metaMask, coinbaseWallet, walletConnect } from 'wagmi/connectors'
+import { 
+  metaMaskWallet, 
+  coinbaseWallet, 
+  rainbowWallet, 
+  trustWallet, 
+  phantomWallet,
+  walletConnect
+} from '@rainbow-me/rainbowkit/wallets'
+import { connectorsForWallets } from '@rainbow-me/rainbowkit'
+import { http } from 'wagmi'
 
-// WalletConnect v2 configuration with enhanced mobile support
+// WalletConnect v2 configuration with proper project ID
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'c4f79cc821944d9680842e34466bfbd9'
 
-// Platform-specific configuration for mobile deep linking
-const platformConfig = {
-  ios: {
-    bundleId: "com.pizzaparty.app",
-    redirectUri: "pizzaparty://walletconnect"
+// Create connectors with mobile-optimized wallet support
+const connectors = connectorsForWallets([
+  {
+    groupName: 'Recommended',
+    wallets: [
+      metaMaskWallet({ 
+        chains: [baseSepolia, base],
+        projectId,
+        shimDisconnect: true,
+      }),
+      coinbaseWallet({ 
+        appName: 'Pizza Party',
+        chains: [baseSepolia, base],
+        projectId,
+      }),
+      rainbowWallet({ 
+        chains: [baseSepolia, base],
+        projectId,
+      }),
+      trustWallet({ 
+        chains: [baseSepolia, base],
+        projectId,
+      }),
+      phantomWallet({ 
+        chains: [baseSepolia, base],
+        projectId,
+      }),
+      walletConnect({ 
+        chains: [baseSepolia, base],
+        projectId,
+      }),
+    ],
   },
-  android: {
-    packageName: "com.pizzaparty.app", 
-    redirectUri: "pizzaparty://walletconnect"
-  }
-}
+], {
+  appName: 'Pizza Party',
+  projectId,
+})
 
-// Create wagmi config with enhanced mobile-optimized WalletConnect
-export const config = createConfig({
-  chains: [baseSepolia, base], // Use Base Sepolia for beta testing
-  connectors: [
-    injected(),
-    metaMask(),
-    coinbaseWallet({
-      appName: 'Pizza Party',
-      appLogoUrl: 'https://pizza-party.vmfcoin.com/logo.png',
-      // Enhanced mobile deep linking
-      jsonRpcUrl: 'https://sepolia.base.org',
-      chainId: 84532, // Base Sepolia
-    }),
-    // Enhanced WalletConnect with mobile-optimized settings
-    walletConnect({
-      projectId,
-      showQrModal: true,
-      qrModalOptions: {
-        themeMode: 'dark',
-        themeVariables: {
-          '--wcm-z-index': '9999',
-          '--wcm-background-color': '#1a1a1a',
-          '--wcm-accent-color': '#ff6b35', // Pizza Party orange
-          '--wcm-background-border-radius': '16px',
-        },
-        // Enhanced wallet recommendations for mobile
-        explorerRecommendedWalletIds: [
-          'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', // MetaMask
-          '4622a2b2d6af1c738494851a64cb958218379dfe6ea44443ddf4bf4fd6f6bc71', // Coinbase Wallet
-          '19177a98252e07ddfc9af2083ba8e07ef627cb6103467ffa3c5e3e0b4c0d1d88', // Rainbow
-          '4622a2b2d6af1c738494851a64cb958218379dfe6ea44443ddf4bf4fd6f6bc71', // Trust Wallet
-          '33f145daa2f8f45b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c', // Phantom
-        ],
-        explorerExcludedWalletIds: 'ALL',
-        // Enhanced mobile deep linking
-        mobileWallets: [
-          'metamask',
-          'coinbase',
-          'rainbow',
-          'trust',
-          'phantom'
-        ],
-        privacyPolicyUrl: 'https://pizza-party.vmfcoin.com/privacy',
-        termsOfServiceUrl: 'https://pizza-party.vmfcoin.com/terms',
-      },
-      metadata: {
-        name: 'Pizza Party',
-        description: 'Decentralized gaming platform on Base',
-        url: 'https://pizza-party.vmfcoin.com',
-        icons: ['https://pizza-party.vmfcoin.com/icon.png'],
-      },
-    }),
-  ],
+// Create wagmi config with RainbowKit connectors
+export const config = getDefaultConfig({
+  chains: [baseSepolia, base],
+  connectors,
+  ssr: true,
   transports: {
     [baseSepolia.id]: http('https://sepolia.base.org'),
     [base.id]: http('https://mainnet.base.org'),

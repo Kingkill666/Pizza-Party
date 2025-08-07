@@ -1,71 +1,37 @@
-"use client"
+'use client'
 
-import { Button } from "@/components/ui/button"
-import { Check, Wallet } from "lucide-react"
+import { useAccount, useDisconnect } from 'wagmi'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { formatAddress } from '@/lib/wallet-config'
 
-interface WalletStatusProps {
-  isConnected: boolean
-  walletName?: string
-  formattedAddress?: string | null
-  onConnect: () => void
-  onDisconnect: () => void
-  customFontStyle: any
-}
+export function WalletStatus() {
+  const { address, isConnected } = useAccount()
+  const { disconnect } = useDisconnect()
 
-export function WalletStatus({
-  isConnected,
-  walletName,
-  formattedAddress,
-  onConnect,
-  onDisconnect,
-  customFontStyle,
-}: WalletStatusProps) {
   if (!isConnected) {
     return (
-      <Button
-        variant="outline"
-        className="w-full border-2 border-red-700 text-red-700 hover:bg-red-50 bg-transparent font-bold py-2"
-        style={{
-          ...customFontStyle,
-          letterSpacing: "1px",
-          fontSize: "1rem",
+      <ConnectButton 
+        chainStatus="icon"
+        showBalance={false}
+        accountStatus={{
+          smallScreen: 'avatar',
+          largeScreen: 'full',
         }}
-        onClick={onConnect}
-      >
-        <Wallet className="mr-2 h-5 w-5" />
-        Connect Wallet
-      </Button>
+      />
     )
   }
 
   return (
-    <div className="space-y-2">
-      <div
-        className="w-full bg-green-100 text-green-800 text-sm px-4 py-2 rounded-xl border-2 border-green-300 text-center"
-        style={customFontStyle}
-      >
-        <Check className="inline mr-2 h-4 w-4" />
-        Connected to {walletName}
+    <div className="flex items-center gap-2">
+      <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+        ✅ Connected {formatAddress(address || '')}
       </div>
-      <div
-        className="w-full bg-gray-100 text-gray-700 text-xs px-4 py-1 rounded-lg text-center"
-        style={customFontStyle}
+      <button
+        onClick={() => disconnect()}
+        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium transition-colors"
       >
-        {formattedAddress}
-      </div>
-      <Button
-        variant="outline"
-        className="w-full border-2 border-gray-400 text-gray-600 hover:bg-gray-50 bg-transparent font-bold py-1 text-sm"
-        style={customFontStyle}
-        onClick={() => {
-          console.log("🔌 User clicked disconnect button")
-          console.log("🔌 Calling onDisconnect function")
-          onDisconnect()
-          console.log("🔌 onDisconnect function called")
-        }}
-      >
-        Disconnect & Refresh
-      </Button>
+        Disconnect
+      </button>
     </div>
   )
 }
