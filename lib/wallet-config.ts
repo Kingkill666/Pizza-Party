@@ -187,6 +187,8 @@ export const connectMobileWallet = async (walletId: string): Promise<any> => {
       return await connectRainbowMobile()
     } else if (walletId === "trust") {
       return await connectTrustMobile()
+    } else if (walletId === "phantom") {
+      return await connectPhantomMobile()
     }
 
     // Strategy 2: Try WalletConnect with proper mobile handling
@@ -205,7 +207,6 @@ export const connectMobileWallet = async (walletId: string): Promise<any> => {
           themeVariables: {
             '--wcm-z-index': '9999',
             '--wcm-background-color': '#1a1a1a',
-            '--wcm-text-color': '#ffffff',
           },
           explorerRecommendedWalletIds: [
             'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', // MetaMask
@@ -397,6 +398,42 @@ const connectTrustMobile = async (): Promise<any> => {
   
   // Trust Wallet not available, show instructions
   throw new Error("Trust Wallet not detected. Please install Trust Wallet or open in Trust browser.")
+}
+
+// Phantom Wallet mobile connection
+const connectPhantomMobile = async (): Promise<any> => {
+  console.log("📱 Connecting to Phantom mobile...")
+  
+  // Check if Phantom is available
+  if (typeof window.ethereum !== 'undefined' && window.ethereum.isPhantom) {
+    try {
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      })
+      
+      if (accounts && accounts.length > 0) {
+        const chainId = await window.ethereum.request({
+          method: "eth_chainId",
+        })
+        
+        console.log(`✅ Phantom mobile connection successful: ${accounts[0]}`)
+        return {
+          accounts,
+          chainId,
+          provider: window.ethereum,
+          walletName: "Phantom"
+        }
+      }
+    } catch (error: any) {
+      if (error.code === 4001) {
+        throw new Error("Phantom connection rejected. Please approve in your wallet.")
+      }
+      throw new Error(`Phantom connection failed: ${error.message}`)
+    }
+  }
+  
+  // Phantom not available, show instructions
+  throw new Error("Phantom not detected. Please install Phantom or open in Phantom browser.")
 }
 
 // Generic Web3 provider connection

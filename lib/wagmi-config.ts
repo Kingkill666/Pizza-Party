@@ -24,13 +24,13 @@ export const config = createConfig({
         themeVariables: {
           '--wcm-z-index': '9999',
           '--wcm-background-color': '#1a1a1a',
-          '--wcm-text-color': '#ffffff',
         },
         explorerRecommendedWalletIds: [
           'c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96', // MetaMask
           '4622a2b2d6af1c738494851a64cb958218379dfe6ea44443ddf4bf4fd6f6bc71', // Coinbase Wallet
           '19177a98252e07ddfc9af2083ba8e07ef627cb6103467ffa3c5e3e0b4c0d1d88', // Rainbow
           '4622a2b2d6af1c738494851a64cb958218379dfe6ea44443ddf4bf4fd6f6bc71', // Trust Wallet
+          '33f145daa2f8f45b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c0b4c', // Phantom
         ],
         explorerExcludedWalletIds: 'ALL',
         privacyPolicyUrl: 'https://pizza-party.vmfcoin.com/privacy',
