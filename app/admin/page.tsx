@@ -86,9 +86,9 @@ export default function AdminPage() {
   // Load admin data
   useEffect(() => {
     if (isClient) {
-      loadAdminData()
-      const interval = setInterval(loadAdminData, 10000)
-      return () => clearInterval(interval)
+    loadAdminData()
+    const interval = setInterval(loadAdminData, 10000)
+    return () => clearInterval(interval)
     }
   }, [isClient])
 
@@ -117,12 +117,12 @@ export default function AdminPage() {
     // SSR SAFETY: Only create Date object on client-side
     const currentDate = typeof window !== 'undefined' ? new Date() : null
 
-    setSecurityStatus({
-      contractPaused: paused,
-      blacklistedAddresses: blacklisted.length,
-      suspiciousTransactions: suspicious.length,
+      setSecurityStatus({
+        contractPaused: paused,
+        blacklistedAddresses: blacklisted.length,
+        suspiciousTransactions: suspicious.length,
       lastSecurityCheck: currentDate,
-    })
+      })
   }
 
   // Emergency pause/unpause contract
@@ -211,13 +211,13 @@ export default function AdminPage() {
                 <div className="bg-red-100 p-3 rounded-lg">
                   <p className="text-sm text-red-800" style={customFontStyle}>
                     <strong>Status:</strong> Not Connected ❌
-                  </p>
+                          </p>
                   <p className="text-xs text-red-700 mt-2">
                     Connect wallet to access admin functions
-                  </p>
-                </div>
+                          </p>
+                        </div>
               )}
-            </div>
+                        </div>
 
             {/* Contract Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -243,8 +243,8 @@ export default function AdminPage() {
                 <AlertTriangle className="h-5 w-5 text-yellow-600" />
                 <h3 className="text-lg font-bold text-yellow-800" style={customFontStyle}>
                   Security Status
-                </h3>
-              </div>
+              </h3>
+                  </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-white p-3 rounded-lg">
@@ -260,36 +260,36 @@ export default function AdminPage() {
                 <div className="bg-white p-3 rounded-lg">
                   <p className="text-sm font-bold text-gray-800">Suspicious Transactions</p>
                   <p className="text-lg font-bold text-orange-600">{securityStatus.suspiciousTransactions}</p>
-                </div>
-              </div>
-            </div>
+                        </div>
+                      </div>
+                    </div>
 
             {/* Admin Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Button
-                onClick={() => setShowEmergencyModal(true)}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Button
+                    onClick={() => setShowEmergencyModal(true)}
                 className="bg-red-600 hover:bg-red-700 text-white p-4 rounded-xl"
                 style={customFontStyle}
                 disabled={!isConnected}
-              >
+                  >
                 🚨 Emergency Controls
-              </Button>
+                      </Button>
               
-              <Button
-                onClick={() => setShowSecurityModal(true)}
+                  <Button
+                    onClick={() => setShowSecurityModal(true)}
                 className="bg-yellow-600 hover:bg-yellow-700 text-white p-4 rounded-xl"
                 style={customFontStyle}
                 disabled={!isConnected}
-              >
+                  >
                 🛡️ Security Management
-              </Button>
-            </div>
+                  </Button>
+                      </div>
 
             {/* Error Messages */}
             {adminError && (
               <div className="bg-red-100 p-3 rounded-xl border-2 border-red-300">
                 <p className="text-sm text-red-800">{adminError}</p>
-              </div>
+                    </div>
             )}
           </CardContent>
         </Card>
@@ -298,56 +298,56 @@ export default function AdminPage() {
         <PayoutSystem />
       </div>
 
-      {/* Emergency Modal */}
-      <Dialog open={showEmergencyModal} onOpenChange={setShowEmergencyModal}>
+        {/* Emergency Modal */}
+        <Dialog open={showEmergencyModal} onOpenChange={setShowEmergencyModal}>
         <DialogContent className="bg-white/95 backdrop-blur-sm border-4 border-red-800 rounded-3xl shadow-2xl">
-          <DialogHeader>
+            <DialogHeader>
             <DialogTitle className="text-2xl text-red-800 text-center" style={customFontStyle}>
               🚨 Emergency Controls 🚨
-            </DialogTitle>
-          </DialogHeader>
+              </DialogTitle>
+            </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <Button
+                <Button
                 onClick={() => handleEmergencyPause(true)}
                 disabled={isProcessing || securityStatus.contractPaused}
                 className="bg-red-600 hover:bg-red-700 text-white"
                 style={customFontStyle}
               >
                 ⏸️ Pause Contract
-              </Button>
+                </Button>
               
-              <Button
+                <Button
                 onClick={() => handleEmergencyPause(false)}
                 disabled={isProcessing || !securityStatus.contractPaused}
                 className="bg-green-600 hover:bg-green-700 text-white"
                 style={customFontStyle}
               >
                 ▶️ Unpause Contract
-              </Button>
-            </div>
+                </Button>
+              </div>
             
             <div className="bg-yellow-100 p-3 rounded-lg border border-yellow-300">
               <p className="text-xs text-yellow-800" style={customFontStyle}>
                 ⚠️ Emergency controls should only be used in critical situations. These actions affect all users.
               </p>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+            </div>
+          </DialogContent>
+        </Dialog>
 
-      {/* Security Modal */}
-      <Dialog open={showSecurityModal} onOpenChange={setShowSecurityModal}>
+        {/* Security Modal */}
+        <Dialog open={showSecurityModal} onOpenChange={setShowSecurityModal}>
         <DialogContent className="bg-white/95 backdrop-blur-sm border-4 border-yellow-800 rounded-3xl shadow-2xl">
-          <DialogHeader>
+            <DialogHeader>
             <DialogTitle className="text-2xl text-yellow-800 text-center" style={customFontStyle}>
               🛡️ Security Management 🛡️
-            </DialogTitle>
-          </DialogHeader>
+              </DialogTitle>
+            </DialogHeader>
           <div className="space-y-4">
             <p className="text-gray-700 text-center">
               Monitor and manage security threats and suspicious activities.
-            </p>
+                </p>
             
             <div className="bg-gray-100 p-3 rounded-lg">
               <p className="text-sm text-gray-800">
@@ -359,10 +359,10 @@ export default function AdminPage() {
               <p className="text-sm text-gray-800">
                 <strong>Last Security Check:</strong> {securityStatus.lastSecurityCheck?.toLocaleString() || 'Not available'}
               </p>
+              </div>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
     </div>
   )
 }

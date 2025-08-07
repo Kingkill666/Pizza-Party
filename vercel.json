@@ -8,7 +8,7 @@
   ],
   "build": {
     "env": {
-      "NEXT_PUBLIC_DEPLOYMENT_VERSION": "c248dfe"
+      "NEXT_PUBLIC_DEPLOYMENT_VERSION": "64ffd58"
     }
   },
   "functions": {

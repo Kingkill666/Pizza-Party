@@ -5,7 +5,7 @@ import "./globals.css"
 import { FarcasterWrapper } from "@/components/FarcasterWrapper"
 import { WagmiProvider } from "@/components/WagmiProvider"
 
-// DEPLOYMENT MARKER: Force Vercel to use latest commit c248dfe
+// DEPLOYMENT MARKER: Force Vercel to use latest commit 64ffd58 - URGENT FIX
 
 const inter = Inter({ subsets: ["latin"] })
 
