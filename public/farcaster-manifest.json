@@ -1,37 +1,42 @@
 {
   "name": "Pizza Party",
-  "description": "Play to win a slice of the pie! Daily jackpots, weekly prizes, and VMF rewards on Base network.",
-  "icon": "https://pizzaparty.app/images/pizza-transparent.png",
-  "splash": "https://pizzaparty.app/images/pizza-transparent.png",
-  "url": "https://pizzaparty.app",
-  "frameUrl": "https://pizzaparty.app/frame",
-  "categories": ["gaming", "defi", "social"],
-  "tags": ["pizza", "gaming", "jackpot", "vmf", "base", "defi"],
+  "description": "Play to win a slice of the pie! Join the daily game and compete for Base Sepolia ETH prizes.",
+  "icon": "https://pizza-party.vmfcoin.com/images/pizza-transparent.png",
+  "splash": "https://pizza-party.vmfcoin.com/images/pizza-transparent.png",
+  "url": "https://pizza-party.vmfcoin.com",
+  "version": "1.0.0",
   "author": {
     "name": "Pizza Party Team",
-    "url": "https://pizzaparty.app"
+    "url": "https://pizza-party.vmfcoin.com"
   },
-  "version": "1.0.0",
   "permissions": [
-    "wallet_connect",
-    "user_profile"
+    "user:read",
+    "user:write"
   ],
   "features": [
-    "daily_jackpot",
-    "weekly_prizes", 
-    "referral_system",
-    "toppings_rewards",
-    "vmf_integration"
+    "wallet_connect",
+    "notifications"
   ],
-  "networks": ["base"],
-  "tokens": ["vmf"],
+  "categories": ["gaming", "defi", "social"],
+  "tags": ["pizza", "gaming", "defi", "base", "ethereum"],
+  "screenshots": [
+    "https://pizza-party.vmfcoin.com/images/pizza-homepage.png",
+    "https://pizza-party.vmfcoin.com/images/pizza-final.png"
+  ],
   "social": {
-    "farcaster": "pizzaparty",
-    "twitter": "pizzapartyapp",
-    "discord": "pizzaparty"
+    "twitter": "https://twitter.com/pizzaparty",
+    "discord": "https://discord.gg/pizzaparty",
+    "website": "https://pizza-party.vmfcoin.com"
   },
-  "support": {
-    "email": "vmf@vmfcoin.com",
-    "website": "https://pizzaparty.app"
+  "chain": {
+    "id": 84532,
+    "name": "Base Sepolia",
+    "currency": "BASE"
+  },
+  "game": {
+    "type": "daily",
+    "entry_fee": "0.001 BASE",
+    "prize_pool": "dynamic",
+    "winners": "8 daily"
   }
 } 

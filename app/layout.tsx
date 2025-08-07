@@ -35,6 +35,18 @@ export const metadata: Metadata = {
     'fc:frame:button:3': 'Connect Wallet',
     'fc:frame:button:4': 'Share Pizza Party',
     'fc:frame:post_url': 'https://pizzaparty.app/api/frame',
+    // Farcaster Mini App embed metadata
+    'fc:miniapp': JSON.stringify({
+      version: "1",
+      imageUrl: "https://pizza-party.vmfcoin.com/images/pizza-transparent.png",
+      button: {
+        title: "Pizza Party",
+        action: {
+          type: "post_redirect",
+          url: "https://pizza-party.vmfcoin.com"
+        }
+      }
+    }),
   },
 }
 
