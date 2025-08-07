@@ -42,10 +42,31 @@ export default function AdminPage() {
 
   const { isConnected, address } = useWagmiWallet()
 
-  // Check if we're on the client side
+  // SSR PROTECTION: Check if we're on the client side
   useEffect(() => {
     setIsClient(true)
   }, [])
+
+  // SSR SAFETY: Don't render anything until client-side to prevent SSR issues
+  if (!isClient) {
+    return (
+      <div className="min-h-screen p-4" style={{
+        backgroundImage: "url('/images/rotated-90-pizza-wallpaper.png')",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        backgroundPosition: "center center",
+      }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white/90 backdrop-blur-sm border-4 border-blue-800 rounded-3xl shadow-2xl p-6">
+            <h1 className="text-3xl text-center text-blue-800 mb-6" style={customFontStyle}>
+              🛡️ Admin Dashboard 🛡️
+            </h1>
+            <p className="text-center text-gray-600">Loading admin dashboard...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // Safe localStorage access
   const getLocalStorageItem = (key: string): string | null => {
@@ -92,11 +113,14 @@ export default function AdminPage() {
     const blacklisted = JSON.parse(getLocalStorageItem("pizza_blacklisted_addresses") || "[]")
     const suspicious = JSON.parse(getLocalStorageItem("pizza_suspicious_transactions") || "[]")
 
+    // SSR SAFETY: Only create Date object on client-side
+    const currentDate = typeof window !== 'undefined' ? new Date() : null
+
     setSecurityStatus({
       contractPaused: paused,
       blacklistedAddresses: blacklisted.length,
       suspiciousTransactions: suspicious.length,
-      lastSecurityCheck: new Date(),
+      lastSecurityCheck: currentDate,
     })
   }
 
@@ -129,17 +153,6 @@ export default function AdminPage() {
     } finally {
       setIsProcessing(false)
     }
-  }
-
-  // Don't render anything until client-side
-  if (!isClient) {
-    return (
-      <div className="min-h-screen p-4 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-lg">Loading admin panel...</p>
-        </div>
-      </div>
-    )
   }
 
   return (
