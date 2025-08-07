@@ -306,3 +306,49 @@ body {
     color: black !important;
   }
 }
+
+/* Wallet Connector Styles */
+.wallet-connector {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.wallet-button {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e1e1e1;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wallet-button:hover {
+  background: #f5f5f5;
+}
+
+.error-message {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+/* Mobile-specific wallet styles */
+@media (max-width: 768px) {
+  .wallet-connector {
+    padding: 0.5rem;
+  }
+  
+  .wallet-button {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+}
+
+/* RainbowKit theme customization */
+[data-rk] {
+  --rk-accent-color: #ff6b35;
+  --rk-border-radius: 12px;
+  --rk-font-family: system-ui, -apple-system, sans-serif;
+}

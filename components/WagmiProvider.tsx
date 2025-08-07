@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { config } from '@/lib/wagmi-config'
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import '@rainbow-me/rainbowkit/styles.css'
+import { pizzaPartyChain } from '@/lib/chains'
 
 // Create a client
 const queryClient = new QueryClient()
@@ -25,14 +26,15 @@ export function WagmiProvider({ children }: { children: React.ReactNode }) {
     <WagmiConfig config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider
-          chains={config.chains}
-          initialChain={config.chains[0]}
+          chains={[pizzaPartyChain]}
+          initialChain={pizzaPartyChain}
           theme={{
             accentColor: '#ff6b35', // Pizza Party orange
             borderRadius: 'medium',
             fontStack: 'system',
             overlayBlur: 'small',
           }}
+          coolMode
         >
           {children}
         </RainbowKitProvider>
