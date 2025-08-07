@@ -1,11 +1,77 @@
 # 🍕 Pizza Party API Reference
 
+## Table of Contents
+1. [Authentication](#authentication)
+2. [Base Configuration](#base-configuration)
+3. [Smart Contract Functions](#smart-contract-functions)
+4. [REST API Endpoints](#rest-api-endpoints)
+5. [WebSocket Events](#websocket-events)
+6. [Error Handling](#error-handling)
+7. [Security Features](#security-features)
+8. [Rate Limiting](#rate-limiting)
+9. [Testing](#testing)
+
+## Authentication
+
+All API calls require wallet authentication via MetaMask, Coinbase Wallet, or WalletConnect.
+
+### Wallet Connection Flow
+```typescript
+// 1. Request wallet connection
+const connectWallet = async (walletType: 'metamask' | 'coinbase' | 'walletconnect') => {
+  const result = await window.ethereum.request({
+    method: 'eth_requestAccounts'
+  });
+  return result[0]; // Return connected address
+};
+
+// 2. Sign message for authentication
+const signMessage = async (address: string, message: string) => {
+  const signature = await window.ethereum.request({
+    method: 'personal_sign',
+    params: [message, address]
+  });
+  return signature;
+};
+```
+
+## Base Configuration
+
+### Network Configuration
+```typescript
+// Base Sepolia Testnet (Beta)
+export const BASE_SEPOLIA_CONFIG = {
+  chainId: 84532,
+  chainName: "Base Sepolia",
+  nativeCurrency: {
+    name: "Ethereum",
+    symbol: "ETH",
+    decimals: 18,
+  },
+  rpcUrls: ["https://sepolia.base.org"],
+  blockExplorerUrls: ["https://sepolia.basescan.org"],
+};
+
+// Base Mainnet (Production)
+export const BASE_MAINNET_CONFIG = {
+  chainId: 8453,
+  chainName: "Base",
+  nativeCurrency: {
+    name: "Ethereum",
+    symbol: "ETH",
+    decimals: 18,
+  },
+  rpcUrls: ["https://mainnet.base.org"],
+  blockExplorerUrls: ["https://basescan.org"],
+};
+```
+
 ## Smart Contract Functions
 
 ### Game Entry Functions
 
 #### `enterDailyGame(string memory referralCode)`
-**Description**: Enter the daily game with 0.001 Base Sepolia ETH entry fee for beta testing
+**Description**: Enter the daily game with 0.001 Base Sepolia ETH entry fee
 **Parameters**: 
 - `referralCode` (string): Optional referral code for bonus toppings
 **Returns**: None
@@ -88,15 +154,6 @@ function drawDailyWinners() external {
 **Events Emitted**: 
 - `DailyWinnersSelected(uint256 gameId, address[] winners, uint256 jackpot)`
 
-```solidity
-function checkAndDistributeDailyPrizes() external {
-    Game storage currentGame = games[_gameId];
-    if (!currentGame.isCompleted && block.timestamp >= currentGame.endTime) {
-        drawDailyWinners();
-    }
-}
-```
-
 ### Toppings System Functions
 
 #### `claimToppings(uint256 amount)`
@@ -107,18 +164,19 @@ function checkAndDistributeDailyPrizes() external {
 **Events Emitted**: 
 - `ToppingsAwarded(address indexed player, uint256 amount, string reason)`
 
-```solidity
-function claimToppings(uint256 amount) external nonReentrant whenNotPaused notBlacklisted(msg.sender) {
-    require(amount > 0, "Invalid topping amount");
-    require(players[msg.sender].totalToppings >= amount, "Insufficient toppings");
-    
-    // Transfer toppings to weekly jackpot
-    players[msg.sender].totalToppings = players[msg.sender].totalToppings - amount;
-    currentWeeklyJackpot = currentWeeklyJackpot + (amount * 0.001 ether);
-    
-    emit ToppingsAwarded(msg.sender, amount, "Weekly jackpot claim");
-}
-```
+#### `awardBaseSepoliaHoldingsToppings()`
+**Description**: Award toppings based on Base Sepolia ETH holdings
+**Parameters**: None
+**Returns**: None
+**Events Emitted**: 
+- `ToppingsAwarded(address indexed player, uint256 amount, string reason)`
+
+#### `awardStreakBonus()`
+**Description**: Award toppings for 7-day streak
+**Parameters**: None
+**Returns**: None
+**Events Emitted**: 
+- `ToppingsAwarded(address indexed player, uint256 amount, string reason)`
 
 ### Randomness Functions
 
@@ -129,15 +187,6 @@ function claimToppings(uint256 amount) external nonReentrant whenNotPaused notBl
 **Events Emitted**: 
 - `RandomnessRequested(uint256 gameId, uint256 randomnessRoundId)`
 
-```solidity
-function requestDailyRandomness() external onlyOwner whenNotPaused {
-    uint256 randomnessRoundId = randomnessContract.requestRandomness();
-    currentRandomnessRound = randomnessRoundId;
-    
-    emit RandomnessRequested(_gameId, randomnessRoundId);
-}
-```
-
 #### `submitRandomnessCommitment(uint256 roundId, bytes32 commitment)`
 **Description**: Submit commitment for randomness generation
 **Parameters**: 
@@ -147,191 +196,496 @@ function requestDailyRandomness() external onlyOwner whenNotPaused {
 **Events Emitted**: 
 - `EntropyContributed(address indexed contributor, bytes32 entropy, uint256 roundId)`
 
-```solidity
-function submitRandomnessCommitment(uint256 roundId, bytes32 commitment) external whenNotPaused {
-    randomnessContract.submitCommitment(roundId, commitment);
+## REST API Endpoints
+
+### Base URL
+- **Testnet**: `https://api.pizzaparty.com/v1`
+- **Mainnet**: `https://api.pizzaparty.com/v1`
+
+### Authentication Headers
+```http
+Authorization: Bearer <wallet_signature>
+X-Wallet-Address: <wallet_address>
+X-Chain-Id: <chain_id>
+```
+
+### Game Management
+
+#### Enter Daily Game
+```http
+POST /api/game/enter
+Content-Type: application/json
+
+{
+  "referralCode": "PIZZA123",
+  "walletAddress": "0x...",
+  "signature": "0x...",
+  "chainId": 84532
 }
 ```
 
-## Automatic Jackpot Payout System
+**Response:**
+```json
+{
+  "success": true,
+  "transactionHash": "0x...",
+  "gameId": 1,
+  "entryFee": "0.001",
+  "jackpotAmount": "0.050",
+  "timestamp": 1703123456789
+}
+```
 
-### Daily Jackpot Process
-1. **Entry Collection**: Players pay 0.001 Base Sepolia ETH per entry
-2. **Prize Pool**: All entry fees accumulate in `currentDailyJackpot`
-3. **Game End**: Automatic detection at 12pm PST daily
-4. **Winner Selection**: 8 random winners using secure on-chain randomness
-5. **Prize Distribution**: Automatic ETH transfer to winner wallets
-6. **New Game**: Automatic start of new daily game
+#### Get Game Status
+```http
+GET /api/game/status?gameId=1
+```
 
-### Weekly Jackpot Process
-1. **Toppings Collection**: Players claim toppings throughout the week
-2. **Prize Pool**: Total claimed toppings × 0.001 ETH
-3. **Game End**: Automatic detection at 12pm PST Monday
-4. **Winner Selection**: 10 random winners using secure randomness
-5. **Prize Distribution**: Automatic ETH transfer to winner wallets
-6. **Reset**: All toppings reset for new weekly cycle
+**Response:**
+```json
+{
+  "gameId": 1,
+  "isActive": true,
+  "endTime": "2024-01-15T20:00:00Z",
+  "totalPlayers": 150,
+  "jackpotAmount": "0.150",
+  "winners": [],
+  "dailyWinnersCount": 8,
+  "weeklyWinnersCount": 10
+}
+```
 
-### Security Features
-- **ReentrancyGuard**: All payable functions protected
-- **Access Control**: Role-based permissions for admin functions
-- **Input Validation**: Sanitized inputs with length and format checks
-- **Rate Limiting**: Cooldown periods to prevent abuse
-- **Emergency Pause**: Ability to pause contract in emergencies
+#### Get Player Info
+```http
+GET /api/player/info?address=0x...
+```
 
-### Event Tracking
-The contract emits comprehensive events for monitoring:
-- `PlayerEntered`: When players enter the game
-- `DailyWinnersSelected`: When daily winners are chosen
-- `WeeklyWinnersSelected`: When weekly winners are chosen
-- `JackpotUpdated`: When jackpot amounts change
-- `ToppingsAwarded`: When players earn toppings
-- `ReferralUsed`: When referral codes are used
-- `RandomnessRequested`: When randomness is requested
+**Response:**
+```json
+{
+  "address": "0x...",
+  "totalToppings": 25,
+  "dailyEntries": 1,
+  "lastEntryTime": "2024-01-15T10:30:00Z",
+  "streakDays": 3,
+  "referrals": 2,
+  "totalRewards": "0.005",
+  "isEligibleForDaily": true
+}
+```
 
-## Frontend Integration
+### Wallet Integration
 
-### Wallet Connection
-```typescript
-// Connect to wallet
-const connectWallet = async (walletId: string) => {
-    const result = await requestWalletConnection(walletId);
-    const walletConnection: WalletConnection = {
-        address: result.accounts[0],
-        chainId: Number.parseInt(result.chainId, 16),
-        walletName: getWalletDisplayName(walletId),
-    };
-    return walletConnection;
+#### Connect Wallet
+```http
+POST /api/wallet/connect
+Content-Type: application/json
+
+{
+  "walletType": "metamask",
+  "chainId": 84532,
+  "signature": "0x..."
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "address": "0x...",
+  "chainId": 84532,
+  "balance": "0.500",
+  "sessionToken": "session_abc123..."
+}
+```
+
+#### Get Wallet Balance
+```http
+GET /api/wallet/balance?address=0x...
+```
+
+**Response:**
+```json
+{
+  "address": "0x...",
+  "balance": "0.500",
+  "currency": "ETH",
+  "chainId": 84532,
+  "lastUpdated": "2024-01-15T10:30:00Z"
+}
+```
+
+### Prize Management
+
+#### Claim Toppings
+```http
+POST /api/prizes/claim-toppings
+Content-Type: application/json
+
+{
+  "amount": 10,
+  "walletAddress": "0x...",
+  "signature": "0x..."
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "transactionHash": "0x...",
+  "claimedAmount": 10,
+  "weeklyJackpot": "0.010",
+  "remainingToppings": 15
+}
+```
+
+#### Get Prize History
+```http
+GET /api/prizes/history?address=0x...
+```
+
+**Response:**
+```json
+{
+  "address": "0x...",
+  "prizes": [
+    {
+      "type": "daily",
+      "amount": "0.0125",
+      "transactionHash": "0x...",
+      "timestamp": "2024-01-15T20:00:00Z",
+      "gameId": 1
+    }
+  ],
+  "totalWon": "0.025"
+}
+```
+
+### Referral System
+
+#### Create Referral Code
+```http
+POST /api/referrals/create
+Content-Type: application/json
+
+{
+  "walletAddress": "0x...",
+  "signature": "0x..."
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "referralCode": "PIZZA123ABC",
+  "walletAddress": "0x...",
+  "createdAt": "2024-01-15T10:30:00Z"
+}
+```
+
+#### Get Referral Stats
+```http
+GET /api/referrals/stats?address=0x...
+```
+
+**Response:**
+```json
+{
+  "address": "0x...",
+  "referralCode": "PIZZA123ABC",
+  "totalReferrals": 5,
+  "totalRewards": "0.025",
+  "referrals": [
+    {
+      "address": "0x...",
+      "joinedAt": "2024-01-15T10:30:00Z",
+      "reward": "0.005"
+    }
+  ]
+}
+```
+
+## WebSocket Events
+
+### Connection
+```javascript
+const ws = new WebSocket('wss://api.pizzaparty.com/ws');
+
+ws.onopen = () => {
+  console.log('Connected to Pizza Party WebSocket');
+  
+  // Subscribe to events
+  ws.send(JSON.stringify({
+    type: 'subscribe',
+    events: ['player_entered', 'jackpot_updated', 'winners_selected']
+  }));
 };
 ```
 
-### Contract Interaction
-```typescript
-// Enter daily game
-const enterGame = async (referralCode?: string) => {
-    const contract = createPizzaPartyContract(window.ethereum);
-    const txHash = await contract.enterDailyGame(referralCode || "", {
-        value: ethers.utils.parseEther("0.001")
-    });
-    return txHash;
-};
+### Event Types
+
+#### Player Entered
+```json
+{
+  "type": "player_entered",
+  "data": {
+    "player": "0x...",
+    "gameId": 1,
+    "amount": "0.001",
+    "timestamp": 1703123456789
+  }
+}
 ```
 
-### Event Listening
-```typescript
-// Listen for game events
-const listenForEvents = () => {
-    contract.on("PlayerEntered", (player, gameId, amount) => {
-        console.log(`Player ${player} entered game ${gameId} with ${amount} ETH`);
-    });
-    
-    contract.on("DailyWinnersSelected", (gameId, winners, jackpot) => {
-        console.log(`Daily winners selected for game ${gameId}: ${winners}`);
-    });
-};
+#### Jackpot Updated
+```json
+{
+  "type": "jackpot_updated",
+  "data": {
+    "dailyJackpot": "0.150",
+    "weeklyJackpot": "0.500",
+    "timestamp": 1703123456789
+  }
+}
 ```
 
-## Network Configuration
-
-### Base Sepolia Testnet (Beta)
-```typescript
-export const BASE_SEPOLIA_NETWORK = {
-    chainId: 84532,
-    chainName: "Base Sepolia",
-    nativeCurrency: {
-        name: "Ethereum",
-        symbol: "ETH",
-        decimals: 18,
-    },
-    rpcUrls: [
-        "https://sepolia.base.org",
-        "https://base-sepolia.g.alchemy.com/v2/demo",
-    ],
-    blockExplorerUrls: ["https://sepolia.basescan.org"],
-};
+#### Winners Selected
+```json
+{
+  "type": "winners_selected",
+  "data": {
+    "gameId": 1,
+    "winners": ["0x...", "0x...", "0x..."],
+    "jackpot": "0.150",
+    "prizePerWinner": "0.01875",
+    "timestamp": 1703123456789
+  }
+}
 ```
 
-### Base Mainnet (Production)
-```typescript
-export const BASE_NETWORK = {
-    chainId: 8453,
-    chainName: "Base",
-    nativeCurrency: {
-        name: "Ethereum",
-        symbol: "ETH",
-        decimals: 18,
-    },
-    rpcUrls: [
-        "https://mainnet.base.org",
-        "https://base-mainnet.g.alchemy.com/v2/demo",
-    ],
-    blockExplorerUrls: ["https://basescan.org"],
-};
+#### Game State Changed
+```json
+{
+  "type": "game_state_changed",
+  "data": {
+    "gameId": 1,
+    "state": "completed",
+    "totalPlayers": 150,
+    "timestamp": 1703123456789
+  }
+}
 ```
 
 ## Error Handling
 
+### HTTP Status Codes
+- `200`: Success
+- `400`: Bad Request (validation error)
+- `401`: Unauthorized (authentication required)
+- `403`: Forbidden (rate limited or blacklisted)
+- `404`: Not Found
+- `429`: Too Many Requests (rate limit exceeded)
+- `500`: Internal Server Error
+
+### Error Response Format
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid wallet address format",
+    "details": {
+      "field": "walletAddress",
+      "value": "invalid_address"
+    },
+    "timestamp": "2024-01-15T10:30:00Z",
+    "requestId": "req_abc123"
+  }
+}
+```
+
 ### Common Error Codes
-- `4001`: User rejected the request
-- `-32002`: Request already pending
-- `4902`: Network not found in wallet
-- `-32603`: Internal JSON-RPC error
+| Code | Message | Description |
+|------|---------|-------------|
+| `INVALID_ADDRESS` | Invalid wallet address format | Wallet address validation failed |
+| `INSUFFICIENT_FUNDS` | Insufficient balance for transaction | User doesn't have enough ETH |
+| `RATE_LIMIT_EXCEEDED` | Too many requests, try again later | Rate limit exceeded |
+| `GAME_NOT_ACTIVE` | Game is not currently active | Game is paused or ended |
+| `ALREADY_ENTERED` | Daily entry already completed | User already entered today |
+| `INVALID_SIGNATURE` | Invalid wallet signature | Signature verification failed |
+| `NETWORK_ERROR` | Blockchain network error | RPC or network issue |
+| `CONTRACT_ERROR` | Smart contract execution failed | Contract revert or error |
 
-### Error Handling Example
+## Security Features
+
+### Input Validation
+All inputs are validated using the `InputValidator` class:
 ```typescript
-try {
-    const result = await contract.enterDailyGame("", {
-        value: ethers.utils.parseEther("0.001")
-    });
-    console.log("Transaction successful:", result);
-} catch (error: any) {
-    if (error.code === 4001) {
-        console.log("User rejected the transaction");
-    } else if (error.code === -32002) {
-        console.log("Request already pending");
-    } else {
-        console.error("Transaction failed:", error.message);
-    }
+// Wallet address validation
+const validation = InputValidator.validateWalletAddress(address);
+if (!validation.valid) {
+  throw new Error(validation.error);
+}
+
+// Amount validation
+const amountValidation = InputValidator.validateAmount(amount);
+if (!amountValidation.valid) {
+  throw new Error(amountValidation.error);
 }
 ```
 
-## Gas Optimization
-
-### Batch Processing
-```solidity
-function processBatchPlayers(address[] memory players, uint256[] memory amounts) external {
-    require(players.length <= BATCH_SIZE, "Batch size too large");
-    
-    for (uint256 i = 0; i < players.length; i++) {
-        _processPlayerOptimized(players[i], amounts[i]);
-    }
-}
-```
-
-### Gas Estimation
+### Rate Limiting
+Configurable rate limits per action type:
 ```typescript
-const estimateGas = async (functionName: string, ...args: any[]) => {
-    const contract = createPizzaPartyContract(window.ethereum);
-    const gasEstimate = await contract.estimateGas[functionName](...args);
-    return gasEstimate;
+const RATE_LIMITS = {
+  GAME_ENTRY: { max: 10, window: 24 * 60 * 60 * 1000 }, // 10 per day
+  WALLET_CONNECTION: { max: 5, window: 60 * 1000 }, // 5 per minute
+  API_CALL: { max: 100, window: 60 * 1000 }, // 100 per minute
+  REFERRAL_CREATION: { max: 3, window: 24 * 60 * 60 * 1000 }, // 3 per day
+  PRIZE_CLAIM: { max: 5, window: 60 * 60 * 1000 } // 5 per hour
 };
 ```
 
-## Security Considerations
+### Security Monitoring
+Real-time threat detection and alerting:
+```typescript
+// Track user actions
+securityMonitor.trackUserAction({
+  type: 'GAME_ENTRY',
+  userId: address,
+  metadata: { timestamp: Date.now() }
+});
 
-### Reentrancy Protection
-All payable functions use the `nonReentrant` modifier to prevent reentrancy attacks.
+// Check for suspicious activity
+if (securityMonitor.isUserFlagged(address)) {
+  throw new Error('Account temporarily restricted');
+}
+```
 
-### Access Control
-- `onlyOwner`: Only contract owner can call admin functions
-- `onlyRole`: Role-based access control for specific functions
-- `whenNotPaused`: Functions disabled when contract is paused
+### Error Handling
+Centralized error handling with severity levels:
+```typescript
+const errorHandler = ErrorHandler.getInstance();
+const userMessage = errorHandler.handleError(error, 'API.gameEntry', 'HIGH');
+```
 
-### Input Validation
-- Referral code length and format validation
-- Address validation for all external inputs
-- Amount validation to prevent overflow/underflow
+## Rate Limiting
 
-### Rate Limiting
-- Daily entry limits per wallet
-- Cooldown periods between actions
-- Maximum reward amounts per day 
+### Headers
+```http
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1703123456
+```
+
+### Response when exceeded
+```json
+{
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Too many requests",
+    "retryAfter": 60
+  }
+}
+```
+
+## Testing
+
+### Unit Tests
+```bash
+# Run all tests
+npm test
+
+# Run specific test suites
+npm run test:contracts
+npm run test:api
+npm run test:security
+
+# Run with coverage
+npm run test:coverage
+```
+
+### Integration Tests
+```bash
+# Test API endpoints
+npm run test:integration:api
+
+# Test WebSocket events
+npm run test:integration:websocket
+
+# Test contract interactions
+npm run test:integration:contracts
+```
+
+### Security Tests
+```bash
+# Test input validation
+npm run test:security:validation
+
+# Test rate limiting
+npm run test:security:rate-limit
+
+# Test error handling
+npm run test:security:error-handling
+```
+
+### Example Test
+```typescript
+describe('Game Entry API', () => {
+  it('should allow valid game entry', async () => {
+    const response = await request(app)
+      .post('/api/game/enter')
+      .send({
+        walletAddress: '0x1234567890123456789012345678901234567890',
+        signature: '0x...',
+        referralCode: 'PIZZA123'
+      })
+      .expect(200);
+
+    expect(response.body.success).toBe(true);
+    expect(response.body.transactionHash).toBeDefined();
+  });
+
+  it('should reject invalid wallet address', async () => {
+    const response = await request(app)
+      .post('/api/game/enter')
+      .send({
+        walletAddress: 'invalid_address',
+        signature: '0x...'
+      })
+      .expect(400);
+
+    expect(response.body.error.code).toBe('INVALID_ADDRESS');
+  });
+});
+```
+
+## Deployment
+
+### Environment Variables
+```bash
+# Required
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x...
+NEXT_PUBLIC_CHAIN_ID=84532
+NEXT_PUBLIC_RPC_URL=https://sepolia.base.org
+
+# Optional
+NEXT_PUBLIC_SENTRY_DSN=your_sentry_dsn
+NEXT_PUBLIC_SECURITY_WEBHOOK=your_webhook_url
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
+```
+
+### Build and Deploy
+```bash
+# Build for production
+npm run build
+
+# Start production server
+npm start
+
+# Deploy to Vercel
+vercel --prod
+```
+
+This comprehensive API documentation provides complete coverage of all endpoints, security features, and testing procedures for the Pizza Party dApp! 🍕 
