@@ -162,7 +162,7 @@ export const getCurrentPageUrl = (): string => {
   return window.location.href
 }
 
-// Enhanced mobile wallet connection with multiple strategies
+// Mobile wallet connection with in-app popups (no external redirects)
 export const connectMobileWallet = async (walletId: string): Promise<any> => {
   const wallet = WALLETS.find((w) => w.id === walletId)
   if (!wallet) throw new Error("Wallet not found")
@@ -176,7 +176,7 @@ export const connectMobileWallet = async (walletId: string): Promise<any> => {
     return requestWalletConnection(walletId)
   }
 
-  // For mobile, use multiple connection strategies
+  // For mobile, use in-app connection strategies
   if (isMobile()) {
     // Strategy 1: Try direct Web3 connection (works if user is in wallet browser)
     if (window.ethereum) {
@@ -209,98 +209,199 @@ export const connectMobileWallet = async (walletId: string): Promise<any> => {
       }
     }
 
-    // Strategy 2: Try WalletConnect for mobile
+    // Strategy 2: Try WalletConnect v2 with in-app popup
     try {
-      console.log("📱 Attempting WalletConnect connection...")
+      console.log("📱 Attempting WalletConnect v2 in-app connection...")
       
-      // Create WalletConnect URI
+      // Create WalletConnect URI for in-app connection
       const currentUrl = getCurrentPageUrl()
       const wcUri = `wc:${Date.now()}@2?relay-protocol=irn&symKey=${generateSymKey()}&expiry=${Date.now() + 60000}`
       
-      // Create deep links for different wallets
-      let deepLinkUrl = ""
-      switch (walletId) {
-        case "metamask":
-          deepLinkUrl = `https://metamask.app.link/dapp/${encodeURIComponent(currentUrl)}?uri=${encodeURIComponent(wcUri)}`
-          break
-        case "coinbase":
-          deepLinkUrl = `https://wallet.coinbase.com/dapp/${encodeURIComponent(currentUrl)}?uri=${encodeURIComponent(wcUri)}`
-          break
-        case "rainbow":
-          deepLinkUrl = `https://rainbow.me/dapp/${encodeURIComponent(currentUrl)}?uri=${encodeURIComponent(wcUri)}`
-          break
-        case "trust":
-          deepLinkUrl = `https://link.trustwallet.com/dapp/${encodeURIComponent(currentUrl)}?uri=${encodeURIComponent(wcUri)}`
-          break
-        default:
-          // Universal WalletConnect deep link
-          deepLinkUrl = `https://walletconnect.com/dapp/${encodeURIComponent(currentUrl)}?uri=${encodeURIComponent(wcUri)}`
-      }
-
-      // Try to open the deep link
-      if (deepLinkUrl) {
-        console.log(`🔗 Opening deep link: ${deepLinkUrl}`)
-        
-        // Try to open in new tab/window first
-        const newWindow = window.open(deepLinkUrl, '_blank')
-        
-        if (!newWindow) {
-          // Fallback to direct navigation
-          window.location.href = deepLinkUrl
-        }
-        
-        return new Promise((resolve, reject) => {
-          // Give the user time to switch to the wallet app
-          setTimeout(() => {
-            reject(new Error("Please complete the connection in your wallet app and return to this page."))
-          }, 3000)
+      // Use WalletConnect's in-app connection method
+      const wcClient = await import('@walletconnect/ethereum-provider')
+      
+      if (wcClient && wcClient.default) {
+        const provider = await wcClient.default.init({
+          projectId: 'pizza-party-wc', // Use a simple project ID
+          chains: [8453], // Base network
+          showQrModal: true,
+          qrModalOptions: {
+            themeMode: 'dark',
+            themeVariables: {
+              '--w3m-z-index': '9999'
+            }
+          }
         })
-      }
-    } catch (error: any) {
-      console.log("❌ WalletConnect deep linking failed:", error.message)
-    }
 
-    // Strategy 3: Try universal wallet deep linking
-    try {
-      console.log("📱 Attempting universal wallet deep linking...")
-      
-      const currentUrl = getCurrentPageUrl()
-      const universalLinks = [
-        `https://metamask.app.link/dapp/${encodeURIComponent(currentUrl)}`,
-        `https://wallet.coinbase.com/dapp/${encodeURIComponent(currentUrl)}`,
-        `https://rainbow.me/dapp/${encodeURIComponent(currentUrl)}`,
-        `https://link.trustwallet.com/dapp/${encodeURIComponent(currentUrl)}`,
-        `https://walletconnect.com/dapp/${encodeURIComponent(currentUrl)}`
-      ]
-
-      // Try each universal link
-      for (const link of universalLinks) {
-        try {
-          console.log(`🔗 Trying universal link: ${link}`)
-          window.location.href = link
-          break
-        } catch (error) {
-          console.log(`❌ Universal link failed: ${link}`)
+        // Connect using WalletConnect's built-in modal
+        await provider.connect()
+        
+        const accounts = await provider.request({ method: 'eth_accounts' })
+        const chainId = await provider.request({ method: 'eth_chainId' })
+        
+        if (accounts && accounts.length > 0) {
+          console.log(`✅ WalletConnect in-app connection successful: ${accounts[0]}`)
+          return {
+            accounts,
+            chainId,
+            provider: provider
+          }
         }
       }
-      
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          reject(new Error("Please complete the connection in your wallet app and return to this page."))
-        }, 2000)
-      })
     } catch (error: any) {
-      console.log("❌ Universal deep linking failed:", error.message)
+      console.log("❌ WalletConnect in-app connection failed:", error.message)
     }
 
-    // Strategy 4: Provide manual instructions as final fallback
-    const currentUrl = getCurrentPageUrl()
-    const instructions = `To connect your ${wallet.name}:
+    // Strategy 3: Try MetaMask's in-app connection
+    if (walletId === "metamask") {
+      try {
+        console.log("📱 Attempting MetaMask in-app connection...")
+        
+        // Check if MetaMask is available
+        if (typeof window.ethereum !== 'undefined' && window.ethereum.isMetaMask) {
+          const accounts = await window.ethereum.request({
+            method: "eth_requestAccounts",
+          })
 
-1. Copy this URL: ${currentUrl}
+          if (accounts && accounts.length > 0) {
+            const chainId = await window.ethereum.request({
+              method: "eth_chainId",
+            })
+
+            console.log(`✅ MetaMask in-app connection successful: ${accounts[0]}`)
+            return {
+              accounts,
+              chainId,
+              provider: window.ethereum,
+            }
+          }
+        }
+      } catch (error: any) {
+        console.log("❌ MetaMask in-app connection failed:", error.message)
+      }
+    }
+
+    // Strategy 4: Try Coinbase Wallet's in-app connection
+    if (walletId === "coinbase") {
+      try {
+        console.log("📱 Attempting Coinbase Wallet in-app connection...")
+        
+        // Check if Coinbase Wallet is available
+        if (typeof window.ethereum !== 'undefined' && window.ethereum.isCoinbaseWallet) {
+          const accounts = await window.ethereum.request({
+            method: "eth_requestAccounts",
+          })
+
+          if (accounts && accounts.length > 0) {
+            const chainId = await window.ethereum.request({
+              method: "eth_chainId",
+            })
+
+            console.log(`✅ Coinbase Wallet in-app connection successful: ${accounts[0]}`)
+            return {
+              accounts,
+              chainId,
+              provider: window.ethereum,
+            }
+          }
+        }
+      } catch (error: any) {
+        console.log("❌ Coinbase Wallet in-app connection failed:", error.message)
+      }
+    }
+
+    // Strategy 5: Try Rainbow Wallet's in-app connection
+    if (walletId === "rainbow") {
+      try {
+        console.log("📱 Attempting Rainbow Wallet in-app connection...")
+        
+        // Check if Rainbow Wallet is available
+        if (typeof window.ethereum !== 'undefined' && window.ethereum.isRainbow) {
+          const accounts = await window.ethereum.request({
+            method: "eth_requestAccounts",
+          })
+
+          if (accounts && accounts.length > 0) {
+            const chainId = await window.ethereum.request({
+              method: "eth_chainId",
+            })
+
+            console.log(`✅ Rainbow Wallet in-app connection successful: ${accounts[0]}`)
+            return {
+              accounts,
+              chainId,
+              provider: window.ethereum,
+            }
+          }
+        }
+      } catch (error: any) {
+        console.log("❌ Rainbow Wallet in-app connection failed:", error.message)
+      }
+    }
+
+    // Strategy 6: Try Trust Wallet's in-app connection
+    if (walletId === "trust") {
+      try {
+        console.log("📱 Attempting Trust Wallet in-app connection...")
+        
+        // Check if Trust Wallet is available
+        if (typeof window.ethereum !== 'undefined' && window.ethereum.isTrust) {
+          const accounts = await window.ethereum.request({
+            method: "eth_requestAccounts",
+          })
+
+          if (accounts && accounts.length > 0) {
+            const chainId = await window.ethereum.request({
+              method: "eth_chainId",
+            })
+
+            console.log(`✅ Trust Wallet in-app connection successful: ${accounts[0]}`)
+            return {
+              accounts,
+              chainId,
+              provider: window.ethereum,
+            }
+          }
+        }
+      } catch (error: any) {
+        console.log("❌ Trust Wallet in-app connection failed:", error.message)
+      }
+    }
+
+    // Strategy 7: Try any available Web3 provider
+    try {
+      console.log("📱 Attempting generic Web3 connection...")
+      
+      if (typeof window.ethereum !== 'undefined') {
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        })
+
+        if (accounts && accounts.length > 0) {
+          const chainId = await window.ethereum.request({
+            method: "eth_chainId",
+          })
+
+          console.log(`✅ Generic Web3 connection successful: ${accounts[0]}`)
+          return {
+            accounts,
+            chainId,
+            provider: window.ethereum,
+          }
+        }
+      }
+    } catch (error: any) {
+      console.log("❌ Generic Web3 connection failed:", error.message)
+    }
+
+    // Final fallback: Provide instructions for manual connection
+    const currentUrl = getCurrentPageUrl()
+    const instructions = `To connect your ${wallet.name} on mobile:
+
+1. Make sure your ${wallet.name} app is installed
 2. Open your ${wallet.name} app
 3. Go to the browser/dApp section
-4. Paste the URL and visit this page
+4. Enter this URL: ${currentUrl}
 5. Try connecting again
 
 If you're using a different wallet, try opening this URL directly in your wallet's browser.`
