@@ -93,7 +93,7 @@ export default function JackpotPage() {
               </Link>
             </div>
 
-            <CardTitle className="text-5xl text-red-800 mb-2" style={customFontStyle}>
+            <CardTitle className="text-4xl text-red-800 mb-2" style={customFontStyle}>
               Weekly Jackpot
             </CardTitle>
             <p className="text-lg text-gray-700" style={customFontStyle}>
