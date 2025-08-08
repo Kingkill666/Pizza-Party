@@ -455,36 +455,34 @@ export default function GamePage() {
             {/* MASSIVE Pizza Party Title */}
             <div className="mb-4">
               <div
-                className="text-8xl font-black transform -rotate-3 drop-shadow-2xl"
+                className={`${deviceInfo.isMobile ? 'text-6xl' : 'text-8xl'} font-black transform -rotate-3 drop-shadow-2xl`}
                 style={{
                   ...customFontStyle,
-                  color: "#DC2626",
-                  textShadow: "4px 4px 0px #991B1B, 8px 8px 0px #7F1D1D, 12px 12px 20px rgba(0,0,0,0.5)",
                   letterSpacing: "3px",
                   fontWeight: "900",
-                  WebkitTextStroke: "2px #450A0A",
-                  background: "linear-gradient(45deg, #DC2626, #EF4444, #F87171)",
+                  // 3D glossy effect from image
+                  background: "linear-gradient(135deg, #DC2626 0%, #EF4444 25%, #F87171 50%, #FCA5A5 75%, #FEE2E2 100%)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
-                  filter: "drop-shadow(0 0 6px #DC2626)",
+                  textShadow: "2px 2px 0px #991B1B, 4px 4px 0px #7F1D1D, 6px 6px 0px #450A0A, 8px 8px 20px rgba(0,0,0,0.3)",
+                  filter: "drop-shadow(0 0 8px #DC2626)",
                 }}
               >
                 PIZZA
               </div>
-              <div style={{ height: "10px" }}></div>
+              <div style={{ height: deviceInfo.isMobile ? "5px" : "10px" }}></div>
               <div
-                className="text-8xl font-black transform -rotate-3 drop-shadow-2xl"
+                className={`${deviceInfo.isMobile ? 'text-6xl' : 'text-8xl'} font-black transform -rotate-3 drop-shadow-2xl`}
                 style={{
                   ...customFontStyle,
-                  color: "#DC2626",
-                  textShadow: "4px 4px 0px #991B1B, 8px 8px 0px #7F1D1D, 12px 12px 20px rgba(0,0,0,0.5)",
                   letterSpacing: "3px",
                   fontWeight: "900",
-                  WebkitTextStroke: "2px #450A0A",
-                  background: "linear-gradient(45deg, #DC2626, #EF4444, #F87171)",
+                  // 3D glossy effect from image
+                  background: "linear-gradient(135deg, #DC2626 0%, #EF4444 25%, #F87171 50%, #FCA5A5 75%, #FEE2E2 100%)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
-                  filter: "drop-shadow(0 0 6px #DC2626)",
+                  textShadow: "2px 2px 0px #991B1B, 4px 4px 0px #7F1D1D, 6px 6px 0px #450A0A, 8px 8px 20px rgba(0,0,0,0.3)",
+                  filter: "drop-shadow(0 0 8px #DC2626)",
                 }}
               >
                 PARTY

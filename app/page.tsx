@@ -252,7 +252,7 @@ export default function HomePage() {
             {/* MASSIVE Pizza Party Title - Mobile optimized */}
             <div className="mb-4">
               <div
-                className="text-8xl font-black transform -rotate-3 drop-shadow-2xl"
+                className={`${deviceInfo.isMobile ? 'text-6xl' : 'text-8xl'} font-black transform -rotate-3 drop-shadow-2xl`}
                 style={{
                   ...customFontStyle,
                   color: "#DC2626",
@@ -264,13 +264,31 @@ export default function HomePage() {
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   filter: "drop-shadow(0 0 6px #DC2626)",
+                  // 3D glossy effect from image
+                  background: "linear-gradient(135deg, #DC2626 0%, #EF4444 25%, #F87171 50%, #FCA5A5 75%, #FEE2E2 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  textShadow: "2px 2px 0px #991B1B, 4px 4px 0px #7F1D1D, 6px 6px 0px #450A0A, 8px 8px 20px rgba(0,0,0,0.3)",
+                  filter: "drop-shadow(0 0 8px #DC2626)",
+                  // White highlight effect
+                  position: "relative",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: "2px",
+                    left: "2px",
+                    background: "linear-gradient(45deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 50%, transparent 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    zIndex: 1
+                  }
                 }}
               >
                 PIZZA
               </div>
-              <div style={{ height: "10px" }}></div>
+              <div style={{ height: deviceInfo.isMobile ? "5px" : "10px" }}></div>
               <div
-                className="text-8xl font-black transform -rotate-3 drop-shadow-2xl"
+                className={`${deviceInfo.isMobile ? 'text-6xl' : 'text-8xl'} font-black transform -rotate-3 drop-shadow-2xl`}
                 style={{
                   ...customFontStyle,
                   color: "#DC2626",
@@ -282,6 +300,24 @@ export default function HomePage() {
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   filter: "drop-shadow(0 0 6px #DC2626)",
+                  // 3D glossy effect from image
+                  background: "linear-gradient(135deg, #DC2626 0%, #EF4444 25%, #F87171 50%, #FCA5A5 75%, #FEE2E2 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  textShadow: "2px 2px 0px #991B1B, 4px 4px 0px #7F1D1D, 6px 6px 0px #450A0A, 8px 8px 20px rgba(0,0,0,0.3)",
+                  filter: "drop-shadow(0 0 8px #DC2626)",
+                  // White highlight effect
+                  position: "relative",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: "2px",
+                    left: "2px",
+                    background: "linear-gradient(45deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 50%, transparent 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    zIndex: 1
+                  }
                 }}
               >
                 PARTY
