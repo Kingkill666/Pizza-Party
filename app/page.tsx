@@ -281,9 +281,9 @@ export default function HomePage() {
             </div>
 
             {/* Pizza Visual - Mobile optimized with transparent background */}
-            <div className="flex justify-center items-center mb-4">
+            <div className="flex justify-center items-center mb-4 relative">
               <Image
-                src={deviceInfo.isMobile ? "/images/pizza-transparent-mobile.png" : "/images/pizza-reference.png"}
+                src={deviceInfo.isMobile ? "/images/pizza-transparent-mobile.png" : "/images/pizza-final.png"}
                 alt="Delicious pizza with pepperoni, green peppers, and olives"
                 width={deviceInfo.isMobile ? 144 : 192}
                 height={deviceInfo.isMobile ? 144 : 192}
@@ -296,6 +296,38 @@ export default function HomePage() {
                   outline: "none",
                 }}
               />
+              
+              {/* Slice Lines Overlay - Only show on desktop */}
+              {!deviceInfo.isMobile && (
+                <svg 
+                  viewBox="0 0 192 192" 
+                  className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                  style={{ width: '192px', height: '192px' }}
+                >
+                  {/* 8 slice divider lines from center to edge */}
+                  {[...Array(8)].map((_, i) => {
+                    const angle = i * 45 - 90 // Start from top and go clockwise
+                    const centerX = 96
+                    const centerY = 96
+                    const radius = 80 // Adjust based on pizza size
+                    const endX = centerX + radius * Math.cos((angle * Math.PI) / 180)
+                    const endY = centerY + radius * Math.sin((angle * Math.PI) / 180)
+
+                    return (
+                      <line
+                        key={i}
+                        x1={centerX}
+                        y1={centerY}
+                        x2={endX}
+                        y2={endY}
+                        stroke="#8B4513"
+                        strokeWidth="2"
+                        opacity="0.6"
+                      />
+                    )
+                  })}
+                </svg>
+              )}
             </div>
 
             {/* Call to Action */}
