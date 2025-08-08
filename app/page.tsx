@@ -82,44 +82,73 @@ export default function HomePage() {
 
   // Handle page reloads specifically - runs on every page load
   useEffect(() => {
-    // Clear toppings data immediately on page load if wallet is not connected
-    const clearToppingsOnReload = () => {
-      // Check if wallet is connected by looking for wallet data
-      const hasWalletData = localStorage.getItem('wagmi.connected') || 
-                           localStorage.getItem('wagmi.wallet') ||
-                           localStorage.getItem('wagmi.account')
+    // Force disconnect on page reload
+    const forceDisconnectOnReload = () => {
+      console.log("🔄 Page reload detected - forcing wallet disconnect")
       
-      if (!hasWalletData) {
-        console.log("🔄 Page reload detected - clearing toppings data (no wallet data found)")
-        const keysToRemove = [
-          'claimed_toppings_week_',
-          'daily_players_',
-          'weekly_players_',
-          'daily_entry_',
-          'referral_code_',
-          'streak_count_',
-          'last_play_date_',
-          'legacy_toppings_',
-          'claimed_toppings_',
-          'pizza_toppings_',
-          'pizza_entry_',
-          'pizza_referrer_stats_'
-        ]
-        
-        Object.keys(localStorage).forEach(key => {
-          keysToRemove.forEach(prefix => {
-            if (key.startsWith(prefix)) {
-              localStorage.removeItem(key)
-              console.log(`🗑️ Removed ${key} from localStorage on page reload`)
-            }
-          })
+      // Call the actual disconnect function
+      disconnect()
+      
+      // Clear all wallet data from localStorage
+      const walletKeysToRemove = [
+        'wagmi.connected',
+        'wagmi.wallet',
+        'wagmi.account',
+        'wagmi.chainId',
+        'wagmi.connector',
+        'wallet_connection',
+        'wagmi.cache',
+        'wagmi.state'
+      ]
+      
+      // Remove all wallet-related data
+      Object.keys(localStorage).forEach(key => {
+        walletKeysToRemove.forEach(prefix => {
+          if (key.startsWith(prefix) || key.includes('wallet') || key.includes('ethereum') || key.includes('web3')) {
+            localStorage.removeItem(key)
+            console.log(`🗑️ Removed wallet data: ${key}`)
+          }
         })
-      }
+      })
+      
+      // Clear sessionStorage wallet data
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.includes('wallet') || key.includes('ethereum') || key.includes('web3')) {
+          sessionStorage.removeItem(key)
+          console.log(`🗑️ Removed session wallet data: ${key}`)
+        }
+      })
+      
+      // Clear toppings data immediately on page load
+      console.log("🔄 Page reload detected - clearing toppings data")
+      const keysToRemove = [
+        'claimed_toppings_week_',
+        'daily_players_',
+        'weekly_players_',
+        'daily_entry_',
+        'referral_code_',
+        'streak_count_',
+        'last_play_date_',
+        'legacy_toppings_',
+        'claimed_toppings_',
+        'pizza_toppings_',
+        'pizza_entry_',
+        'pizza_referrer_stats_'
+      ]
+      
+      Object.keys(localStorage).forEach(key => {
+        keysToRemove.forEach(prefix => {
+          if (key.startsWith(prefix)) {
+            localStorage.removeItem(key)
+            console.log(`🗑️ Removed ${key} from localStorage on page reload`)
+          }
+        })
+      })
     }
 
     // Run immediately on component mount
-    clearToppingsOnReload()
-  }, []) // Empty dependency array - runs only on mount
+    forceDisconnectOnReload()
+  }, [disconnect]) // Add disconnect to dependency array
 
   const handleWalletConnect = async (walletId: string) => {
     try {
