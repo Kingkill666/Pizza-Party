@@ -48,6 +48,38 @@ export default function HomePage() {
     window.scrollTo(0, 0)
   }, [])
 
+  // Handle page refresh and wallet disconnection
+  useEffect(() => {
+    // If wallet is not connected, clear all toppings data
+    if (!isConnected) {
+      console.log("🔌 Wallet not connected - clearing toppings data")
+      const keysToRemove = [
+        'claimed_toppings_week_',
+        'daily_players_',
+        'weekly_players_',
+        'daily_entry_',
+        'referral_code_',
+        'streak_count_',
+        'last_play_date_',
+        'legacy_toppings_',
+        'claimed_toppings_',
+        'pizza_toppings_',
+        'pizza_entry_',
+        'pizza_referrer_stats_'
+      ]
+      
+      // Remove all toppings-related data
+      Object.keys(localStorage).forEach(key => {
+        keysToRemove.forEach(prefix => {
+          if (key.startsWith(prefix)) {
+            localStorage.removeItem(key)
+            console.log(`🗑️ Removed ${key} from localStorage on page refresh`)
+          }
+        })
+      })
+    }
+  }, [isConnected])
+
   const handleWalletConnect = async (walletId: string) => {
     try {
       await connectWallet(walletId)
@@ -71,7 +103,10 @@ export default function HomePage() {
       'streak_count_',
       'last_play_date_',
       'legacy_toppings_',
-      'claimed_toppings_'
+      'claimed_toppings_',
+      'pizza_toppings_',
+      'pizza_entry_',
+      'pizza_referrer_stats_'
     ]
     
     // Remove all toppings-related data
@@ -88,10 +123,10 @@ export default function HomePage() {
     disconnect()
     console.log("🔌 disconnect function called")
     
-    // Force page refresh after a short delay to ensure disconnect completes
+    // Force page refresh to homepage after a short delay to ensure disconnect completes
     setTimeout(() => {
-      console.log("🔄 Refreshing page for true disconnect")
-      window.location.reload()
+      console.log("🔄 Refreshing page for true disconnect - returning to homepage")
+      window.location.href = "/"
     }, 100)
   }
 
