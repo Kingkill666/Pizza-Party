@@ -546,21 +546,7 @@ export default function GamePage() {
               onClick={handleEnterGame}
               disabled={isProcessing}
               >
-                <Image
-                  src="/images/star-favicon-original.png"
-                  alt="Star"
-                  width={24}
-                  height={24}
-                  className="inline mr-2 rounded-full"
-                />
               {isProcessing ? 'Processing...' : 'ENTER GAME .001 Base Sepolia'}
-                <Image
-                  src="/images/star-favicon-original.png"
-                  alt="Star"
-                  width={24}
-                  height={24}
-                  className="inline ml-2 rounded-full"
-                />
               </Button>
 
             {/* Wallet Status Display */}
