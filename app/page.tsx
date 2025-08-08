@@ -305,44 +305,42 @@ export default function HomePage() {
                 }}
               />
               
-              {/* Slice Lines Overlay - Only show on desktop */}
-              {!deviceInfo.isMobile && (
-                <svg 
-                  viewBox="0 0 192 192" 
-                  className="absolute top-0 left-0 w-full h-full pointer-events-none"
-                  style={{ 
-                    width: '192px', 
-                    height: '192px',
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)'
-                  }}
-                >
-                  {/* 8 slice divider lines from center to edge */}
-                  {[...Array(8)].map((_, i) => {
-                    const angle = i * 45 - 90 // Start from top and go clockwise
-                    const centerX = 96
-                    const centerY = 96
-                    const radius = 85 // Increased radius to match pizza edge
-                    const endX = centerX + radius * Math.cos((angle * Math.PI) / 180)
-                    const endY = centerY + radius * Math.sin((angle * Math.PI) / 180)
+              {/* Slice Lines Overlay - Show on both desktop and mobile */}
+              <svg 
+                viewBox={deviceInfo.isMobile ? "0 0 144 144" : "0 0 192 192"} 
+                className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                style={{ 
+                  width: deviceInfo.isMobile ? '144px' : '192px', 
+                  height: deviceInfo.isMobile ? '144px' : '192px',
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)'
+                }}
+              >
+                {/* 8 slice divider lines from center to edge */}
+                {[...Array(8)].map((_, i) => {
+                  const angle = i * 45 - 90 // Start from top and go clockwise
+                  const centerX = deviceInfo.isMobile ? 72 : 96
+                  const centerY = deviceInfo.isMobile ? 72 : 96
+                  const radius = deviceInfo.isMobile ? 64 : 85 // Adjust radius for mobile
+                  const endX = centerX + radius * Math.cos((angle * Math.PI) / 180)
+                  const endY = centerY + radius * Math.sin((angle * Math.PI) / 180)
 
-                    return (
-                      <line
-                        key={i}
-                        x1={centerX}
-                        y1={centerY}
-                        x2={endX}
-                        y2={endY}
-                        stroke="#8B4513"
-                        strokeWidth="3"
-                        opacity="0.7"
-                      />
-                    )
-                  })}
-                </svg>
-              )}
+                  return (
+                    <line
+                      key={i}
+                      x1={centerX}
+                      y1={centerY}
+                      x2={endX}
+                      y2={endY}
+                      stroke="#8B4513"
+                      strokeWidth={deviceInfo.isMobile ? "2" : "3"}
+                      opacity="0.7"
+                    />
+                  )
+                })}
+              </svg>
             </div>
 
             {/* Call to Action */}
