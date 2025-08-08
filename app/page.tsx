@@ -283,7 +283,7 @@ export default function HomePage() {
             {/* Pizza Visual - Mobile optimized with transparent background */}
             <div className="flex justify-center items-center mb-4">
               <Image
-                src={deviceInfo.isMobile ? "/images/pizza-transparent-mobile.png" : "/images/pizza-final.png"}
+                src={deviceInfo.isMobile ? "/images/pizza-transparent-mobile.png" : "/images/pizza-reference.png"}
                 alt="Delicious pizza with pepperoni, green peppers, and olives"
                 width={deviceInfo.isMobile ? 144 : 192}
                 height={deviceInfo.isMobile ? 144 : 192}
