@@ -93,7 +93,7 @@ export default function JackpotPage() {
               </Link>
             </div>
 
-            <CardTitle className="text-4xl text-red-800 mb-1" style={customFontStyle}>
+            <CardTitle className="text-4xl text-red-800" style={customFontStyle}>
               Weekly Jackpot
             </CardTitle>
             <p className="text-lg text-gray-700" style={customFontStyle}>
@@ -101,7 +101,7 @@ export default function JackpotPage() {
             </p>
           </CardHeader>
 
-          <CardContent className="space-y-5" style={{ marginTop: '20px' }}>
+          <CardContent className="space-y-0">
             {/* Jackpot Amount */}
             <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-3 rounded-xl border-4 border-yellow-600 text-center">
               <p className="text-white text-2xl mb-2" style={customFontStyle}>
