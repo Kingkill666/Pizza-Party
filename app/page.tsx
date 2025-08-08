@@ -15,7 +15,6 @@ import {
   isFarcaster,
   initMobileOptimizations,
 } from "@/lib/wallet-config"
-import { WalletStatus } from "@/components/WalletStatus"
 
 export default function HomePage() {
   const customFontStyle = {
@@ -181,15 +180,19 @@ export default function HomePage() {
                 </Button>
               </Link>
 
-              {/* Wallet Connection Button */}
-              <WalletStatus
-                isConnected={isConnected}
-                walletName={connection?.walletName}
-                formattedAddress={formattedAddress}
-                onConnect={() => setShowWalletModal(true)}
-                onDisconnect={handleDisconnect}
-                customFontStyle={customFontStyle}
-              />
+              {/* Connect Wallet Button */}
+              <Button
+                onClick={() => setShowWalletModal(true)}
+                className="w-full bg-white text-red-700 border-2 border-red-700 hover:bg-red-50 text-lg font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all touch-manipulation"
+                style={{
+                  ...customFontStyle,
+                  letterSpacing: "1px",
+                  fontSize: deviceInfo.isMobile ? "1.1rem" : "1.25rem",
+                  minHeight: deviceInfo.isMobile ? "56px" : "auto",
+                }}
+              >
+                💳 Connect Wallet
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -198,100 +201,52 @@ export default function HomePage() {
         <Dialog open={showWalletModal} onOpenChange={setShowWalletModal}>
           <DialogContent className="max-w-xl mx-auto bg-white border-4 border-red-800 rounded-3xl max-h-[90vh] overflow-y-auto m-2">
             <DialogHeader>
-              <DialogTitle className="text-xl sm:text-2xl text-red-800 text-center" style={customFontStyle}>
-                🍕 Connect Your Wallet 🍕
+              <DialogTitle className="text-2xl font-bold text-red-800 text-center">
+                Connect Your Wallet
               </DialogTitle>
-              <p className="text-center text-gray-600 mt-2 text-sm" style={customFontStyle}>
-                {deviceInfo.isMobile
-                  ? "Choose your wallet to connect"
-                  : "Choose your preferred wallet to connect to Pizza Party"}
-              </p>
             </DialogHeader>
 
-            <div className="space-y-3 p-4 max-h-[70vh] overflow-y-auto">
-              {/* Error Display with Mobile Instructions */}
-              {error && (
-                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-red-800 font-bold text-sm" style={customFontStyle}>
-                      Connection Failed
-                    </p>
-                    <div className="text-red-700 text-xs mt-1 whitespace-pre-line" style={customFontStyle}>
-                      {error}
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setError(null)}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-
-              {/* Show all wallets on both mobile and desktop */}
+            <div className="space-y-4 p-4">
               {WALLETS.map((wallet) => (
                 <Button
                   key={wallet.id}
                   onClick={() => handleWalletConnect(wallet.id)}
                   disabled={isConnecting === wallet.id}
-                  className={`w-full p-4 sm:p-4 rounded-xl border-2 border-gray-200 text-white font-bold text-left flex items-center justify-between hover:scale-105 transition-all min-h-[60px] sm:min-h-[70px] touch-manipulation ${wallet.color}`}
-                  style={customFontStyle}
+                  className={`w-full p-4 text-lg font-bold rounded-xl border-2 transition-all transform hover:scale-105 ${
+                    wallet.color
+                  } ${isConnecting === wallet.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  style={{
+                    ...customFontStyle,
+                    letterSpacing: "1px",
+                    minHeight: deviceInfo.isMobile ? "64px" : "auto",
+                  }}
                 >
-                  <div className="flex items-center flex-1 min-w-0 pr-4">
-                    {wallet.iconImage ? (
-                      <Image
-                        src={wallet.iconImage || "/placeholder.svg"}
-                        alt={`${wallet.name} icon`}
-                        width={24}
-                        height={24}
-                        className="w-6 h-6 sm:w-6 sm:h-6 mr-3 sm:mr-3 flex-shrink-0 rounded"
-                      />
-                    ) : (
-                      <span className="text-2xl sm:text-2xl mr-3 sm:mr-3 flex-shrink-0">{wallet.icon}</span>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-lg sm:text-lg font-bold mb-1 sm:mb-1">{wallet.name}</div>
-                      {/* Only show description on desktop */}
-                      {!deviceInfo.isMobile && (
-                        <div className="text-xs sm:text-xs opacity-90 leading-relaxed whitespace-normal">
-                          {wallet.description}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex-shrink-0">
-                    {isConnecting === wallet.id ? (
-                      <div className="animate-spin rounded-full h-5 w-5 sm:h-5 sm:w-5 border-b-2 border-white"></div>
-                    ) : (
-                      <ExternalLink className="h-4 w-4 sm:h-4 sm:w-4" />
-                    )}
-                  </div>
+                  <span className="text-2xl mr-3">{wallet.icon}</span>
+                  {wallet.name}
+                  {isConnecting === wallet.id && (
+                    <div className="ml-3 animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  )}
                 </Button>
               ))}
 
-              {/* Info Section */}
-              <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 mt-6">
-                <h3 className="text-lg font-bold text-blue-800 mb-2" style={customFontStyle}>
-                  🔒 Why Connect Your Wallet?
-                </h3>
-                <ul className="space-y-1 text-sm text-blue-700" style={customFontStyle}>
-                  <li>• Earn VMF tokens and toppings</li>
-                  <li>• Participate in daily & weekly jackpots</li>
-                  <li>• Track your game history</li>
-                  <li>• Secure and decentralized</li>
-                </ul>
-              </div>
+              {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg flex items-center">
+                  <AlertCircle className="mr-2" />
+                  {error}
+                </div>
+              )}
 
-              {/* Security Notice */}
-              <div className="bg-yellow-50 p-3 rounded-xl border-2 border-yellow-200">
-                <p className="text-xs text-yellow-800 text-center" style={customFontStyle}>
-                  🛡️ Your wallet connection is secure and encrypted. We never store your private keys.
-                </p>
-              </div>
+              {/* Mobile Connection Tips */}
+              {deviceInfo.isMobile && (
+                <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-lg">
+                  <p className="font-bold mb-2">📱 Mobile Connection Tips:</p>
+                  <ul className="text-sm space-y-1">
+                    <li>• Make sure your wallet app is installed</li>
+                    <li>• Try opening the link in your wallet's browser</li>
+                    <li>• If it doesn't work, try copying the URL to your wallet</li>
+                  </ul>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
