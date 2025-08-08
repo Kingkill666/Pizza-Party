@@ -271,6 +271,76 @@ export default function GamePage() {
     window.scrollTo(0, 0)
   }, [])
 
+  // Handle page reloads specifically - runs on every page load
+  useEffect(() => {
+    // Force disconnect on page reload
+    const forceDisconnectOnReload = () => {
+      console.log("🔄 Page reload detected on game page - clearing wallet data")
+      
+      // Clear session flag to force fresh load
+      sessionStorage.removeItem("wallet_fresh_load")
+      
+      // Clear all wallet data from localStorage
+      const walletKeysToRemove = [
+        'wagmi.connected',
+        'wagmi.wallet',
+        'wagmi.account',
+        'wagmi.chainId',
+        'wagmi.connector',
+        'wallet_connection',
+        'wagmi.cache',
+        'wagmi.state'
+      ]
+      
+      // Remove all wallet-related data
+      Object.keys(localStorage).forEach(key => {
+        walletKeysToRemove.forEach(prefix => {
+          if (key.startsWith(prefix) || key.includes('wallet') || key.includes('ethereum') || key.includes('web3')) {
+            localStorage.removeItem(key)
+            console.log(`🗑️ Removed wallet data: ${key}`)
+          }
+        })
+      })
+      
+      // Clear sessionStorage wallet data
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.includes('wallet') || key.includes('ethereum') || key.includes('web3')) {
+          sessionStorage.removeItem(key)
+          console.log(`🗑️ Removed session wallet data: ${key}`)
+        }
+      })
+      
+      // Clear toppings data immediately on page load
+      console.log("🔄 Page reload detected on game page - clearing toppings data")
+      const keysToRemove = [
+        'claimed_toppings_week_',
+        'daily_players_',
+        'weekly_players_',
+        'daily_entry_',
+        'referral_code_',
+        'streak_count_',
+        'last_play_date_',
+        'legacy_toppings_',
+        'claimed_toppings_',
+        'pizza_toppings_',
+        'pizza_entry_',
+        'pizza_referrer_stats_'
+      ]
+      
+      Object.keys(localStorage).forEach(key => {
+        keysToRemove.forEach(prefix => {
+          if (key.startsWith(prefix)) {
+            localStorage.removeItem(key)
+            console.log(`🗑️ Removed ${key} from localStorage on page reload`)
+          }
+        })
+      })
+    }
+
+    // Run immediately on component mount
+    forceDisconnectOnReload()
+  }, []) // Empty dependency array - runs only on mount
+
   // Initialize player count on mount
   useEffect(() => {
     const initializePlayerCount = async () => {
