@@ -84,10 +84,7 @@ export default function HomePage() {
   useEffect(() => {
     // Force disconnect on page reload
     const forceDisconnectOnReload = () => {
-      console.log("🔄 Page reload detected - forcing wallet disconnect")
-      
-      // Call the actual disconnect function
-      disconnect()
+      console.log("🔄 Page reload detected - clearing wallet data")
       
       // Clear all wallet data from localStorage
       const walletKeysToRemove = [
@@ -148,7 +145,7 @@ export default function HomePage() {
 
     // Run immediately on component mount
     forceDisconnectOnReload()
-  }, [disconnect]) // Add disconnect to dependency array
+  }, []) // Remove disconnect from dependency array
 
   const handleWalletConnect = async (walletId: string) => {
     try {
@@ -161,7 +158,6 @@ export default function HomePage() {
 
   const handleDisconnect = () => {
     console.log("🔌 handleDisconnect called")
-    console.log("🔌 Calling disconnect function")
     
     // Clear all toppings and wallet data from localStorage
     const keysToRemove = [
@@ -189,9 +185,37 @@ export default function HomePage() {
       })
     })
     
-    // Disconnect the wallet
-    disconnect()
-    console.log("🔌 disconnect function called")
+    // Clear wallet data
+    const walletKeysToRemove = [
+      'wagmi.connected',
+      'wagmi.wallet',
+      'wagmi.account',
+      'wagmi.chainId',
+      'wagmi.connector',
+      'wallet_connection',
+      'wagmi.cache',
+      'wagmi.state'
+    ]
+    
+    // Remove all wallet-related data
+    Object.keys(localStorage).forEach(key => {
+      walletKeysToRemove.forEach(prefix => {
+        if (key.startsWith(prefix) || key.includes('wallet') || key.includes('ethereum') || key.includes('web3')) {
+          localStorage.removeItem(key)
+          console.log(`🗑️ Removed wallet data: ${key}`)
+        }
+      })
+    })
+    
+    // Clear sessionStorage wallet data
+    Object.keys(sessionStorage).forEach(key => {
+      if (key.includes('wallet') || key.includes('ethereum') || key.includes('web3')) {
+        sessionStorage.removeItem(key)
+        console.log(`🗑️ Removed session wallet data: ${key}`)
+      }
+    })
+    
+    console.log("🔌 Wallet data cleared successfully")
     
     // Force page refresh to homepage after a short delay to ensure disconnect completes
     setTimeout(() => {
