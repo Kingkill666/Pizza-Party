@@ -425,7 +425,138 @@ export default function GamePage() {
           </CardHeader>
 
           <CardContent className="p-6 pt-2">
-            {/* Daily Game Window Countdown */}
+            {/* Game Buttons - Moved to TOP */}
+            <div className="relative w-72 h-72 mx-auto mb-6">
+              {/* Pizza Image */}
+              <Image
+                src="/images/pizza-final.png"
+                alt="Delicious pizza with pepperoni, green peppers, and olives"
+                width={288}
+                height={288}
+                className="w-full h-full object-contain drop-shadow-2xl"
+                priority
+              />
+
+              {/* Slice Lines Overlay */}
+              <svg viewBox="0 0 288 288" className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                {/* 8 slice divider lines from center to edge */}
+                {[...Array(8)].map((_, i) => {
+                  const angle = i * 45 - 90 // Start from top and go clockwise
+                  const centerX = 144
+                  const centerY = 144
+                  const radius = 120 // Adjust based on pizza size
+                  const endX = centerX + radius * Math.cos((angle * Math.PI) / 180)
+                  const endY = centerY + radius * Math.sin((angle * Math.PI) / 180)
+
+                  return (
+                    <line
+                      key={i}
+                      x1={centerX}
+                      y1={centerY}
+                      x2={endX}
+                      y2={endY}
+                      stroke="#8B4513"
+                      strokeWidth="2"
+                      opacity="0.6"
+                    />
+                  )
+                })}
+              </svg>
+            </div>
+
+            {/* Game Buttons */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              <Button
+              className="w-full bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-4 px-8 rounded-xl border-4 border-green-800 shadow-lg"
+                style={{
+                  ...customFontStyle,
+                  letterSpacing: "1px",
+                  fontSize: "1.25rem",
+                }}
+              onClick={handleEnterGame}
+              disabled={isProcessing}
+              >
+                <Image
+                  src="/images/star-favicon-original.png"
+                  alt="Star"
+                  width={24}
+                  height={24}
+                  className="inline mr-2 rounded-full"
+                />
+              {isProcessing ? 'Processing...' : 'ENTER GAME .001 Base Sepolia'}
+                <Image
+                  src="/images/star-favicon-original.png"
+                  alt="Star"
+                  width={24}
+                  height={24}
+                  className="inline ml-2 rounded-full"
+                />
+              </Button>
+
+            {/* Wallet Status Display */}
+            {isConnected && connection && (
+              <div className="bg-green-100 border-2 border-green-300 rounded-xl p-3 text-center">
+                <p className="text-green-800 font-bold text-sm" style={customFontStyle}>
+                  ✅ Connected to {connection.name || 'Wallet'} {connection.address?.slice(0, 6)}...{connection.address?.slice(-4)}
+                  </p>
+                </div>
+            )}
+
+            {/* Weekly Jackpot Button */}
+              <Link href="/jackpot">
+                <Button
+                  className="w-full bg-red-700 hover:bg-red-800 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-red-900 shadow-lg transform hover:scale-105 transition-all"
+                  style={{
+                    ...customFontStyle,
+                    letterSpacing: "1px",
+                    fontSize: "1.25rem",
+                  }}
+                >
+                  🏆 Weekly Jackpot 🏆
+                </Button>
+              </Link>
+
+            {/* Invite Friends Button */}
+              <Button
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-blue-800 shadow-lg transform hover:scale-105 transition-all"
+              style={{ ...customFontStyle, letterSpacing: "1px", fontSize: "1.25rem" }}
+              onClick={() => {
+                if (!isConnected || !connection) {
+                  setShowWalletModal(true)
+                } else {
+                  setShowInviteModal(true)
+                }
+              }}
+            >
+              <UsersIcon className="mr-2 h-5 w-5" />
+              Invite Friends
+              <UsersIcon className="ml-2 h-5 w-5" />
+              </Button>
+
+            {/* Wallet Required Hint */}
+            {!isConnected && (
+              <p className="text-xs text-gray-500 text-center mt-1" style={customFontStyle}>
+                💡 Connect wallet to invite friends
+              </p>
+            )}
+
+            {/* Game Rules */}
+              <div className="bg-gray-50 p-2 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <span className="text-sm">🎯</span>
+                  <p className="text-sm font-semibold text-gray-800" style={customFontStyle}>
+                    Game Rules:
+                  </p>
+                </div>
+                <ul className="space-y-1 text-xs text-gray-700" style={customFontStyle}>
+                  <li>• One entry per wallet per day</li>
+                  <li>• Equal chance for all players</li>
+                  <li>• New game starts daily at 12pm PST</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Daily Game Window Countdown - Moved to BOTTOM */}
             <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 mb-4">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Clock className="h-5 w-5 text-blue-600" />
@@ -484,139 +615,6 @@ export default function GamePage() {
                   ${jackpot.toLocaleString()}
                 </p>
               </div>
-            </div>
-
-            {/* Pizza Game */}
-            <div className="relative w-72 h-72 mx-auto mb-6">
-              {/* Pizza Image */}
-              <Image
-                src="/images/pizza-final.png"
-                alt="Delicious pizza with pepperoni, green peppers, and olives"
-                width={288}
-                height={288}
-                className="w-full h-full object-contain drop-shadow-2xl"
-                priority
-              />
-
-              {/* Slice Lines Overlay */}
-              <svg viewBox="0 0 288 288" className="absolute top-0 left-0 w-full h-full pointer-events-none">
-                {/* 8 slice divider lines from center to edge */}
-                {[...Array(8)].map((_, i) => {
-                  const angle = i * 45 - 90 // Start from top and go clockwise
-                  const centerX = 144
-                  const centerY = 144
-                  const radius = 120 // Adjust based on pizza size
-                  const endX = centerX + radius * Math.cos((angle * Math.PI) / 180)
-                  const endY = centerY + radius * Math.sin((angle * Math.PI) / 180)
-
-                  return (
-                    <line
-                      key={i}
-                      x1={centerX}
-                      y1={centerY}
-                      x2={endX}
-                      y2={endY}
-                      stroke="#8B4513"
-                      strokeWidth="3"
-                      opacity="0.8"
-                    />
-                  )
-                })}
-              </svg>
-            </div>
-
-            {/* Entry Section */}
-            <div className="text-center">
-                <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                  <Button
-                  className="w-full bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-4 px-8 rounded-xl border-4 border-green-800 shadow-lg"
-                    style={{
-                      ...customFontStyle,
-                      letterSpacing: "1px",
-                      fontSize: "1.25rem",
-                    }}
-                  onClick={handleEnterGame}
-                  disabled={isProcessing}
-                  >
-                    <Image
-                      src="/images/star-favicon-original.png"
-                      alt="Star"
-                      width={24}
-                      height={24}
-                      className="inline mr-2 rounded-full"
-                    />
-                  {isProcessing ? 'Processing...' : 'ENTER GAME .001 Base Sepolia'}
-                    <Image
-                      src="/images/star-favicon-original.png"
-                      alt="Star"
-                      width={24}
-                      height={24}
-                      className="inline ml-2 rounded-full"
-                    />
-                  </Button>
-
-                {/* Wallet Status Display */}
-                {isConnected && connection && (
-                  <div className="bg-green-100 border-2 border-green-300 rounded-xl p-3 text-center">
-                    <p className="text-green-800 font-bold text-sm" style={customFontStyle}>
-                      ✅ Connected to {connection.name || 'Wallet'} {connection.address?.slice(0, 6)}...{connection.address?.slice(-4)}
-                      </p>
-                    </div>
-                )}
-
-                {/* Weekly Jackpot Button */}
-                  <Link href="/jackpot">
-                    <Button
-                      className="w-full bg-red-700 hover:bg-red-800 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-red-900 shadow-lg transform hover:scale-105 transition-all"
-                      style={{
-                        ...customFontStyle,
-                        letterSpacing: "1px",
-                        fontSize: "1.25rem",
-                      }}
-                    >
-                      🏆 Weekly Jackpot 🏆
-                    </Button>
-                  </Link>
-
-                {/* Invite Friends Button */}
-                  <Button
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-blue-800 shadow-lg transform hover:scale-105 transition-all"
-                  style={{ ...customFontStyle, letterSpacing: "1px", fontSize: "1.25rem" }}
-                  onClick={() => {
-                    if (!isConnected || !connection) {
-                      setShowWalletModal(true)
-                    } else {
-                      setShowInviteModal(true)
-                    }
-                  }}
-                >
-                  <UsersIcon className="mr-2 h-5 w-5" />
-                  Invite Friends
-                  <UsersIcon className="ml-2 h-5 w-5" />
-                  </Button>
-
-                {/* Wallet Required Hint */}
-                {!isConnected && (
-                  <p className="text-xs text-gray-500 text-center mt-1" style={customFontStyle}>
-                    💡 Connect wallet to invite friends
-                  </p>
-                )}
-
-                {/* Game Rules */}
-                  <div className="bg-gray-50 p-2 rounded-lg border border-gray-200">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <span className="text-sm">🎯</span>
-                      <p className="text-sm font-semibold text-gray-800" style={customFontStyle}>
-                        Game Rules:
-                      </p>
-                    </div>
-                    <ul className="space-y-1 text-xs text-gray-700" style={customFontStyle}>
-                      <li>• One entry per wallet per day</li>
-                      <li>• Equal chance for all players</li>
-                      <li>• New game starts daily at 12pm PST</li>
-                    </ul>
-                  </div>
-                </div>
             </div>
           </CardContent>
         </Card>
