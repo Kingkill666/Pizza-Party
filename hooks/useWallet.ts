@@ -20,6 +20,35 @@ export const useWallet = () => {
   // Load saved connection on mount (but don't auto-connect)
   useEffect(() => {
     if (typeof window !== "undefined") {
+      // Check if this is a fresh page load (not a reload)
+      const isFreshLoad = sessionStorage.getItem("wallet_fresh_load")
+      
+      if (!isFreshLoad) {
+        // This is a fresh page load - set the flag
+        sessionStorage.setItem("wallet_fresh_load", "true")
+        
+        // Clear any existing wallet data on fresh load
+        console.log("🔄 Fresh page load - clearing wallet data")
+        const walletKeysToRemove = [
+          'wallet_connection',
+          'wagmi.connected',
+          'wagmi.wallet',
+          'wagmi.account',
+          'wagmi.chainId',
+          'wagmi.connector',
+          'wagmi.cache',
+          'wagmi.state'
+        ]
+        
+        walletKeysToRemove.forEach(key => {
+          localStorage.removeItem(key)
+        })
+        
+        // Don't load saved connection on fresh load
+        return
+      }
+      
+      // This is not a fresh load - check for saved connection
       const savedConnection = localStorage.getItem("wallet_connection")
       if (savedConnection) {
         try {

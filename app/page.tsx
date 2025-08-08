@@ -86,6 +86,9 @@ export default function HomePage() {
     const forceDisconnectOnReload = () => {
       console.log("🔄 Page reload detected - clearing wallet data")
       
+      // Clear session flag to force fresh load
+      sessionStorage.removeItem("wallet_fresh_load")
+      
       // Clear all wallet data from localStorage
       const walletKeysToRemove = [
         'wagmi.connected',
