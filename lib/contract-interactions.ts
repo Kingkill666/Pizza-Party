@@ -210,7 +210,7 @@ export class PizzaPartyContract {
         method: 'eth_call',
         params: [{
           to: this.pizzaPartyAddress,
-          data: this.encodeFunctionCall('dailyPlayerCount', ['1'])
+          data: this.encodeFunctionCall('dailyPlayerCount', ['0x0000000000000000000000000000000000000000000000000000000000000001'])
         }, 'latest']
       })
       return this.decodeUint256(data)
@@ -227,7 +227,7 @@ export class PizzaPartyContract {
         method: 'eth_call',
         params: [{
           to: this.pizzaPartyAddress,
-          data: this.encodeFunctionCall('weeklyPlayerCount', ['1'])
+          data: this.encodeFunctionCall('weeklyPlayerCount', ['0x0000000000000000000000000000000000000000000000000000000000000001'])
         }, 'latest']
       })
       return this.decodeUint256(data)
@@ -272,13 +272,31 @@ export class PizzaPartyContract {
 
   // Helper methods
   private encodeFunctionCall(functionName: string, params: any[]): string {
-    // Simple function signature encoding
-    const signature = `${functionName}(${params.map(() => 'string').join(',')})`
-    const functionSelector = this.keccak256(signature).slice(0, 10)
+    // Function selectors for common functions
+    const functionSelectors: { [key: string]: string } = {
+      'dailyPlayerCount': '0x8b5b9ccc', // keccak256('dailyPlayerCount(uint256)')
+      'weeklyPlayerCount': '0x9b2c0a37', // keccak256('weeklyPlayerCount(uint256)')
+      'getDailyJackpot': '0x12345678', // placeholder
+      'getWeeklyJackpot': '0x87654321', // placeholder
+      'getCurrentEntryFee': '0xabcdef12', // placeholder
+      'getVMFPrice': '0xfedcba98', // placeholder
+      'enterDailyGame': '0x11223344', // placeholder
+      'createReferralCode': '0x55667788', // placeholder
+      'awardStreakBonus': '0x99aabbcc', // placeholder
+    }
     
-    // For simplicity, we'll just return the function selector
-    // In a real implementation, you'd encode the parameters properly
-    return functionSelector
+    const selector = functionSelectors[functionName]
+    if (!selector) {
+      console.error(`Unknown function: ${functionName}`)
+      return '0x'
+    }
+    
+    // For functions with parameters, append the encoded parameters
+    if (params.length > 0) {
+      return selector + params.join('')
+    }
+    
+    return selector
   }
 
   private decodePlayerData(data: string) {

@@ -176,6 +176,34 @@ export default function GamePage() {
     try {
       console.log('🔄 Updating player count...')
       
+      // Always try to get contract data first
+      let contractDailyCount = 0
+      let contractWeeklyCount = 0
+      
+      if (isConnected && connection && window.ethereum) {
+        try {
+          console.log('🔍 Attempting contract calls...')
+          const contract = createPizzaPartyContract(window.ethereum)
+          
+          // Get both daily and weekly counts from contract
+          const [dailyCount, weeklyCount] = await Promise.all([
+            contract.getDailyPlayerCount(),
+            contract.getWeeklyPlayerCount()
+          ])
+          
+          contractDailyCount = dailyCount
+          contractWeeklyCount = weeklyCount
+          
+          console.log('📊 Contract daily players:', contractDailyCount)
+          console.log('📊 Contract weekly players:', contractWeeklyCount)
+        } catch (contractError) {
+          console.error('❌ Error reading players from contract:', contractError)
+        }
+      } else {
+        console.log('🔍 Wallet not connected for contract calls')
+      }
+
+      // Fallback to localStorage only if contract data is not available
       const now = new Date()
       const pstOffset = -8
       const pstTime = new Date(now.getTime() + (pstOffset * 60 * 60 * 1000))
@@ -185,24 +213,7 @@ export default function GamePage() {
       const gameDate = isBeforeNoonPST ? today : yesterday
       const dailyKey = `daily_players_${gameDate}`
       const dailyPlayers = JSON.parse(localStorage.getItem(dailyKey) || '[]')
-      const dailyCount = dailyPlayers.length
-      console.log('📊 LocalStorage daily players:', dailyCount)
-      console.log('📊 Daily key:', dailyKey)
-      console.log('📊 Game date:', gameDate)
-
-      let contractDailyCount = 0
-      if (isConnected && connection && window.ethereum) {
-        try {
-          console.log('🔍 Attempting daily contract call...')
-          const contract = createPizzaPartyContract(window.ethereum)
-          contractDailyCount = await contract.getDailyPlayerCount()
-          console.log('📊 Contract daily players:', contractDailyCount)
-        } catch (contractError) {
-          console.error('❌ Error reading daily players from contract:', contractError)
-        }
-      } else {
-        console.log('🔍 Wallet not connected for daily contract call')
-      }
+      const localStorageDailyCount = dailyPlayers.length
 
       const dayOfWeek = pstTime.getDay()
       const daysSinceMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
@@ -210,23 +221,27 @@ export default function GamePage() {
       weekStart.setHours(12, 0, 0, 0)
       const weeklyKey = `weekly_players_${weekStart.getTime()}`
       const weeklyPlayers = JSON.parse(localStorage.getItem(weeklyKey) || '[]')
-      const weeklyCount = weeklyPlayers.length
-      const totalEntriesKey = `total_entries_${gameDate}`
-      const totalEntries = Number.parseInt(localStorage.getItem(totalEntriesKey) || '0')
+      const localStorageWeeklyCount = weeklyPlayers.length
 
       console.log('📊 Player Stats:', {
-        dailyPlayers: dailyCount,
-        weeklyPlayers: weeklyCount,
         contractDailyPlayers: contractDailyCount,
-        totalEntries: totalEntries,
+        contractWeeklyPlayers: contractWeeklyCount,
+        localStorageDailyPlayers: localStorageDailyCount,
+        localStorageWeeklyPlayers: localStorageWeeklyCount,
         gameDate: gameDate
       })
 
-      const displayCount = (contractDailyCount && !isNaN(contractDailyCount) && contractDailyCount > 0)
+      // Use contract data if available, otherwise fallback to localStorage
+      const displayDailyCount = (contractDailyCount && !isNaN(contractDailyCount) && contractDailyCount > 0)
         ? contractDailyCount
-        : dailyCount
-      console.log('📊 Final display count:', displayCount)
-      setPlayerCount(displayCount)
+        : localStorageDailyCount
+        
+      const displayWeeklyCount = (contractWeeklyCount && !isNaN(contractWeeklyCount) && contractWeeklyCount > 0)
+        ? contractWeeklyCount
+        : localStorageWeeklyCount
+
+      console.log('📊 Final display counts - Daily:', displayDailyCount, 'Weekly:', displayWeeklyCount)
+      setPlayerCount(displayDailyCount)
     } catch (error) {
       console.error('❌ Error updating player count:', error)
     }
