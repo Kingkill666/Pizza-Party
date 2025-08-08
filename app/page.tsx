@@ -159,6 +159,7 @@ export default function HomePage() {
                   letterSpacing: "1px",
                   fontSize: deviceInfo.isMobile ? "1.1rem" : "1.25rem",
                   minHeight: deviceInfo.isMobile ? "56px" : "auto", // Better touch target
+                  marginBottom: "15px"
                 }}
               >
                 🍕 START PLAYING 🍕
@@ -166,7 +167,7 @@ export default function HomePage() {
             </Link>
 
             {/* All Buttons with Equal Spacing */}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col" style={{ gap: '15px' }}>
               <Link href="/jackpot">
                 <Button
                   className="w-full bg-red-700 hover:bg-red-800 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-red-900 shadow-lg transform hover:scale-105 transition-all touch-manipulation"
