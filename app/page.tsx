@@ -175,9 +175,9 @@ export default function HomePage() {
                   letterSpacing: "1px",
                 }}
               >
-                Play to win a slice
+                Play to win a slice!
                 <br />
-                of the pie!
+                8 Slices, 8 Winners!
               </p>
             </div>
 
