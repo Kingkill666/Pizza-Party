@@ -18,7 +18,7 @@ export default function GamePage() {
   }
 
   // Wallet connection state
-  const { isConnected, connection, connectWallet, isConnecting, error, setError } = useWallet()
+  const { isConnected, connection, connectWallet, walletError, isConnecting, error, setError } = useWallet()
   const [isProcessing, setIsProcessing] = useState(false)
   const [gameError, setGameError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -467,14 +467,14 @@ export default function GamePage() {
             {/* Game Buttons */}
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               <Button
-                className="w-full bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-4 px-8 rounded-xl border-4 border-green-800 shadow-lg"
+              className="w-full bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-4 px-8 rounded-xl border-4 border-green-800 shadow-lg"
                 style={{
                   ...customFontStyle,
                   letterSpacing: "1px",
                   fontSize: "1.25rem",
                 }}
-                onClick={handleEnterGame}
-                disabled={isProcessing}
+              onClick={handleEnterGame}
+              disabled={isProcessing}
               >
                 <Image
                   src="/images/star-favicon-original.png"
@@ -483,7 +483,7 @@ export default function GamePage() {
                   height={24}
                   className="inline mr-2 rounded-full"
                 />
-                {isProcessing ? 'Processing...' : 'ENTER GAME .001 Base Sepolia'}
+              {isProcessing ? 'Processing...' : 'ENTER GAME .001 Base Sepolia'}
                 <Image
                   src="/images/star-favicon-original.png"
                   alt="Star"
@@ -493,16 +493,16 @@ export default function GamePage() {
                 />
               </Button>
 
-              {/* Wallet Status Display */}
-              {isConnected && connection && (
-                <div className="bg-green-100 border-2 border-green-300 rounded-xl p-3 text-center">
-                  <p className="text-green-800 font-bold text-sm" style={customFontStyle}>
-                    ✅ Connected to {connection.name || 'Wallet'} {connection.address?.slice(0, 6)}...{connection.address?.slice(-4)}
+            {/* Wallet Status Display */}
+            {isConnected && connection && (
+              <div className="bg-green-100 border-2 border-green-300 rounded-xl p-3 text-center">
+                <p className="text-green-800 font-bold text-sm" style={customFontStyle}>
+                  ✅ Connected to {connection.name || 'Wallet'} {connection.address?.slice(0, 6)}...{connection.address?.slice(-4)}
                   </p>
                 </div>
-              )}
+            )}
 
-              {/* Weekly Jackpot Button */}
+            {/* Weekly Jackpot Button */}
               <Link href="/jackpot">
                 <Button
                   className="w-full bg-red-700 hover:bg-red-800 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-red-900 shadow-lg transform hover:scale-105 transition-all"
@@ -516,29 +516,29 @@ export default function GamePage() {
                 </Button>
               </Link>
 
-              {/* Invite Friends Button */}
+            {/* Invite Friends Button */}
               <Button
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-blue-800 shadow-lg transform hover:scale-105 transition-all"
-                style={{ ...customFontStyle, letterSpacing: "1px", fontSize: "1.25rem" }}
-                onClick={() => {
-                  if (!isConnected || !connection) {
-                    setShowWalletModal(true)
-                  } else {
-                    setShowInviteModal(true)
-                  }
-                }}
-              >
-                <UsersIcon className="mr-2 h-5 w-5" />
-                Invite Friends
-                <UsersIcon className="ml-2 h-5 w-5" />
+              style={{ ...customFontStyle, letterSpacing: "1px", fontSize: "1.25rem" }}
+              onClick={() => {
+                if (!isConnected || !connection) {
+                  setShowWalletModal(true)
+                } else {
+                  setShowInviteModal(true)
+                }
+              }}
+            >
+              <UsersIcon className="mr-2 h-5 w-5" />
+              Invite Friends
+              <UsersIcon className="ml-2 h-5 w-5" />
               </Button>
 
-              {/* Wallet Required Hint */}
-              {!isConnected && (
-                <p className="text-xs text-gray-500 text-center mt-1" style={customFontStyle}>
-                  💡 Connect wallet to invite friends
-                </p>
-              )}
+            {/* Wallet Required Hint */}
+            {!isConnected && (
+              <p className="text-xs text-gray-500 text-center mt-1" style={customFontStyle}>
+                💡 Connect wallet to invite friends
+              </p>
+            )}
             </div>
 
             {/* Daily Game Window Countdown - Moved to BOTTOM */}
@@ -547,8 +547,8 @@ export default function GamePage() {
                 <Clock className="h-5 w-5 text-blue-600" />
                 <p className="font-semibold text-blue-800 text-center" style={customFontStyle}>
                   Current Game Window Ends In:
-                      </p>
-                    </div>
+                </p>
+              </div>
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="bg-white p-2 rounded">
                   <div className="text-xl font-bold text-blue-800" style={customFontStyle}>
@@ -556,7 +556,7 @@ export default function GamePage() {
                   </div>
                   <div className="text-xs text-blue-600" style={customFontStyle}>
                     HRS
-                </div>
+                  </div>
                 </div>
                 <div className="bg-white p-2 rounded">
                   <div className="text-xl font-bold text-blue-800" style={customFontStyle}>
@@ -578,7 +578,7 @@ export default function GamePage() {
               <p className="text-xs text-blue-600 text-center mt-2" style={customFontStyle}>
                 New game starts daily at 12pm PST
               </p>
-                  </div>
+            </div>
 
             {/* Game Stats */}
             <div className="grid grid-cols-2 gap-4 mb-4">
@@ -600,21 +600,21 @@ export default function GamePage() {
                   ${jackpot.toLocaleString()}
                 </p>
               </div>
-                  </div>
+            </div>
 
             {/* Game Rules - Moved to BOTTOM */}
-                  <div className="bg-gray-50 p-2 rounded-lg border border-gray-200">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <span className="text-sm">🎯</span>
-                      <p className="text-sm font-semibold text-gray-800" style={customFontStyle}>
-                        Game Rules:
-                      </p>
-                    </div>
-                    <ul className="space-y-1 text-xs text-gray-700" style={customFontStyle}>
-                      <li>• One entry per wallet per day</li>
-                      <li>• Equal chance for all players</li>
-                      <li>• New game starts daily at 12pm PST</li>
-                    </ul>
+            <div className="bg-gray-50 p-2 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <span className="text-sm">🎯</span>
+                <p className="text-sm font-semibold text-gray-800" style={customFontStyle}>
+                  Game Rules:
+                </p>
+              </div>
+              <ul className="space-y-1 text-xs text-gray-700" style={customFontStyle}>
+                <li>• One entry per wallet per day</li>
+                <li>• Equal chance for all players</li>
+                <li>• New game starts daily at 12pm PST</li>
+              </ul>
             </div>
           </CardContent>
         </Card>
