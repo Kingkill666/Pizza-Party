@@ -37,8 +37,8 @@ export function WalletStatus({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="w-full bg-green-100 text-green-800 border-2 border-green-600 text-base font-bold py-2 px-6 rounded-xl shadow-lg touch-manipulation flex items-center justify-center"
+    <>
+      <div className="w-full bg-green-100 text-green-800 border-4 border-green-600 text-base font-bold py-2 px-6 rounded-xl shadow-lg touch-manipulation flex items-center justify-center"
         style={{
           ...customFontStyle,
           letterSpacing: "1px",
@@ -50,7 +50,7 @@ export function WalletStatus({
       </div>
       <Button
         onClick={onDisconnect}
-        className="w-full bg-red-600 hover:bg-red-700 text-white text-base font-bold py-2 px-6 rounded-xl border-2 border-red-700 shadow-lg transform hover:scale-105 transition-all touch-manipulation"
+        className="w-full bg-red-600 hover:bg-red-700 text-white text-base font-bold py-2 px-6 rounded-xl border-4 border-red-700 shadow-lg transform hover:scale-105 transition-all touch-manipulation"
         style={{
           ...customFontStyle,
           letterSpacing: "1px",
@@ -60,6 +60,6 @@ export function WalletStatus({
       >
         🔌 Disconnect
       </Button>
-    </div>
+    </>
   )
 }
