@@ -540,22 +540,6 @@ export default function GamePage() {
               </p>
             )}
 
-            {/* Game Rules */}
-              <div className="bg-gray-50 p-2 rounded-lg border border-gray-200">
-                <div className="flex items-center justify-center gap-1 mb-1">
-                  <span className="text-sm">🎯</span>
-                  <p className="text-sm font-semibold text-gray-800" style={customFontStyle}>
-                    Game Rules:
-                  </p>
-                </div>
-                <ul className="space-y-1 text-xs text-gray-700" style={customFontStyle}>
-                  <li>• One entry per wallet per day</li>
-                  <li>• Equal chance for all players</li>
-                  <li>• New game starts daily at 12pm PST</li>
-                </ul>
-              </div>
-            </div>
-
             {/* Daily Game Window Countdown - Moved to BOTTOM */}
             <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 mb-4">
               <div className="flex items-center justify-center gap-2 mb-2">
@@ -615,6 +599,21 @@ export default function GamePage() {
                   ${jackpot.toLocaleString()}
                 </p>
               </div>
+            </div>
+
+            {/* Game Rules - Moved to BOTTOM */}
+            <div className="bg-gray-50 p-2 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <span className="text-sm">🎯</span>
+                <p className="text-sm font-semibold text-gray-800" style={customFontStyle}>
+                  Game Rules:
+                </p>
+              </div>
+              <ul className="space-y-1 text-xs text-gray-700" style={customFontStyle}>
+                <li>• One entry per wallet per day</li>
+                <li>• Equal chance for all players</li>
+                <li>• New game starts daily at 12pm PST</li>
+              </ul>
             </div>
           </CardContent>
         </Card>
