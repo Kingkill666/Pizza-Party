@@ -93,14 +93,7 @@ export default function JackpotPage() {
               </Link>
             </div>
 
-            {/* Trophy Icon */}
-            <div className="flex justify-center mb-4">
-              <div className="bg-yellow-400 p-4 rounded-full border-4 border-yellow-600 shadow-lg">
-                <Trophy className="h-12 w-12 text-yellow-800" />
-              </div>
-            </div>
-
-            <CardTitle className="text-4xl text-red-800 mb-2" style={customFontStyle}>
+            <CardTitle className="text-5xl text-red-800 mb-2" style={customFontStyle}>
               Weekly Jackpot
             </CardTitle>
             <p className="text-lg text-gray-700" style={customFontStyle}>
@@ -111,7 +104,7 @@ export default function JackpotPage() {
           <CardContent className="space-y-6">
             {/* Jackpot Amount */}
             <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-3 rounded-xl border-4 border-yellow-600 text-center">
-              <p className="text-white text-lg mb-2" style={customFontStyle}>
+              <p className="text-white text-2xl mb-2" style={customFontStyle}>
                 Weekly Jackpot
               </p>
               <p className="text-white text-4xl font-black flex items-center justify-center" style={customFontStyle}>
