@@ -249,25 +249,42 @@ export default function HomePage() {
       <div className="max-w-md mx-auto">
         <Card className="bg-white/90 backdrop-blur-sm border-4 border-red-800 rounded-3xl shadow-2xl">
           <CardContent className="p-4 sm:p-6 text-center">
-            {/* MASSIVE Pizza Party Title - EXACT IMAGE */}
-            <div className="mb-4 flex justify-center">
-              <div className="relative">
-                <Image
-                  src="/images/pizza-party-title.png"
-                  alt="PIZZA PARTY - 3D glossy red text"
-                  width={deviceInfo.isMobile ? 300 : 400}
-                  height={deviceInfo.isMobile ? 120 : 160}
-                  className="drop-shadow-2xl"
-                  priority
-                  style={{
-                    background: "transparent",
-                    backgroundColor: "transparent",
-                    border: "none",
-                    outline: "none",
-                    mixBlendMode: "multiply",
-                    filter: "contrast(1.2) brightness(1.1)",
-                  }}
-                />
+            {/* MASSIVE Pizza Party Title - Mobile optimized */}
+            <div className="mb-4">
+              <div
+                className="text-8xl font-black transform -rotate-3 drop-shadow-2xl"
+                style={{
+                  ...customFontStyle,
+                  color: "#DC2626",
+                  textShadow: "4px 4px 0px #991B1B, 8px 8px 0px #7F1D1D, 12px 12px 20px rgba(0,0,0,0.5)",
+                  letterSpacing: "3px",
+                  fontWeight: "900",
+                  WebkitTextStroke: "2px #450A0A",
+                  background: "linear-gradient(45deg, #DC2626, #EF4444, #F87171)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  filter: "drop-shadow(0 0 6px #DC2626)",
+                }}
+              >
+                PIZZA
+              </div>
+              <div style={{ height: "10px" }}></div>
+              <div
+                className="text-8xl font-black transform -rotate-3 drop-shadow-2xl"
+                style={{
+                  ...customFontStyle,
+                  color: "#DC2626",
+                  textShadow: "4px 4px 0px #991B1B, 8px 8px 0px #7F1D1D, 12px 12px 20px rgba(0,0,0,0.5)",
+                  letterSpacing: "3px",
+                  fontWeight: "900",
+                  WebkitTextStroke: "2px #450A0A",
+                  background: "linear-gradient(45deg, #DC2626, #EF4444, #F87171)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  filter: "drop-shadow(0 0 6px #DC2626)",
+                }}
+              >
+                PARTY
               </div>
             </div>
 
