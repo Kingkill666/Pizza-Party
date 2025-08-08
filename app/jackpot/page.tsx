@@ -70,7 +70,7 @@ export default function JackpotPage() {
 
   return (
     <div
-      className="min-h-screen p-4"
+      className="min-h-screen p-2"
       style={{
         backgroundImage: "url('/images/rotated-90-pizza-wallpaper.png')",
         backgroundRepeat: "no-repeat",
@@ -80,7 +80,7 @@ export default function JackpotPage() {
     >
       <div className="max-w-md mx-auto">
         <Card className="relative bg-white/90 backdrop-blur-sm border-4 border-red-800 rounded-3xl shadow-2xl mb-6">
-          <CardHeader className="text-center pb-4">
+          <CardHeader className="text-center pb-2">
             <div className="absolute top-4 left-4 z-10">
               <Link href="/">
                 <Button
@@ -93,7 +93,7 @@ export default function JackpotPage() {
               </Link>
             </div>
 
-            <CardTitle className="text-4xl text-red-800" style={customFontStyle}>
+            <CardTitle className="text-4xl text-red-800 mb-1" style={customFontStyle}>
               Weekly Jackpot
             </CardTitle>
             <p className="text-lg text-gray-700" style={customFontStyle}>
@@ -101,7 +101,7 @@ export default function JackpotPage() {
             </p>
           </CardHeader>
 
-          <CardContent className="space-y-0">
+          <CardContent className="space-y-1">
             {/* Jackpot Amount */}
             <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-3 rounded-xl border-4 border-yellow-600 text-center">
               <p className="text-white text-2xl mb-2" style={customFontStyle}>
