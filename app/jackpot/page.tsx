@@ -80,7 +80,7 @@ export default function JackpotPage() {
     >
       <div className="max-w-md mx-auto">
         <Card className="relative bg-white/90 backdrop-blur-sm border-4 border-red-800 rounded-3xl shadow-2xl mb-6">
-          <CardHeader className="text-center pb-2">
+          <CardHeader className="text-center pb-1">
             <div className="absolute top-4 left-4 z-10">
               <Link href="/">
                 <Button
@@ -101,7 +101,7 @@ export default function JackpotPage() {
             </p>
           </CardHeader>
 
-          <CardContent className="space-y-1">
+          <CardContent className="space-y-5">
             {/* Jackpot Amount */}
             <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-3 rounded-xl border-4 border-yellow-600 text-center">
               <p className="text-white text-2xl mb-2" style={customFontStyle}>
