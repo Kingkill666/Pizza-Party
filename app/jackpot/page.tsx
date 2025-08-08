@@ -115,21 +115,7 @@ export default function JackpotPage() {
                 Weekly Jackpot
               </p>
               <p className="text-white text-4xl font-black flex items-center justify-center" style={customFontStyle}>
-                <Image
-                  src="/images/star-favicon-original.png"
-                  alt="Star"
-                  width={31}
-                  height={31}
-                  className="inline mr-2 rounded-full"
-                />
-                {formatJackpotAmount(communityJackpot)} Base Sepolia
-                <Image
-                  src="/images/star-favicon-original.png"
-                  alt="Star"
-                  width={31}
-                  height={31}
-                  className="inline ml-2 rounded-full"
-                />
+                0.000 Base Sepolia
               </p>
             </div>
 
