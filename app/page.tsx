@@ -60,8 +60,39 @@ export default function HomePage() {
   const handleDisconnect = () => {
     console.log("🔌 handleDisconnect called")
     console.log("🔌 Calling disconnect function")
+    
+    // Clear all toppings and wallet data from localStorage
+    const keysToRemove = [
+      'claimed_toppings_week_',
+      'daily_players_',
+      'weekly_players_',
+      'daily_entry_',
+      'referral_code_',
+      'streak_count_',
+      'last_play_date_',
+      'legacy_toppings_',
+      'claimed_toppings_'
+    ]
+    
+    // Remove all toppings-related data
+    Object.keys(localStorage).forEach(key => {
+      keysToRemove.forEach(prefix => {
+        if (key.startsWith(prefix)) {
+          localStorage.removeItem(key)
+          console.log(`🗑️ Removed ${key} from localStorage`)
+        }
+      })
+    })
+    
+    // Disconnect the wallet
     disconnect()
     console.log("🔌 disconnect function called")
+    
+    // Force page refresh after a short delay to ensure disconnect completes
+    setTimeout(() => {
+      console.log("🔄 Refreshing page for true disconnect")
+      window.location.reload()
+    }, 100)
   }
 
   return (
