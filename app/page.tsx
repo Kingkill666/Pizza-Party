@@ -177,7 +177,7 @@ export default function HomePage() {
               >
                 Play to win a slice!
                 <br />
-                8 Slices, 8 Winners!
+                <span className="text-xl sm:text-2xl lg:text-3xl">8 Slices, 8 Winners!</span>
               </p>
             </div>
 
