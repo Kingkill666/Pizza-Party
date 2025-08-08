@@ -249,79 +249,22 @@ export default function HomePage() {
       <div className="max-w-md mx-auto">
         <Card className="bg-white/90 backdrop-blur-sm border-4 border-red-800 rounded-3xl shadow-2xl">
           <CardContent className="p-4 sm:p-6 text-center">
-            {/* MASSIVE Pizza Party Title - Mobile optimized */}
-            <div className="mb-4">
-              <div
-                className={`${deviceInfo.isMobile ? 'text-6xl' : 'text-8xl'} font-black transform -rotate-3 drop-shadow-2xl`}
+            {/* MASSIVE Pizza Party Title - EXACT IMAGE */}
+            <div className="mb-4 flex justify-center">
+              <Image
+                src="/images/pizza-party-title.png"
+                alt="PIZZA PARTY - 3D glossy red text"
+                width={deviceInfo.isMobile ? 300 : 400}
+                height={deviceInfo.isMobile ? 120 : 160}
+                className="drop-shadow-2xl"
+                priority
                 style={{
-                  ...customFontStyle,
-                  color: "#DC2626",
-                  textShadow: "4px 4px 0px #991B1B, 8px 8px 0px #7F1D1D, 12px 12px 20px rgba(0,0,0,0.5)",
-                  letterSpacing: "3px",
-                  fontWeight: "900",
-                  WebkitTextStroke: "2px #450A0A",
-                  background: "linear-gradient(45deg, #DC2626, #EF4444, #F87171)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  filter: "drop-shadow(0 0 6px #DC2626)",
-                  // 3D glossy effect from image
-                  background: "linear-gradient(135deg, #DC2626 0%, #EF4444 25%, #F87171 50%, #FCA5A5 75%, #FEE2E2 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  textShadow: "2px 2px 0px #991B1B, 4px 4px 0px #7F1D1D, 6px 6px 0px #450A0A, 8px 8px 20px rgba(0,0,0,0.3)",
-                  filter: "drop-shadow(0 0 8px #DC2626)",
-                  // White highlight effect
-                  position: "relative",
-                  "&::before": {
-                    content: '""',
-                    position: "absolute",
-                    top: "2px",
-                    left: "2px",
-                    background: "linear-gradient(45deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 50%, transparent 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    zIndex: 1
-                  }
+                  background: "transparent",
+                  backgroundColor: "transparent",
+                  border: "none",
+                  outline: "none",
                 }}
-              >
-                PIZZA
-              </div>
-              <div style={{ height: deviceInfo.isMobile ? "5px" : "10px" }}></div>
-              <div
-                className={`${deviceInfo.isMobile ? 'text-6xl' : 'text-8xl'} font-black transform -rotate-3 drop-shadow-2xl`}
-                style={{
-                  ...customFontStyle,
-                  color: "#DC2626",
-                  textShadow: "4px 4px 0px #991B1B, 8px 8px 0px #7F1D1D, 12px 12px 20px rgba(0,0,0,0.5)",
-                  letterSpacing: "3px",
-                  fontWeight: "900",
-                  WebkitTextStroke: "2px #450A0A",
-                  background: "linear-gradient(45deg, #DC2626, #EF4444, #F87171)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  filter: "drop-shadow(0 0 6px #DC2626)",
-                  // 3D glossy effect from image
-                  background: "linear-gradient(135deg, #DC2626 0%, #EF4444 25%, #F87171 50%, #FCA5A5 75%, #FEE2E2 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  textShadow: "2px 2px 0px #991B1B, 4px 4px 0px #7F1D1D, 6px 6px 0px #450A0A, 8px 8px 20px rgba(0,0,0,0.3)",
-                  filter: "drop-shadow(0 0 8px #DC2626)",
-                  // White highlight effect
-                  position: "relative",
-                  "&::before": {
-                    content: '""',
-                    position: "absolute",
-                    top: "2px",
-                    left: "2px",
-                    background: "linear-gradient(45deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 50%, transparent 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    zIndex: 1
-                  }
-                }}
-              >
-                PARTY
-              </div>
+              />
             </div>
 
             {/* Pizza Visual - Mobile optimized with transparent background */}

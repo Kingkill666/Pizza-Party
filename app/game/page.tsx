@@ -452,41 +452,22 @@ export default function GamePage() {
               </Link>
             </div>
             
-            {/* MASSIVE Pizza Party Title */}
-            <div className="mb-4">
-              <div
-                className={`${deviceInfo.isMobile ? 'text-6xl' : 'text-8xl'} font-black transform -rotate-3 drop-shadow-2xl`}
+            {/* MASSIVE Pizza Party Title - EXACT IMAGE */}
+            <div className="mb-4 flex justify-center">
+              <Image
+                src="/images/pizza-party-title.png"
+                alt="PIZZA PARTY - 3D glossy red text"
+                width={deviceInfo.isMobile ? 300 : 400}
+                height={deviceInfo.isMobile ? 120 : 160}
+                className="drop-shadow-2xl"
+                priority
                 style={{
-                  ...customFontStyle,
-                  letterSpacing: "3px",
-                  fontWeight: "900",
-                  // 3D glossy effect from image
-                  background: "linear-gradient(135deg, #DC2626 0%, #EF4444 25%, #F87171 50%, #FCA5A5 75%, #FEE2E2 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  textShadow: "2px 2px 0px #991B1B, 4px 4px 0px #7F1D1D, 6px 6px 0px #450A0A, 8px 8px 20px rgba(0,0,0,0.3)",
-                  filter: "drop-shadow(0 0 8px #DC2626)",
+                  background: "transparent",
+                  backgroundColor: "transparent",
+                  border: "none",
+                  outline: "none",
                 }}
-              >
-                PIZZA
-              </div>
-              <div style={{ height: deviceInfo.isMobile ? "5px" : "10px" }}></div>
-              <div
-                className={`${deviceInfo.isMobile ? 'text-6xl' : 'text-8xl'} font-black transform -rotate-3 drop-shadow-2xl`}
-                style={{
-                  ...customFontStyle,
-                  letterSpacing: "3px",
-                  fontWeight: "900",
-                  // 3D glossy effect from image
-                  background: "linear-gradient(135deg, #DC2626 0%, #EF4444 25%, #F87171 50%, #FCA5A5 75%, #FEE2E2 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  textShadow: "2px 2px 0px #991B1B, 4px 4px 0px #7F1D1D, 6px 6px 0px #450A0A, 8px 8px 20px rgba(0,0,0,0.3)",
-                  filter: "drop-shadow(0 0 8px #DC2626)",
-                }}
-              >
-                PARTY
-              </div>
+              />
             </div>
             
             <CardTitle className="text-4xl text-red-800" style={customFontStyle}>
