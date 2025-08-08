@@ -1012,12 +1012,6 @@ export default function GamePage() {
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="text-lg sm:text-lg font-bold mb-1 sm:mb-1">{wallet.name}</div>
-                      {/* Only show description on desktop */}
-                      {!deviceInfo.isMobile && (
-                        <div className="text-xs sm:text-xs opacity-90 leading-relaxed whitespace-normal">
-                          Connect your {wallet.name} wallet to play
-                        </div>
-                      )}
                     </div>
                   </div>
                   <div className="flex-shrink-0">
