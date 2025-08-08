@@ -1,37 +1,65 @@
 'use client'
 
-import { useAccount, useDisconnect } from 'wagmi'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { formatAddress } from '@/lib/wallet-config'
+import { Button } from "@/components/ui/button"
 
-export function WalletStatus() {
-  const { address, isConnected } = useAccount()
-  const { disconnect } = useDisconnect()
+interface WalletStatusProps {
+  isConnected: boolean
+  walletName?: string
+  formattedAddress?: string
+  onConnect: () => void
+  onDisconnect: () => void
+  customFontStyle?: React.CSSProperties
+}
 
+export function WalletStatus({ 
+  isConnected, 
+  walletName, 
+  formattedAddress, 
+  onConnect, 
+  onDisconnect, 
+  customFontStyle 
+}: WalletStatusProps) {
   if (!isConnected) {
     return (
-      <ConnectButton 
-        chainStatus="icon"
-        showBalance={false}
-        accountStatus={{
-          smallScreen: 'avatar',
-          largeScreen: 'full',
+      <Button
+        onClick={onConnect}
+        className="w-full bg-white text-red-700 border-2 border-red-700 hover:bg-red-50 text-lg font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all touch-manipulation"
+        style={{
+          ...customFontStyle,
+          letterSpacing: "1px",
+          fontSize: "1.1rem",
+          minHeight: "56px",
         }}
-      />
+      >
+        💳 Connect Wallet
+      </Button>
     )
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-        ✅ Connected {formatAddress(address || '')}
-      </div>
-      <button
-        onClick={() => disconnect()}
-        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium transition-colors"
+    <div className="flex flex-col gap-2">
+      <div className="w-full bg-green-100 text-green-800 border-2 border-green-600 text-lg font-bold py-3 px-6 rounded-xl shadow-lg touch-manipulation flex items-center justify-center"
+        style={{
+          ...customFontStyle,
+          letterSpacing: "1px",
+          fontSize: "1.1rem",
+          minHeight: "56px",
+        }}
       >
-        Disconnect
-      </button>
+        ✅ Connected {formattedAddress}
+      </div>
+      <Button
+        onClick={onDisconnect}
+        className="w-full bg-red-600 hover:bg-red-700 text-white text-lg font-bold py-3 px-6 rounded-xl border-2 border-red-700 shadow-lg transform hover:scale-105 transition-all touch-manipulation"
+        style={{
+          ...customFontStyle,
+          letterSpacing: "1px",
+          fontSize: "1.1rem",
+          minHeight: "56px",
+        }}
+      >
+        🔌 Disconnect
+      </Button>
     </div>
   )
 }
