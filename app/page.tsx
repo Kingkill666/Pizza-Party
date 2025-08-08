@@ -153,7 +153,7 @@ export default function HomePage() {
             {/* Play Button - Mobile optimized */}
             <Link href="/game">
               <Button
-                className="w-full bg-red-700 hover:bg-red-800 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-red-900 shadow-lg transform hover:scale-105 transition-all mb-6 touch-manipulation"
+                className="w-full bg-red-700 hover:bg-red-800 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-red-900 shadow-lg transform hover:scale-105 transition-all touch-manipulation"
                 style={{
                   ...customFontStyle,
                   letterSpacing: "1px",
@@ -165,7 +165,7 @@ export default function HomePage() {
               </Button>
             </Link>
 
-            {/* Navigation */}
+            {/* All Buttons with Equal Spacing */}
             <div className="flex flex-col gap-4">
               <Link href="/jackpot">
                 <Button
