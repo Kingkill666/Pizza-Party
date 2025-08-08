@@ -28,12 +28,6 @@ export function WagmiProvider({ children }: { children: React.ReactNode }) {
         <RainbowKitProvider
           chains={[pizzaPartyChain]}
           initialChain={pizzaPartyChain}
-          theme={{
-            accentColor: '#ff6b35', // Pizza Party orange
-            borderRadius: 'medium',
-            fontStack: 'system',
-            overlayBlur: 'small',
-          }}
           coolMode
         >
           {children}
