@@ -18,7 +18,7 @@ export default function GamePage() {
   }
 
   // Wallet connection state
-  const { isConnected, connection, connectWallet, walletError, isConnecting, error, setError } = useWallet()
+  const { isConnected, connection, connectWallet, isConnecting, error, setError } = useWallet()
   const [isProcessing, setIsProcessing] = useState(false)
   const [gameError, setGameError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -497,9 +497,9 @@ export default function GamePage() {
             {isConnected && connection && (
               <div className="bg-green-100 border-2 border-green-300 rounded-xl p-3 text-center">
                 <p className="text-green-800 font-bold text-sm" style={customFontStyle}>
-                  ✅ Connected to {connection.name || 'Wallet'} {connection.address?.slice(0, 6)}...{connection.address?.slice(-4)}
-                  </p>
-                </div>
+                  ✅ Connected to {connection.walletName || 'Wallet'} {connection.address?.slice(0, 6)}...{connection.address?.slice(-4)}
+                </p>
+              </div>
             )}
 
             {/* Weekly Jackpot Button */}
@@ -922,7 +922,7 @@ export default function GamePage() {
                       {/* Only show description on desktop */}
                       {!deviceInfo.isMobile && (
                         <div className="text-xs sm:text-xs opacity-90 leading-relaxed whitespace-normal">
-                          {wallet.description}
+                          Connect your {wallet.name} wallet to play
                         </div>
                       )}
                     </div>
