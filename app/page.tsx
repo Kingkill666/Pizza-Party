@@ -180,19 +180,46 @@ export default function HomePage() {
                 </Button>
               </Link>
 
-              {/* Connect Wallet Button */}
-              <Button
-                onClick={() => setShowWalletModal(true)}
-                className="w-full bg-white text-red-700 border-2 border-red-700 hover:bg-red-50 text-lg font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all touch-manipulation"
-                style={{
-                  ...customFontStyle,
-                  letterSpacing: "1px",
-                  fontSize: deviceInfo.isMobile ? "1.1rem" : "1.25rem",
-                  minHeight: deviceInfo.isMobile ? "56px" : "auto",
-                }}
-              >
-                💳 Connect Wallet
-              </Button>
+              {/* Wallet Connection Status */}
+              {!isConnected ? (
+                <Button
+                  onClick={() => setShowWalletModal(true)}
+                  className="w-full bg-white text-red-700 border-2 border-red-700 hover:bg-red-50 text-lg font-bold py-3 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all touch-manipulation"
+                  style={{
+                    ...customFontStyle,
+                    letterSpacing: "1px",
+                    fontSize: deviceInfo.isMobile ? "1.1rem" : "1.25rem",
+                    minHeight: deviceInfo.isMobile ? "56px" : "auto",
+                  }}
+                >
+                  💳 Connect Wallet
+                </Button>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <div className="w-full bg-green-100 text-green-800 border-2 border-green-600 text-lg font-bold py-3 px-6 rounded-xl shadow-lg touch-manipulation flex items-center justify-center"
+                    style={{
+                      ...customFontStyle,
+                      letterSpacing: "1px",
+                      fontSize: deviceInfo.isMobile ? "1.1rem" : "1.25rem",
+                      minHeight: deviceInfo.isMobile ? "56px" : "auto",
+                    }}
+                  >
+                    ✅ Connected {formattedAddress}
+                  </div>
+                  <Button
+                    onClick={handleDisconnect}
+                    className="w-full bg-red-600 hover:bg-red-700 text-white text-lg font-bold py-3 px-6 rounded-xl border-2 border-red-700 shadow-lg transform hover:scale-105 transition-all touch-manipulation"
+                    style={{
+                      ...customFontStyle,
+                      letterSpacing: "1px",
+                      fontSize: deviceInfo.isMobile ? "1.1rem" : "1.25rem",
+                      minHeight: deviceInfo.isMobile ? "56px" : "auto",
+                    }}
+                  >
+                    🔌 Disconnect
+                  </Button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
