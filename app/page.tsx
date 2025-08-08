@@ -302,14 +302,21 @@ export default function HomePage() {
                 <svg 
                   viewBox="0 0 192 192" 
                   className="absolute top-0 left-0 w-full h-full pointer-events-none"
-                  style={{ width: '192px', height: '192px' }}
+                  style={{ 
+                    width: '192px', 
+                    height: '192px',
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)'
+                  }}
                 >
                   {/* 8 slice divider lines from center to edge */}
                   {[...Array(8)].map((_, i) => {
                     const angle = i * 45 - 90 // Start from top and go clockwise
                     const centerX = 96
                     const centerY = 96
-                    const radius = 80 // Adjust based on pizza size
+                    const radius = 85 // Increased radius to match pizza edge
                     const endX = centerX + radius * Math.cos((angle * Math.PI) / 180)
                     const endY = centerY + radius * Math.sin((angle * Math.PI) / 180)
 
@@ -321,8 +328,8 @@ export default function HomePage() {
                         x2={endX}
                         y2={endY}
                         stroke="#8B4513"
-                        strokeWidth="2"
-                        opacity="0.6"
+                        strokeWidth="3"
+                        opacity="0.7"
                       />
                     )
                   })}
