@@ -251,20 +251,24 @@ export default function HomePage() {
           <CardContent className="p-4 sm:p-6 text-center">
             {/* MASSIVE Pizza Party Title - EXACT IMAGE */}
             <div className="mb-4 flex justify-center">
-              <Image
-                src="/images/pizza-party-title.png"
-                alt="PIZZA PARTY - 3D glossy red text"
-                width={deviceInfo.isMobile ? 300 : 400}
-                height={deviceInfo.isMobile ? 120 : 160}
-                className="drop-shadow-2xl"
-                priority
-                style={{
-                  background: "transparent",
-                  backgroundColor: "transparent",
-                  border: "none",
-                  outline: "none",
-                }}
-              />
+              <div className="relative">
+                <Image
+                  src="/images/pizza-party-title.png"
+                  alt="PIZZA PARTY - 3D glossy red text"
+                  width={deviceInfo.isMobile ? 300 : 400}
+                  height={deviceInfo.isMobile ? 120 : 160}
+                  className="drop-shadow-2xl"
+                  priority
+                  style={{
+                    background: "transparent",
+                    backgroundColor: "transparent",
+                    border: "none",
+                    outline: "none",
+                    mixBlendMode: "multiply",
+                    filter: "contrast(1.2) brightness(1.1)",
+                  }}
+                />
+              </div>
             </div>
 
             {/* Pizza Visual - Mobile optimized with transparent background */}
