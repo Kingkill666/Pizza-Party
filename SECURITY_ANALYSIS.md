@@ -210,7 +210,7 @@ function drawWeeklyWinners() external onlyOwner {
     address[] memory winners = _selectWeeklyWinners();
     uint256 prizePerWinner = currentWeeklyJackpot / WEEKLY_WINNERS_COUNT;
     
-    // Distribute Base Sepolia ETH prizes automatically
+    // Distribute Base Mainnet VMF prizes automatically
     for (uint256 i = 0; i < winners.length; i++) {
         if (winners[i] != address(0)) {
             (bool success, ) = winners[i].call{value: prizePerWinner}("");

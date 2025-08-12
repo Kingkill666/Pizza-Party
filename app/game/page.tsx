@@ -67,6 +67,14 @@ export default function GamePage() {
     totalAllowed: 3 // Total codes per user
   })
 
+  // Gasless transaction state
+  const [useGasless, setUseGasless] = useState(true)
+  const [gasEstimates, setGasEstimates] = useState({
+    regular: { enterDailyGame: '0', claimToppings: '0', addJackpotEntry: '0' },
+    gasless: { enterDailyGame: '0', claimToppings: '0', addJackpotEntry: '0' }
+  })
+  const [gaslessAvailable, setGaslessAvailable] = useState(false)
+
   // Social media platforms for sharing
   const socialPlatforms = [
     {
@@ -180,8 +188,11 @@ export default function GamePage() {
       // Create contract instance using window.ethereum as provider
       const contract = createPizzaPartyContract(window.ethereum)
       
+      // Use gasless transaction if available and enabled
+      const shouldUseGasless = useGasless && gaslessAvailable
+      
       // Enter the daily game with $1 VMF
-      const txHash = await contract.enterDailyGame('')
+      const txHash = await contract.enterDailyGame('', shouldUseGasless)
       
       // Earn toppings for daily play (only when wallet is connected)
       if (isConnected && connection?.address) {
@@ -538,6 +549,29 @@ export default function GamePage() {
     }
   }
 
+  // Check gasless availability and get gas estimates
+  const checkGaslessAvailability = useCallback(async () => {
+    if (!isConnected || !connection) return
+
+    try {
+      const contract = createPizzaPartyContract(window.ethereum)
+      const availability = await contract.isGaslessAvailable()
+      setGaslessAvailable(availability.available)
+
+      if (availability.available) {
+        const estimates = await contract.getGasEstimates()
+        setGasEstimates(estimates)
+      }
+    } catch (error) {
+      console.error('Error checking gasless availability:', error)
+      setGaslessAvailable(false)
+    }
+  }, [isConnected, connection])
+
+  useEffect(() => {
+    checkGaslessAvailability()
+  }, [isConnected, connection, checkGaslessAvailability])
+
   return (
     <div
       className="min-h-screen p-4"
@@ -618,6 +652,22 @@ export default function GamePage() {
 
             {/* Game Buttons */}
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              {/* Gasless Transaction Toggle */}
+              {gaslessAvailable && (
+                <div className="flex items-center justify-center space-x-2 bg-blue-50 p-3 rounded-lg border-2 border-blue-200">
+                  <input
+                    type="checkbox"
+                    id="gasless-toggle"
+                    checked={useGasless}
+                    onChange={(e) => setUseGasless(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="gasless-toggle" className="text-sm font-medium text-blue-800" style={customFontStyle}>
+                    🚀 Use Gasless Transactions (No Gas Fees!)
+                  </label>
+                </div>
+              )}
+              
               <Button
               className="w-full bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-4 px-8 rounded-xl border-4 border-green-800 shadow-lg"
                 style={{
@@ -631,11 +681,22 @@ export default function GamePage() {
               {isProcessing ? 'Processing...' : (
                 <>
                   <img src="/images/pepperoni-art.png" alt="Pizza Slice" className="w-6 h-6 mr-2" />
-                  ENTER GAME $1 VMF
+                  {useGasless && gaslessAvailable ? 'ENTER GAME $1 VMF (GASLESS!)' : 'ENTER GAME $1 VMF'}
                   <img src="/images/pepperoni-art.png" alt="Pizza Slice" className="w-6 h-6 ml-2" />
                 </>
               )}
               </Button>
+              
+              {/* Gas Estimate Display */}
+              {gaslessAvailable && (
+                <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded text-center" style={customFontStyle}>
+                  {useGasless ? (
+                    <span>💰 Gasless: ~{parseInt(gasEstimates.gasless.enterDailyGame) / 1000}k gas</span>
+                  ) : (
+                    <span>💰 Regular: ~{parseInt(gasEstimates.regular.enterDailyGame) / 1000}k gas</span>
+                  )}
+                </div>
+              )}
 
             {/* Wallet Status Display */}
             {isConnected && connection && (

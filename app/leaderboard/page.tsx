@@ -437,7 +437,7 @@ export default function LeaderboardPage() {
                     <Button
                       key={wallet.id}
                       onClick={() => handleWalletConnect(wallet.id)}
-                      disabled={isConnecting}
+                      disabled={!!isConnecting}
                       className={`w-full font-bold py-6 px-4 rounded-xl border-2 shadow-lg transform hover:scale-105 transition-all flex items-center justify-between text-lg ${getWalletStyle(wallet.name)}`}
                       style={customFontStyle}
                     >

@@ -1,4 +1,5 @@
 import { CONTRACT_ADDRESSES, PIZZA_PARTY_ABI, FREE_PRICE_ORACLE_ABI, FREE_RANDOMNESS_ABI, VMF_TOKEN_ABI } from './contract-config'
+import { GaslessGameService } from './services/gasless-game-service';
 
 // Web3 provider interface
 export interface Web3Provider {
@@ -9,16 +10,26 @@ export interface Web3Provider {
 
 // Pizza Party Contract class for interacting with deployed contracts
 export class PizzaPartyContract {
-  private provider: Web3Provider
+  private provider: any
   private pizzaPartyAddress: string
   private priceOracleAddress: string
   private randomnessAddress: string
+  private gaslessService?: GaslessGameService;
 
-  constructor(provider: Web3Provider) {
+  constructor(provider: any) {
     this.provider = provider
     this.pizzaPartyAddress = CONTRACT_ADDRESSES.PIZZA_PARTY
     this.priceOracleAddress = CONTRACT_ADDRESSES.FREE_PRICE_ORACLE
     this.randomnessAddress = CONTRACT_ADDRESSES.FREE_RANDOMNESS
+    
+    // Initialize gasless service
+    this.gaslessService = new GaslessGameService(
+      provider,
+      // We'll initialize the signer later when needed
+      undefined as any, 
+      this.pizzaPartyAddress,
+      PIZZA_PARTY_ABI
+    );
   }
 
   // Get player data from contract
@@ -102,8 +113,35 @@ export class PizzaPartyContract {
     }
   }
 
-  // Enter daily game with VMF tokens
-  async enterDailyGame(referralCode: string = '') {
+  /**
+   * Enter daily game with gasless transaction support
+   */
+  async enterDailyGame(referralCode: string = '', useGasless: boolean = false): Promise<string> {
+    try {
+      if (useGasless && this.gaslessService) {
+        // Check if gasless is supported
+        const gaslessCheck = await this.gaslessService.canPerformGasless();
+        if (gaslessCheck.supported) {
+          console.log('🚀 Using gasless transaction for daily game entry');
+          return await this.gaslessService.enterDailyGameGasless(referralCode);
+        } else {
+          console.log('⚠️ Gasless not available, falling back to regular transaction:', gaslessCheck.reason);
+        }
+      }
+
+      // Fallback to regular transaction
+      console.log('💰 Using regular transaction for daily game entry');
+      return await this.enterDailyGameRegular(referralCode);
+    } catch (error) {
+      console.error('❌ Daily game entry failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Regular transaction for daily game entry
+   */
+  private async enterDailyGameRegular(referralCode: string = ''): Promise<string> {
     try {
       const accounts = await this.provider.request({ method: 'eth_requestAccounts' })
       const account = accounts[0]
@@ -160,6 +198,126 @@ export class PizzaPartyContract {
       return txHash
     } catch (error) {
       console.error('Error entering daily game:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Claim toppings with gasless transaction support
+   */
+  async claimToppings(useGasless: boolean = false): Promise<string> {
+    try {
+      if (useGasless && this.gaslessService) {
+        // Check if gasless is supported
+        const gaslessCheck = await this.gaslessService.canPerformGasless();
+        if (gaslessCheck.supported) {
+          console.log('🚀 Using gasless transaction for topping claim');
+          return await this.gaslessService.claimToppingsGasless();
+        } else {
+          console.log('⚠️ Gasless not available, falling back to regular transaction:', gaslessCheck.reason);
+        }
+      }
+
+      // Fallback to regular transaction
+      console.log('💰 Using regular transaction for topping claim');
+      return await this.claimToppingsRegular();
+    } catch (error) {
+      console.error('❌ Topping claim failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Regular transaction for claiming toppings
+   */
+  private async claimToppingsRegular(): Promise<string> {
+    try {
+      const accounts = await this.provider.request({ method: 'eth_requestAccounts' })
+      const account = accounts[0]
+      
+      const data = this.encodeFunctionCall('awardVMFHoldingsToppings', [])
+      const gasEstimate = await this.provider.request({
+        method: 'eth_estimateGas',
+        params: [{
+          from: account,
+          to: this.pizzaPartyAddress,
+          data: data
+        }]
+      })
+
+      const txHash = await this.provider.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: account,
+          to: this.pizzaPartyAddress,
+          data: data,
+          gas: gasEstimate
+        }]
+      })
+
+      return txHash
+    } catch (error) {
+      console.error('Error awarding VMF holdings toppings:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Add jackpot entry with gasless transaction support
+   */
+  async addJackpotEntry(useGasless: boolean = false): Promise<string> {
+    try {
+      if (useGasless && this.gaslessService) {
+        // Check if gasless is supported
+        const gaslessCheck = await this.gaslessService.canPerformGasless();
+        if (gaslessCheck.supported) {
+          console.log('🚀 Using gasless transaction for jackpot entry');
+          return await this.gaslessService.addJackpotEntryGasless();
+        } else {
+          console.log('⚠️ Gasless not available, falling back to regular transaction:', gaslessCheck.reason);
+        }
+      }
+
+      // Fallback to regular transaction
+      console.log('💰 Using regular transaction for jackpot entry');
+      return await this.addJackpotEntryRegular();
+    } catch (error) {
+      console.error('❌ Jackpot entry failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Regular transaction for adding jackpot entry
+   */
+  private async addJackpotEntryRegular(): Promise<string> {
+    try {
+      const accounts = await this.provider.request({ method: 'eth_requestAccounts' })
+      const account = accounts[0]
+      
+      const data = this.encodeFunctionCall('awardStreakBonus', [])
+      const gasEstimate = await this.provider.request({
+        method: 'eth_estimateGas',
+        params: [{
+          from: account,
+          to: this.pizzaPartyAddress,
+          data: data
+        }]
+      })
+
+      const txHash = await this.provider.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: account,
+          to: this.pizzaPartyAddress,
+          data: data,
+          gas: gasEstimate
+        }]
+      })
+
+      return txHash
+    } catch (error) {
+      console.error('Error awarding streak bonus:', error)
       throw error
     }
   }
@@ -395,6 +553,96 @@ export class PizzaPartyContract {
   private keccak256(data: string): string {
     // Simple hash function - in real implementation, use proper crypto library
     return '0x' + data.split('').map(char => char.charCodeAt(0).toString(16)).join('')
+  }
+
+  /**
+   * Get regular gas estimates for all game actions
+   */
+  private async getRegularGasEstimates(): Promise<{
+    enterDailyGame: string;
+    claimToppings: string;
+    addJackpotEntry: string;
+  }> {
+    try {
+      // Default gas estimates for regular transactions
+      return {
+        enterDailyGame: '100000', // 100k gas
+        claimToppings: '80000',   // 80k gas
+        addJackpotEntry: '120000', // 120k gas
+      };
+    } catch (error) {
+      console.error('❌ Failed to get regular gas estimates:', error);
+      return {
+        enterDailyGame: '100000',
+        claimToppings: '80000',
+        addJackpotEntry: '120000',
+      };
+    }
+  }
+
+  /**
+   * Get gas estimates for all game actions
+   */
+  async getGasEstimates(): Promise<{
+    regular: {
+      enterDailyGame: string;
+      claimToppings: string;
+      addJackpotEntry: string;
+    };
+    gasless: {
+      enterDailyGame: string;
+      claimToppings: string;
+      addJackpotEntry: string;
+    };
+  }> {
+    try {
+      // Get regular gas estimates
+      const regularEstimates = await this.getRegularGasEstimates();
+
+      // Get gasless gas estimates
+      let gaslessEstimates = {
+        enterDailyGame: '0',
+        claimToppings: '0',
+        addJackpotEntry: '0',
+      };
+
+      if (this.gaslessService) {
+        try {
+          gaslessEstimates = await this.gaslessService.getGasEstimates();
+        } catch (error) {
+          console.log('⚠️ Could not get gasless estimates:', error);
+        }
+      }
+
+      return {
+        regular: regularEstimates,
+        gasless: gaslessEstimates,
+      };
+    } catch (error) {
+      console.error('❌ Failed to get gas estimates:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if gasless transactions are available
+   */
+  async isGaslessAvailable(): Promise<{
+    available: boolean;
+    reason?: string;
+  }> {
+    if (!this.gaslessService) {
+      return {
+        available: false,
+        reason: 'Gasless service not initialized',
+      };
+    }
+
+    const gaslessCheck = await this.gaslessService.canPerformGasless();
+    return {
+      available: gaslessCheck.supported,
+      reason: gaslessCheck.reason,
+    };
   }
 }
 
