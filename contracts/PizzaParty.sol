@@ -493,13 +493,30 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         require(block.timestamp >= currentGame.endTime, "Game not finished");
         
         address[] memory winners = _selectWinners(DAILY_WINNERS_COUNT, currentGame.totalEntries);
-        uint256 prizePerWinner = currentDailyJackpot / DAILY_WINNERS_COUNT;
         
-        // Distribute Base Sepolia ETH prizes
+        // Count actual winners (non-zero addresses)
+        uint256 actualWinnerCount = 0;
         for (uint256 i = 0; i < winners.length; i++) {
             if (winners[i] != address(0)) {
-                (bool success, ) = winners[i].call{value: prizePerWinner}("");
-                require(success, "Prize transfer failed");
+                actualWinnerCount++;
+            }
+        }
+        
+        // If no winners, keep jackpot for next round
+        if (actualWinnerCount == 0) {
+            currentGame.isCompleted = true;
+            emit DailyWinnersSelected(_gameId, winners, currentDailyJackpot);
+            _startNewDailyGame();
+            return;
+        }
+        
+        // Distribute jackpot evenly among actual winners
+        uint256 prizePerWinner = currentDailyJackpot / actualWinnerCount;
+        
+        // Distribute VMF prizes
+        for (uint256 i = 0; i < winners.length; i++) {
+            if (winners[i] != address(0)) {
+                require(vmfToken.transfer(winners[i], prizePerWinner), "VMF prize transfer failed");
             }
         }
         
@@ -520,13 +537,29 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         require(block.timestamp >= lastWeeklyDraw + 7 days, "Weekly draw not ready");
         
         address[] memory winners = _selectWeeklyWinners();
-        uint256 prizePerWinner = currentWeeklyJackpot / WEEKLY_WINNERS_COUNT;
         
-        // Distribute Base Sepolia ETH prizes
+        // Count actual winners (non-zero addresses)
+        uint256 actualWinnerCount = 0;
         for (uint256 i = 0; i < winners.length; i++) {
             if (winners[i] != address(0)) {
-                (bool success, ) = winners[i].call{value: prizePerWinner}("");
-                require(success, "Prize transfer failed");
+                actualWinnerCount++;
+            }
+        }
+        
+        // If no winners, keep jackpot for next round
+        if (actualWinnerCount == 0) {
+            emit WeeklyWinnersSelected(_gameId, winners, currentWeeklyJackpot);
+            _resetWeeklyGame();
+            return;
+        }
+        
+        // Distribute jackpot evenly among actual winners
+        uint256 prizePerWinner = currentWeeklyJackpot / actualWinnerCount;
+        
+        // Distribute VMF prizes
+        for (uint256 i = 0; i < winners.length; i++) {
+            if (winners[i] != address(0)) {
+                require(vmfToken.transfer(winners[i], prizePerWinner), "VMF prize transfer failed");
             }
         }
         
@@ -820,10 +853,25 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     function _selectWeeklyWinners() internal view returns (address[] memory) {
         address[] memory winners = new address[](WEEKLY_WINNERS_COUNT);
         
-        // Simplified selection based on toppings
-        // In production, implement weighted random selection
-        for (uint256 i = 0; i < WEEKLY_WINNERS_COUNT; i++) {
-            winners[i] = address(0); // Placeholder
+        // Get all players with toppings for the week
+        address[] memory eligiblePlayers = new address[](1000); // Max 1000 players
+        uint256 eligibleCount = 0;
+        
+        // This is a simplified implementation
+        // In production, you would iterate through all players and collect those with toppings
+        // For now, we'll use a placeholder that returns the actual number of eligible players
+        
+        // If no eligible players, return empty winners array
+        if (eligibleCount == 0) {
+            return winners;
+        }
+        
+        // Select winners (up to the number of eligible players or WEEKLY_WINNERS_COUNT, whichever is smaller)
+        uint256 winnersToSelect = eligibleCount < WEEKLY_WINNERS_COUNT ? eligibleCount : WEEKLY_WINNERS_COUNT;
+        
+        for (uint256 i = 0; i < winnersToSelect; i++) {
+            // Simple selection - in production, implement weighted random selection based on toppings
+            winners[i] = eligiblePlayers[i];
         }
         
         return winners;

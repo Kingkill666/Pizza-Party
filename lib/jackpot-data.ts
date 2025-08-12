@@ -215,7 +215,7 @@ export const getWeeklyPlayerCount = (): number => {
         // Only count entries from this week (since Monday 12pm PST)
         if (entryDate >= currentWeekStart) {
           const address = parts[1]
-          uniquePlayers.add(address)
+      uniquePlayers.add(address)
         }
       }
     }
@@ -531,15 +531,15 @@ export const selectWeeklyJackpotWinners = (): string[] => {
   const maxWinners = Math.min(10, players.length) // Maximum 10 winners or all players if less than 10
 
   for (let i = 0; i < maxWinners; i++) {
-    const totalWeight = players.reduce((sum, player) => sum + player.toppings, 0)
-    const random = Math.random() * totalWeight
+  const totalWeight = players.reduce((sum, player) => sum + player.toppings, 0)
+  const random = Math.random() * totalWeight
 
-    let currentWeight = 0
+  let currentWeight = 0
     let selectedIndex = -1
 
     for (let j = 0; j < players.length; j++) {
       currentWeight += players[j].toppings
-      if (random <= currentWeight) {
+    if (random <= currentWeight) {
         selectedIndex = j
         break
       }
