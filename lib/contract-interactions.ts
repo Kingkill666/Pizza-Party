@@ -114,7 +114,16 @@ export class PizzaPartyContract {
           data: this.encodeFunctionCall('currentDailyJackpot', [])
         }, 'latest']
       })
-      return this.decodeUint256(data)
+      
+      // Validate the response
+      if (!data || data === '0x') {
+        console.warn('Empty response from currentDailyJackpot call')
+        return 0
+      }
+      
+      const result = this.decodeUint256(data)
+      console.log('Current jackpot result:', result)
+      return result
     } catch (error) {
       console.error('Error getting current jackpot:', error)
       return 0
@@ -131,6 +140,13 @@ export class PizzaPartyContract {
           data: this.encodeFunctionCallWithABI('getVMFPrice', [], FREE_PRICE_ORACLE_ABI)
         }, 'latest']
       })
+      
+      // Validate the response
+      if (!data || data === '0x') {
+        console.warn('Empty response from getVMFPrice call')
+        return 0
+      }
+      
       const price = this.decodeUint256(data)
       console.log('Current VMF price:', price, 'wei')
       return price
@@ -150,6 +166,13 @@ export class PizzaPartyContract {
           data: this.encodeFunctionCallWithABI('getRequiredVMFForDollar', [], FREE_PRICE_ORACLE_ABI)
         }, 'latest']
       })
+      
+      // Validate the response
+      if (!data || data === '0x') {
+        console.warn('Empty response from getRequiredVMFForDollar call')
+        return 0
+      }
+      
       const amount = this.decodeUint256(data)
       console.log('Required VMF for $1:', amount, 'wei')
       return amount
@@ -524,7 +547,16 @@ export class PizzaPartyContract {
           data: this.encodeFunctionCall('dailyPlayerCount', ['0x0000000000000000000000000000000000000000000000000000000000000001'])
         }, 'latest']
       })
-      return this.decodeUint256(data)
+      
+      // Validate the response
+      if (!data || data === '0x') {
+        console.warn('Empty response from dailyPlayerCount call')
+        return 0
+      }
+      
+      const result = this.decodeUint256(data)
+      console.log('Daily player count result:', result)
+      return result
     } catch (error) {
       console.error('Error getting daily player count:', error)
       return 0
@@ -619,7 +651,35 @@ export class PizzaPartyContract {
   }
 
   private decodeUint256(data: string): number {
-    return parseInt(data, 16)
+    try {
+      // Check if data is valid
+      if (!data || data === '0x' || data === '0x0') {
+        return 0
+      }
+      
+      // Remove 0x prefix if present
+      const cleanData = data.startsWith('0x') ? data.slice(2) : data
+      
+      // Check if the hex string is valid
+      if (!/^[0-9a-fA-F]+$/.test(cleanData)) {
+        console.warn('Invalid hex data received:', data)
+        return 0
+      }
+      
+      // Convert hex to decimal
+      const result = parseInt(cleanData, 16)
+      
+      // Check if result is valid
+      if (isNaN(result)) {
+        console.warn('Failed to parse hex data:', data)
+        return 0
+      }
+      
+      return result
+    } catch (error) {
+      console.error('Error decoding uint256:', error, 'Data:', data)
+      return 0
+    }
   }
 
   /**

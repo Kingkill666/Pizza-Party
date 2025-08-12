@@ -351,9 +351,12 @@ export default function GamePage() {
           console.log('📊 Contract daily players:', dailyCount)
           console.log('📊 Contract weekly players:', weeklyCount)
           
-          // Use contract data if available
-          if (dailyCount > 0) {
+          // Use contract data if available and valid
+          if (dailyCount && !isNaN(dailyCount) && dailyCount > 0) {
             setPlayerCount(dailyCount)
+          } else {
+            console.log('📊 Invalid daily count, using fallback')
+            updatePlayerCountFromLocalStorage()
           }
           
         } catch (contractError) {
@@ -445,9 +448,15 @@ export default function GamePage() {
           
           console.log('💰 Contract jackpot amount:', jackpotAmount)
           
-          // Convert from wei to VMF (assuming 18 decimals)
-          const jackpotInVMF = jackpotAmount / 1e18
-          setJackpot(jackpotInVMF)
+          // Validate the jackpot amount
+          if (jackpotAmount && !isNaN(jackpotAmount) && jackpotAmount >= 0) {
+            // Convert from wei to VMF (assuming 18 decimals)
+            const jackpotInVMF = jackpotAmount / 1e18
+            setJackpot(jackpotInVMF)
+            console.log('💰 Jackpot in VMF:', jackpotInVMF)
+          } else {
+            console.log('💰 Invalid jackpot amount, keeping current value')
+          }
           
         } catch (contractError) {
           console.error('❌ Error reading jackpot from contract:', contractError)
