@@ -47,12 +47,20 @@ export function FarcasterWrapper({ children }: FarcasterWrapperProps) {
       }
     }
 
-    initializeFarcaster()
+    // Only run in client-side
+    if (typeof window !== 'undefined') {
+      initializeFarcaster()
+    } else {
+      // In SSR, mark as initialized immediately
+      setIsInitialized(true)
+      setIsFarcaster(false)
+      setSdkAvailable(false)
+    }
   }, [])
 
   // Call ready() after the app is fully loaded
   useEffect(() => {
-    if (isInitialized && isFarcaster && sdkAvailable && !isReady) {
+    if (typeof window !== 'undefined' && isInitialized && isFarcaster && sdkAvailable && !isReady) {
       const callReady = async () => {
         try {
           await farcasterApp.ready()
