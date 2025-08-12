@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ExternalLink, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
 import { useWallet } from "@/hooks/useWallet"
-import { CONTRACT_ADDRESSES, CONTRACT_URLS } from "@/lib/contract-config"
+import { CONTRACT_ADDRESSES } from "@/lib/contract-config"
 import { createPizzaPartyContract } from "@/lib/contract-interactions"
 
 export default function TestContractsPage() {
@@ -73,10 +73,10 @@ export default function TestContractsPage() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-red-800 mb-4">🍕 Beta Testing Page</h1>
           <p className="text-lg text-gray-600">
-            Testing Pizza Party contracts on Base Sepolia Testnet
+            Testing Pizza Party contracts on Base Mainnet
           </p>
           <Badge variant="secondary" className="mt-2">
-            🧪 Beta Testing Mode - Sepolia ETH Only
+            🚀 Production Mode - Base Mainnet
           </Badge>
         </div>
 
@@ -96,7 +96,7 @@ export default function TestContractsPage() {
                     <code className="text-sm bg-gray-100 px-2 py-1 rounded">
                       {CONTRACT_ADDRESSES.PIZZA_PARTY}
                     </code>
-                    <a href={CONTRACT_URLS.PIZZA_PARTY} target="_blank" rel="noopener noreferrer">
+                    <a href={`https://basescan.org/address/${CONTRACT_ADDRESSES.PIZZA_PARTY}`} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4" />
                     </a>
                   </div>
@@ -107,7 +107,7 @@ export default function TestContractsPage() {
                     <code className="text-sm bg-gray-100 px-2 py-1 rounded">
                       {CONTRACT_ADDRESSES.FREE_RANDOMNESS}
                     </code>
-                    <a href={CONTRACT_URLS.FREE_RANDOMNESS} target="_blank" rel="noopener noreferrer">
+                    <a href={`https://basescan.org/address/${CONTRACT_ADDRESSES.FREE_RANDOMNESS}`} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4" />
                     </a>
                   </div>
@@ -118,7 +118,7 @@ export default function TestContractsPage() {
                     <code className="text-sm bg-gray-100 px-2 py-1 rounded">
                       {CONTRACT_ADDRESSES.FREE_PRICE_ORACLE}
                     </code>
-                    <a href={CONTRACT_URLS.FREE_PRICE_ORACLE} target="_blank" rel="noopener noreferrer">
+                    <a href={`https://basescan.org/address/${CONTRACT_ADDRESSES.FREE_PRICE_ORACLE}`} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4" />
                     </a>
                   </div>
