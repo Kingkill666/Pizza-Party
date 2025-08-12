@@ -75,7 +75,7 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     uint256 public constant STREAK_BONUS = 3; // 3 toppings for 7-day streak
     uint256 public constant FIRST_ORDER_REWARD = 5; // 5 toppings for first order
     uint256 public constant MAX_JACKPOT_ENTRIES = 100; // Maximum jackpot entries per user
-    uint256 public constant JACKPOT_ENTRY_COST = 1 * 10**18; // 1 VMF per jackpot entry
+    uint256 public constant JACKPOT_ENTRY_COST = 1 * 10**18; // Dynamic $1 VMF per jackpot entry (calculated via price oracle)
     uint256 public constant JACKPOT_MULTIPLIER = 2; // 2x multiplier for jackpot entries
     uint256 public constant LOYALTY_POINTS_PER_DOLLAR = 10; // 10 points per dollar of VMF
     
@@ -411,9 +411,9 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     }
     
     /**
-     * @dev Enhanced enter daily game with Base Sepolia ETH
+     * @dev Enhanced enter daily game with dynamic VMF pricing ($1 worth of VMF)
      */
-    function enterDailyGame(string memory referralCode) external nonReentrant whenNotPaused notBlacklisted(msg.sender) rateLimited securityCheck payable {
+    function enterDailyGame(string memory referralCode) external nonReentrant whenNotPaused notBlacklisted(msg.sender) rateLimited securityCheck {
         // Update user activity
         _updateUserActivity(msg.sender);
         
@@ -423,10 +423,14 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         // Check for suspicious activity
         require(!_detectSuspiciousActivity(msg.sender), "Suspicious activity detected");
         
-        // Fixed entry fee for Base Sepolia testing
-        uint256 requiredETH = 1 * 10**15; // 0.001 Base Sepolia ETH
+        // Get dynamic entry fee ($1 worth of VMF)
+        uint256 requiredVMF = _calculateDynamicEntryFee();
+        require(requiredVMF > 0, "Invalid entry fee calculated");
         
-        require(msg.value >= requiredETH, "Insufficient Base Sepolia ETH balance");
+        // Check VMF balance and allowance
+        require(vmfToken.balanceOf(msg.sender) >= requiredVMF, "Insufficient VMF balance");
+        require(vmfToken.allowance(msg.sender, address(this)) >= requiredVMF, "Insufficient VMF allowance");
+        
         require(players[msg.sender].dailyEntries < MAX_DAILY_ENTRIES, "Max daily entries reached");
         
         // Validate and sanitize referral code if provided
@@ -435,6 +439,9 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
             sanitizedReferralCode = _validateAndSanitizeInput(referralCode);
             require(_isValidReferralCodeFormat(sanitizedReferralCode), "Invalid referral code format");
         }
+        
+        // Transfer VMF tokens from player to contract
+        require(vmfToken.transferFrom(msg.sender, address(this), requiredVMF), "VMF transfer failed");
         
         // Update player data
         players[msg.sender].dailyEntries = players[msg.sender].dailyEntries + 1;
@@ -445,8 +452,8 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         dailyPlayers[_gameId].push(msg.sender);
         dailyPlayerCount[_gameId] = dailyPlayerCount[_gameId] + 1;
         
-        // Update jackpot
-        currentDailyJackpot = currentDailyJackpot + msg.value;
+        // Update jackpot with VMF value
+        currentDailyJackpot = currentDailyJackpot + requiredVMF;
         
         // Process referral if provided
         if (bytes(sanitizedReferralCode).length > 0) {
@@ -458,7 +465,7 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         emit ToppingsAwarded(msg.sender, DAILY_PLAY_REWARD, "Daily play reward");
         
         // Emit events
-        emit PlayerEntered(msg.sender, _gameId, msg.value);
+        emit PlayerEntered(msg.sender, _gameId, requiredVMF);
         emit JackpotUpdated(currentDailyJackpot, currentWeeklyJackpot);
         
         // Apply rate limiting for next entry
@@ -633,18 +640,27 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     }
     
     /**
-     * @dev Add player to jackpot with Base Sepolia ETH
+     * @dev Add player to jackpot with VMF tokens
      */
-    function addJackpotEntry() external nonReentrant whenNotPaused notBlacklisted(msg.sender) payable {
+    function addJackpotEntry() external nonReentrant whenNotPaused notBlacklisted(msg.sender) {
         require(players[msg.sender].jackpotEntries < MAX_JACKPOT_ENTRIES, "Max jackpot entries reached");
-        require(msg.value >= JACKPOT_ENTRY_COST, "Insufficient Base Sepolia ETH for jackpot entry");
-        require(JACKPOT_ENTRY_COST > 0, "Invalid jackpot entry cost");
-        require(JACKPOT_ENTRY_COST <= 1000 * 10**18, "Jackpot entry cost too high");
+        
+        // Get dynamic jackpot entry cost ($1 worth of VMF)
+        uint256 requiredVMF = _calculateDynamicEntryFee();
+        require(requiredVMF > 0, "Invalid jackpot entry cost calculated");
+        require(requiredVMF <= 1000 * 10**18, "Jackpot entry cost too high");
+        
+        // Check VMF balance and allowance
+        require(vmfToken.balanceOf(msg.sender) >= requiredVMF, "Insufficient VMF balance");
+        require(vmfToken.allowance(msg.sender, address(this)) >= requiredVMF, "Insufficient VMF allowance");
+        
+        // Transfer VMF tokens from player to contract
+        require(vmfToken.transferFrom(msg.sender, address(this), requiredVMF), "VMF transfer failed");
 
         players[msg.sender].jackpotEntries = players[msg.sender].jackpotEntries + 1;
-        currentWeeklyJackpot = currentWeeklyJackpot + msg.value * JACKPOT_MULTIPLIER;
+        currentWeeklyJackpot = currentWeeklyJackpot + requiredVMF * JACKPOT_MULTIPLIER;
 
-        emit JackpotEntryAdded(msg.sender, msg.value);
+        emit JackpotEntryAdded(msg.sender, requiredVMF);
     }
     
     /**

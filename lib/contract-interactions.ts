@@ -262,33 +262,7 @@ export class PizzaPartyContract {
       await this.waitForTransaction(approveTxHash)
       console.log('VMF approval transaction confirmed:', approveTxHash)
       
-      // Step 2: Transfer VMF tokens to the contract (this will be the entry fee)
-      const transferData = this.encodeFunctionCallWithABI('transfer', [this.pizzaPartyAddress, vmfAmountHex], VMF_TOKEN_ABI)
-      
-      const transferGasEstimate = await this.provider.request({
-        method: 'eth_estimateGas',
-        params: [{
-          from: account,
-          to: vmfContractAddress,
-          data: transferData
-        }]
-      })
-
-      const transferTxHash = await this.provider.request({
-        method: 'eth_sendTransaction',
-        params: [{
-          from: account,
-          to: vmfContractAddress,
-          data: transferData,
-          gas: transferGasEstimate
-        }]
-      })
-
-      // Wait for transfer transaction to be mined
-      await this.waitForTransaction(transferTxHash)
-      console.log('VMF transfer transaction confirmed:', transferTxHash)
-      
-      // Step 3: Call enterDailyGame with no ETH value (since we already transferred VMF)
+      // Step 2: Call enterDailyGame (contract will handle VMF transfer via transferFrom)
       const enterGameData = this.encodeFunctionCall('enterDailyGame', [referralCode])
       
       const enterGameGasEstimate = await this.provider.request({
@@ -296,8 +270,7 @@ export class PizzaPartyContract {
         params: [{
           from: account,
           to: this.pizzaPartyAddress,
-          data: enterGameData,
-          value: '0x0' // No ETH value
+          data: enterGameData
         }]
       })
 
@@ -307,14 +280,17 @@ export class PizzaPartyContract {
           from: account,
           to: this.pizzaPartyAddress,
           data: enterGameData,
-          value: '0x0', // No ETH value
           gas: enterGameGasEstimate
         }]
       })
 
+      // Wait for enter game transaction to be mined
+      await this.waitForTransaction(enterGameTxHash)
+      console.log('Enter game transaction confirmed:', enterGameTxHash)
+      
       return enterGameTxHash
     } catch (error) {
-      console.error('Error entering daily game:', error)
+      console.error('Error in enterDailyGameRegular:', error)
       throw error
     }
   }
@@ -412,29 +388,93 @@ export class PizzaPartyContract {
       const accounts = await this.provider.request({ method: 'eth_requestAccounts' })
       const account = accounts[0]
       
-      const data = this.encodeFunctionCall('awardStreakBonus', [])
-      const gasEstimate = await this.provider.request({
+      // Get the current VMF price and calculate required amount for $1 jackpot entry
+      let requiredVMFAmount: number
+      
+      try {
+        const vmfPriceData = await this.provider.request({
+          method: 'eth_call',
+          params: [{
+            to: this.priceOracleAddress,
+            data: this.encodeFunctionCallWithABI('getRequiredVMFForDollar', [], FREE_PRICE_ORACLE_ABI)
+          }, 'latest']
+        })
+        
+        requiredVMFAmount = this.decodeUint256(vmfPriceData)
+        console.log('Required VMF amount for $1 jackpot entry:', requiredVMFAmount)
+        
+        // If the amount is 0 or unreasonably small, use a fallback
+        if (requiredVMFAmount === 0 || requiredVMFAmount < 1000000) {
+          console.log('Price oracle returned invalid amount, using fallback')
+          requiredVMFAmount = 1000000000000000000 // 1 VMF (18 decimals) as fallback
+        }
+      } catch (error) {
+        console.log('Error getting VMF price, using fallback:', error)
+        requiredVMFAmount = 1000000000000000000 // 1 VMF (18 decimals) as fallback
+      }
+      
+      // Convert to hex format for transaction
+      const vmfAmountHex = '0x' + BigInt(requiredVMFAmount).toString(16)
+      console.log('VMF amount in hex:', vmfAmountHex)
+      
+      // VMF token contract address
+      const vmfContractAddress = CONTRACT_ADDRESSES.VMF_TOKEN
+      
+      // Step 1: Approve VMF tokens to the Pizza Party contract
+      const approveData = this.encodeFunctionCallWithABI('approve', [this.pizzaPartyAddress, vmfAmountHex], VMF_TOKEN_ABI)
+      
+      const approveGasEstimate = await this.provider.request({
+        method: 'eth_estimateGas',
+        params: [{
+          from: account,
+          to: vmfContractAddress,
+          data: approveData
+        }]
+      })
+
+      const approveTxHash = await this.provider.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: account,
+          to: vmfContractAddress,
+          data: approveData,
+          gas: approveGasEstimate
+        }]
+      })
+
+      // Wait for approval transaction to be mined
+      await this.waitForTransaction(approveTxHash)
+      console.log('VMF approval transaction confirmed:', approveTxHash)
+      
+      // Step 2: Call addJackpotEntry (contract will handle VMF transfer via transferFrom)
+      const addJackpotData = this.encodeFunctionCall('addJackpotEntry', [])
+      
+      const addJackpotGasEstimate = await this.provider.request({
         method: 'eth_estimateGas',
         params: [{
           from: account,
           to: this.pizzaPartyAddress,
-          data: data
+          data: addJackpotData
         }]
       })
 
-      const txHash = await this.provider.request({
+      const addJackpotTxHash = await this.provider.request({
         method: 'eth_sendTransaction',
         params: [{
           from: account,
           to: this.pizzaPartyAddress,
-          data: data,
-          gas: gasEstimate
+          data: addJackpotData,
+          gas: addJackpotGasEstimate
         }]
       })
 
-      return txHash
+      // Wait for add jackpot transaction to be mined
+      await this.waitForTransaction(addJackpotTxHash)
+      console.log('Add jackpot entry transaction confirmed:', addJackpotTxHash)
+      
+      return addJackpotTxHash
     } catch (error) {
-      console.error('Error awarding streak bonus:', error)
+      console.error('Error in addJackpotEntryRegular:', error)
       throw error
     }
   }
