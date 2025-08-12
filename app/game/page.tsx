@@ -74,6 +74,7 @@ export default function GamePage() {
     gasless: { enterDailyGame: '0', claimToppings: '0', addJackpotEntry: '0' }
   })
   const [gaslessAvailable, setGaslessAvailable] = useState(false)
+  const [hasEnteredToday, setHasEnteredToday] = useState(false)
 
   // Social media platforms for sharing
   const socialPlatforms = [
@@ -133,7 +134,7 @@ export default function GamePage() {
   ]
 
   // Check if user has already entered today
-  const checkDailyEntry = () => {
+  const checkDailyEntry = (): boolean => {
     if (!isConnected || !connection) return false
     
     const now = new Date()
@@ -143,9 +144,54 @@ export default function GamePage() {
     const today = pstTime.toDateString()
     const yesterday = new Date(pstTime.getTime() - (24 * 60 * 60 * 1000)).toDateString()
     const gameDate = isBeforeNoonPST ? today : yesterday
-    const entryKey = `pizza_entry_${connection.address}_${gameDate}`
     
-    return localStorage.getItem(entryKey) === 'true'
+    // Check both localStorage entries
+    const entryKey = `pizza_entry_${connection.address}_${gameDate}`
+    const dailyEntryKey = `daily_entry_${connection.address}`
+    
+    const hasEnteredToday = localStorage.getItem(entryKey) === 'true' || 
+                           localStorage.getItem(dailyEntryKey) !== null
+    
+    return hasEnteredToday
+  }
+
+  // Update hasEnteredToday state when connection changes
+  useEffect(() => {
+    if (isConnected && connection) {
+      setHasEnteredToday(checkDailyEntry())
+    } else {
+      setHasEnteredToday(false)
+    }
+  }, [isConnected, connection])
+
+  // Get next game reset time
+  const getNextGameReset = () => {
+    const now = new Date()
+    const pstOffset = -8
+    const pstTime = new Date(now.getTime() + (pstOffset * 60 * 60 * 1000))
+    const isBeforeNoonPST = pstTime.getHours() < 12
+    
+    const nextReset = new Date(pstTime)
+    if (isBeforeNoonPST) {
+      nextReset.setHours(12, 0, 0, 0) // Today at 12pm PST
+    } else {
+      nextReset.setDate(nextReset.getDate() + 1)
+      nextReset.setHours(12, 0, 0, 0) // Tomorrow at 12pm PST
+    }
+    
+    return nextReset
+  }
+
+  // Format time until next reset
+  const formatTimeUntilReset = () => {
+    const nextReset = getNextGameReset()
+    const now = new Date()
+    const timeDiff = nextReset.getTime() - now.getTime()
+    
+    const hours = Math.floor(timeDiff / (1000 * 60 * 60))
+    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60))
+    
+    return `${hours}h ${minutes}m`
   }
 
   // Check VMF balance
@@ -168,8 +214,9 @@ export default function GamePage() {
       return
     }
 
-    if (checkDailyEntry()) {
-      setGameError('You have already entered today! Come back tomorrow.')
+    if (hasEnteredToday) {
+      const timeUntilReset = formatTimeUntilReset()
+      setGameError(`You have already entered the game today. Come back tomorrow to play again. (Next game starts in ${timeUntilReset})`)
       return
     }
 
@@ -187,6 +234,14 @@ export default function GamePage() {
     try {
       // Create contract instance using window.ethereum as provider
       const contract = createPizzaPartyContract(window.ethereum)
+      
+      // Debug: Get VMF price and required amount
+      console.log('🔍 Getting VMF price and required amount...')
+      const vmfPrice = await contract.getCurrentVMFPrice()
+      const requiredVMF = await contract.getRequiredVMFForDollar()
+      console.log('💰 VMF Price:', vmfPrice, 'wei')
+      console.log('💵 Required VMF for $1:', requiredVMF, 'wei')
+      console.log('💵 Required VMF for $1:', (requiredVMF / 1e18).toFixed(6), 'VMF')
       
       // Use gasless transaction if available and enabled
       const shouldUseGasless = useGasless && gaslessAvailable
@@ -210,6 +265,21 @@ export default function GamePage() {
       
       setSuccess('Transaction submitted!')
       console.log('✅ Game entry successful:', txHash)
+      
+      // Record daily entry
+      const now = new Date()
+      const pstOffset = -8
+      const pstTime = new Date(now.getTime() + (pstOffset * 60 * 60 * 1000))
+      const isBeforeNoonPST = pstTime.getHours() < 12
+      const today = pstTime.toDateString()
+      const yesterday = new Date(pstTime.getTime() - (24 * 60 * 60 * 1000)).toDateString()
+      const gameDate = isBeforeNoonPST ? today : yesterday
+      const entryKey = `pizza_entry_${connection.address}_${gameDate}`
+      const dailyEntryKey = `daily_entry_${connection.address}`
+      
+      localStorage.setItem(entryKey, 'true')
+      localStorage.setItem(dailyEntryKey, Date.now().toString())
+      setHasEnteredToday(true)
       
       // Update player count, VMF balance, and real-time data
       updatePlayerCount()
@@ -668,6 +738,18 @@ export default function GamePage() {
                 </div>
               )}
               
+              {/* Daily Entry Status */}
+              {isConnected && connection && hasEnteredToday && (
+                <div className="bg-yellow-100 border-2 border-yellow-400 rounded-xl p-3 text-center mb-4">
+                  <p className="text-yellow-800 font-bold text-sm" style={customFontStyle}>
+                    🕐 You have already entered today!
+                  </p>
+                  <p className="text-yellow-700 text-xs mt-1" style={customFontStyle}>
+                    Next game starts in {formatTimeUntilReset()}
+                  </p>
+                </div>
+              )}
+              
               <Button
               className="w-full bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-4 px-8 rounded-xl border-4 border-green-800 shadow-lg"
                 style={{
@@ -676,12 +758,15 @@ export default function GamePage() {
                   fontSize: "1.25rem",
                 }}
               onClick={handleEnterGame}
-              disabled={isProcessing}
+              disabled={isProcessing || hasEnteredToday}
               >
               {isProcessing ? 'Processing...' : (
                 <>
                   <img src="/images/pepperoni-art.png" alt="Pizza Slice" className="w-6 h-6 mr-2" />
-                  {useGasless && gaslessAvailable ? 'ENTER GAME $1 VMF (GASLESS!)' : 'ENTER GAME $1 VMF'}
+                  {hasEnteredToday 
+                    ? 'ALREADY ENTERED TODAY' 
+                    : (useGasless && gaslessAvailable ? 'ENTER GAME $1 VMF (GASLESS!)' : 'ENTER GAME $1 VMF')
+                  }
                   <img src="/images/pepperoni-art.png" alt="Pizza Slice" className="w-6 h-6 ml-2" />
                 </>
               )}

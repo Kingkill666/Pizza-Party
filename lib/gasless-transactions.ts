@@ -3,6 +3,13 @@
 
 import { ethers } from 'ethers';
 
+// Web3 provider interface
+export interface Web3Provider {
+  request: (args: { method: string; params?: any[] }) => Promise<any>
+  on: (event: string, callback: (params: any) => void) => void
+  removeListener: (event: string, callback: (params: any) => void) => void
+}
+
 export interface GaslessTransactionRequest {
   to: string;
   data: string;
@@ -19,10 +26,10 @@ export interface GaslessTransactionResponse {
 }
 
 export class GaslessTransactionManager {
-  private provider: ethers.Provider;
+  private provider: Web3Provider;
   private signer: ethers.Signer;
 
-  constructor(provider: ethers.Provider, signer: ethers.Signer) {
+  constructor(provider: Web3Provider, signer: ethers.Signer) {
     this.provider = provider;
     this.signer = signer;
   }
@@ -37,22 +44,32 @@ export class GaslessTransactionManager {
   ): Promise<GaslessTransactionResponse> {
     try {
       // Get the current network
-      const network = await this.provider.getNetwork();
+      const chainId = await this.provider.request({
+        method: 'eth_chainId',
+        params: []
+      });
       
       // Get the current nonce
-      const nonce = await this.provider.getTransactionCount(await this.signer.getAddress());
+      const address = await this.signer.getAddress();
+      const nonce = await this.provider.request({
+        method: 'eth_getTransactionCount',
+        params: [address, 'latest']
+      });
       
       // Get the current gas price
-      const feeData = await this.provider.getFeeData();
+      const feeData = await this.provider.request({
+        method: 'eth_feeData',
+        params: []
+      });
       
       // Create the transaction request
       const transaction: GaslessTransactionRequest = {
         to,
         data,
         value,
-        nonce,
-        maxFeePerGas: feeData.maxFeePerGas?.toString(),
-        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas?.toString(),
+        nonce: parseInt(nonce, 16),
+        maxFeePerGas: feeData.maxFeePerGas,
+        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
         gasLimit: '0x186A0', // 100,000 gas limit
       };
 
@@ -61,7 +78,7 @@ export class GaslessTransactionManager {
         {
           name: 'EIP712Domain',
           version: '1',
-          chainId: network.chainId,
+          chainId: parseInt(chainId, 16),
           verifyingContract: to,
         },
         {
@@ -151,14 +168,18 @@ export class GaslessTransactionManager {
     value: string = '0x0'
   ): Promise<bigint> {
     try {
-      const gasEstimate = await this.provider.estimateGas({
-        to,
-        data,
-        value,
+      const gasEstimate = await this.provider.request({
+        method: 'eth_estimateGas',
+        params: [{
+          to,
+          data,
+          value,
+        }]
       });
       
-      // Add buffer for gasless overhead
-      return gasEstimate + BigInt(50000); // 50k gas buffer
+      // Convert hex to bigint and add buffer for gasless overhead
+      const gasEstimateBigInt = BigInt(gasEstimate);
+      return gasEstimateBigInt + BigInt(50000); // 50k gas buffer
     } catch (error) {
       console.error('Error estimating gas:', error);
       throw new Error('Failed to estimate gas');
@@ -170,9 +191,14 @@ export class GaslessTransactionManager {
    */
   async isGaslessSupported(): Promise<boolean> {
     try {
-      const network = await this.provider.getNetwork();
-      // Only Base Mainnet supports gasless transactions
-      return network.chainId === BigInt(8453);
+      // Use eth_chainId for raw Web3 provider
+      const chainId = await this.provider.request({
+        method: 'eth_chainId',
+        params: []
+      });
+      
+      // Only Base Mainnet (chainId: 0x2105 = 8453) supports gasless transactions
+      return chainId === '0x2105'; // Base Mainnet
     } catch (error) {
       console.error('Error checking gasless support:', error);
       return false;
@@ -183,7 +209,7 @@ export class GaslessTransactionManager {
 /**
  * Hook for using gasless transactions in React components
  */
-export function useGaslessTransactions(provider: ethers.Provider, signer: ethers.Signer) {
+export function useGaslessTransactions(provider: Web3Provider, signer: ethers.Signer) {
   const gaslessManager = new GaslessTransactionManager(provider, signer);
 
   const executeGaslessTransaction = async (

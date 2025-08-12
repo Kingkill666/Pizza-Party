@@ -1,7 +1,7 @@
 // Gasless game service for Pizza Party
 // Enables users to play without paying gas fees
 
-import { GaslessTransactionManager, GaslessUtils } from '../gasless-transactions';
+import { GaslessTransactionManager, GaslessUtils, Web3Provider } from '../gasless-transactions';
 import { ethers } from 'ethers';
 
 export interface GaslessGameTransaction {
@@ -15,7 +15,7 @@ export class GaslessGameService {
   private pizzaPartyContract: ethers.Contract;
 
   constructor(
-    provider: ethers.Provider,
+    provider: Web3Provider,
     signer: ethers.Signer,
     contractAddress: string,
     contractABI: any
@@ -221,9 +221,15 @@ export class GaslessGameService {
       // Check if user has sufficient balance for gasless transactions
       if (this.gaslessManager) {
         const signerAddress = await this.gaslessManager['signer'].getAddress();
-        const balance = await this.gaslessManager['provider'].getBalance(signerAddress);
+        const balance = await this.gaslessManager['provider'].request({
+          method: 'eth_getBalance',
+          params: [signerAddress, 'latest']
+        });
 
-        if (balance < ethers.parseEther('0.001')) {
+        const balanceBigInt = BigInt(balance);
+        const minBalance = ethers.parseEther('0.001');
+
+        if (balanceBigInt < minBalance) {
           return {
             supported: false,
             reason: 'Insufficient balance for gasless transactions',
@@ -246,7 +252,7 @@ export class GaslessGameService {
  * Hook for using gasless game transactions in React components
  */
 export function useGaslessGameService(
-  provider: ethers.Provider,
+  provider: Web3Provider,
   signer: ethers.Signer,
   contractAddress: string,
   contractABI: any

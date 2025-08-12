@@ -23,14 +23,8 @@ export class PizzaPartyContract {
     this.priceOracleAddress = CONTRACT_ADDRESSES.FREE_PRICE_ORACLE
     this.randomnessAddress = CONTRACT_ADDRESSES.FREE_RANDOMNESS
     
-    // Initialize gasless service
-    this.gaslessService = new GaslessGameService(
-      provider,
-      // We'll initialize the signer later when needed
-      undefined as any, 
-      this.pizzaPartyAddress,
-      PIZZA_PARTY_ABI
-    );
+    // Gasless service disabled for now due to provider compatibility issues
+    this.gaslessService = undefined;
   }
 
   // Get player data from contract
@@ -107,9 +101,30 @@ export class PizzaPartyContract {
           data: this.encodeFunctionCallWithABI('getVMFPrice', [], FREE_PRICE_ORACLE_ABI)
         }, 'latest']
       })
-      return this.decodeUint256(data)
+      const price = this.decodeUint256(data)
+      console.log('Current VMF price:', price, 'wei')
+      return price
     } catch (error) {
       console.error('Error getting VMF price:', error)
+      return 0
+    }
+  }
+
+  // Get required VMF amount for $1
+  async getRequiredVMFForDollar() {
+    try {
+      const data = await this.provider.request({
+        method: 'eth_call',
+        params: [{
+          to: this.priceOracleAddress,
+          data: this.encodeFunctionCallWithABI('getRequiredVMFForDollar', [], FREE_PRICE_ORACLE_ABI)
+        }, 'latest']
+      })
+      const amount = this.decodeUint256(data)
+      console.log('Required VMF for $1:', amount, 'wei')
+      return amount
+    } catch (error) {
+      console.error('Error getting required VMF amount:', error)
       return 0
     }
   }
@@ -119,18 +134,7 @@ export class PizzaPartyContract {
    */
   async enterDailyGame(referralCode: string = '', useGasless: boolean = false): Promise<string> {
     try {
-      if (useGasless && this.gaslessService) {
-        // Check if gasless is supported
-        const gaslessCheck = await this.gaslessService.canPerformGasless();
-        if (gaslessCheck.supported) {
-          console.log('🚀 Using gasless transaction for daily game entry');
-          return await this.gaslessService.enterDailyGameGasless(referralCode);
-        } else {
-          console.log('⚠️ Gasless not available, falling back to regular transaction:', gaslessCheck.reason);
-        }
-      }
-
-      // Fallback to regular transaction
+      // Gasless transactions disabled for now due to provider compatibility issues
       console.log('💰 Using regular transaction for daily game entry');
       return await this.enterDailyGameRegular(referralCode);
     } catch (error) {
@@ -148,19 +152,33 @@ export class PizzaPartyContract {
       const account = accounts[0]
       
       // Get the current VMF price and calculate required amount for $1 entry fee
-      const vmfPriceData = await this.provider.request({
-        method: 'eth_call',
-        params: [{
-          to: this.priceOracleAddress,
-          data: this.encodeFunctionCallWithABI('getRequiredVMFForDollar', [], FREE_PRICE_ORACLE_ABI)
-        }, 'latest']
-      })
+      let requiredVMFAmount: number
       
-      const requiredVMFAmount = this.decodeUint256(vmfPriceData)
-      console.log('Required VMF amount for $1 entry:', requiredVMFAmount)
+      try {
+        const vmfPriceData = await this.provider.request({
+          method: 'eth_call',
+          params: [{
+            to: this.priceOracleAddress,
+            data: this.encodeFunctionCallWithABI('getRequiredVMFForDollar', [], FREE_PRICE_ORACLE_ABI)
+          }, 'latest']
+        })
+        
+        requiredVMFAmount = this.decodeUint256(vmfPriceData)
+        console.log('Required VMF amount for $1 entry:', requiredVMFAmount)
+        
+        // If the amount is 0 or unreasonably small, use a fallback
+        if (requiredVMFAmount === 0 || requiredVMFAmount < 1000000) {
+          console.log('Price oracle returned invalid amount, using fallback')
+          requiredVMFAmount = 1000000000000000000 // 1 VMF (18 decimals) as fallback
+        }
+      } catch (error) {
+        console.log('Error getting VMF price, using fallback:', error)
+        requiredVMFAmount = 1000000000000000000 // 1 VMF (18 decimals) as fallback
+      }
       
       // Convert to hex format for transaction
       const vmfAmountHex = '0x' + BigInt(requiredVMFAmount).toString(16)
+      console.log('VMF amount in hex:', vmfAmountHex)
       
       // VMF token contract address
       const vmfContractAddress = CONTRACT_ADDRESSES.VMF_TOKEN
@@ -649,17 +667,9 @@ export class PizzaPartyContract {
     available: boolean;
     reason?: string;
   }> {
-    if (!this.gaslessService) {
-      return {
-        available: false,
-        reason: 'Gasless service not initialized',
-      };
-    }
-
-    const gaslessCheck = await this.gaslessService.canPerformGasless();
     return {
-      available: gaslessCheck.supported,
-      reason: gaslessCheck.reason,
+      available: false,
+      reason: 'Gasless transactions temporarily disabled due to provider compatibility issues',
     };
   }
 }
