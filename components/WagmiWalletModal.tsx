@@ -113,7 +113,7 @@ export const WagmiWalletModal = ({ isOpen, onClose, onConnect }: WagmiWalletModa
               { id: 'rainbow', name: 'Rainbow', icon: '/images/rainbow-wallet-icon.svg', color: 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600' },
               { id: 'phantom', name: 'Phantom', icon: '/images/phantom-wallet-icon.svg', color: 'bg-purple-600 hover:bg-purple-700' }
             ].map((wallet) => (
-              <Button
+                <Button
                 key={wallet.id}
                 onClick={() => handleConnect(wallet.id)}
                 disabled={isProcessing && selectedConnector === wallet.id}
@@ -154,10 +154,10 @@ export const WagmiWalletModal = ({ isOpen, onClose, onConnect }: WagmiWalletModa
                     <ExternalLink className="h-4 w-4 text-white" />
                   )}
                 </div>
-              </Button>
-            ))}
+                </Button>
+              ))}
           </div>
-          
+
           {error && (
             <div className="bg-red-100 border-2 border-red-300 rounded-lg p-3 text-center">
               <p className="text-red-800 font-bold">{error}</p>

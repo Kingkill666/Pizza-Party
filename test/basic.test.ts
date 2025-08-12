@@ -1,6 +1,5 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { Contract } from "ethers";
 
 describe("Basic Contract Tests", function () {
   it("Should deploy MockVMF contract", async function () {

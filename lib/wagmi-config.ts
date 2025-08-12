@@ -1,5 +1,5 @@
 import { createConfig, http } from 'wagmi'
-import { baseSepolia, base } from 'wagmi/chains'
+import { base } from 'wagmi/chains'
 import { 
   metaMaskWallet, 
   coinbaseWallet, 
@@ -36,7 +36,7 @@ export const config = createConfig({
   connectors,
   ssr: true,
   transports: {
-    [pizzaPartyChain.id]: http('https://sepolia.base.org'),
+    [pizzaPartyChain.id]: http('https://mainnet.base.org'),
     [base.id]: http('https://mainnet.base.org'),
   },
 })
@@ -57,11 +57,11 @@ export const isInWalletBrowser = () => {
 }
 
 // Network switching utilities
-export const switchToBaseSepolia = async (switchChain: any) => {
+export const switchToBase = async (switchChain: any) => {
   try {
-    await switchChain({ chainId: baseSepolia.id })
+    await switchChain({ chainId: base.id })
   } catch (error) {
-    console.error('Failed to switch to Base Sepolia:', error)
+    console.error('Failed to switch to Base:', error)
   }
 }
 

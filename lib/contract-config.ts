@@ -1,72 +1,191 @@
-// Contract configuration for deployed Pizza Party contracts on Base Mainnet
-// This file centralizes all contract addresses and ABIs for the frontend
-
-// Deployed contract addresses on Base mainnet
+// Contract addresses and ABIs for Pizza Party dApp
 export const CONTRACT_ADDRESSES = {
-  PIZZA_PARTY: "0xc33f4c5102Bf1cF44bFa5A1678170ebC6F242D6A", // Update with actual deployed address
-  FREE_RANDOMNESS: "0x3Cb2Bbd8E8bB540Af789E7aed7922f8340f640e5", // Update with actual deployed address
-  FREE_PRICE_ORACLE: "0x519f3E234F1E6728191eaBfF938C06b6BF980ccE", // Update with actual deployed address
+  // Base Mainnet
+  PIZZA_PARTY: process.env.NEXT_PUBLIC_PIZZA_PARTY_ADDRESS || '',
+  VMF_TOKEN: '0x2213414893259b0C48066Acd1763e7fbA97859E5',
+  FREE_RANDOMNESS: process.env.NEXT_PUBLIC_FREE_RANDOMNESS_ADDRESS || '',
+  FREE_PRICE_ORACLE: process.env.NEXT_PUBLIC_FREE_PRICE_ORACLE_ADDRESS || '',
 }
 
-// Network configuration for Base Mainnet
+// Network configuration
 export const NETWORK_CONFIG = {
-  BASE_MAINNET: {
-    chainId: 8453,
-    chainName: "Base",
-    nativeCurrency: { name: "Ethereum", symbol: "ETH", decimals: 18 },
-    rpcUrls: ["https://mainnet.base.org", "https://base-mainnet.g.alchemy.com/v2/demo"],
-    blockExplorerUrls: ["https://basescan.org"],
+  chainId: 8453,
+  chainName: 'Base',
+  nativeCurrency: {
+    name: 'Ethereum',
+    symbol: 'ETH',
+    decimals: 18,
   },
+  rpcUrls: ['https://mainnet.base.org'],
+  blockExplorerUrls: ['https://basescan.org'],
 }
 
-// Contract ABIs (simplified for frontend use)
-export const PIZZA_PARTY_ABI = [
-  // Player data
-  { inputs: [{ name: "player", type: "address" }], name: "getPlayerData", outputs: [{ name: "", type: "tuple" }], stateMutability: "view", type: "function" },
-  // Jackpots
-  { inputs: [], name: "getDailyJackpot", outputs: [{ name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "getWeeklyJackpot", outputs: [{ name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  // Entry fees
-  { inputs: [], name: "getCurrentEntryFee", outputs: [{ name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  // Game entry
-  { inputs: [{ name: "referralCode", type: "string" }], name: "enterDailyGame", outputs: [], stateMutability: "payable", type: "function" },
-  // Referrals
-  { inputs: [], name: "createReferralCode", outputs: [{ name: "", type: "string" }], stateMutability: "nonpayable", type: "function" },
-  // Rewards
-  { inputs: [], name: "awardVMFHoldingsToppings", outputs: [], stateMutability: "nonpayable", type: "function" },
-  { inputs: [], name: "awardStreakBonus", outputs: [], stateMutability: "nonpayable", type: "function" },
-]
-
-export const FREE_PRICE_ORACLE_ABI = [
-  { inputs: [], name: "getVMFPrice", outputs: [{ name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-]
-
-export const FREE_RANDOMNESS_ABI = [
-  { inputs: [], name: "getRandomNumber", outputs: [{ name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-]
-
-// ERC-20 ABI for VMF token operations
+// VMF Token ABI (ERC-20 standard)
 export const VMF_TOKEN_ABI = [
-  // balanceOf
-  { inputs: [{ name: "_owner", type: "address" }], name: "balanceOf", outputs: [{ name: "balance", type: "uint256" }], stateMutability: "view", type: "function" },
-  // approve
-  { inputs: [{ name: "_spender", type: "address" }, { name: "_value", type: "uint256" }], name: "approve", outputs: [{ name: "", type: "bool" }], stateMutability: "nonpayable", type: "function" },
-  // transfer
-  { inputs: [{ name: "_to", type: "address" }, { name: "_value", type: "uint256" }], name: "transfer", outputs: [{ name: "", type: "bool" }], stateMutability: "nonpayable", type: "function" },
-  // transferFrom
-  { inputs: [{ name: "_from", type: "address" }, { name: "_to", type: "address" }, { name: "_value", type: "uint256" }], name: "transferFrom", outputs: [{ name: "", type: "bool" }], stateMutability: "nonpayable", type: "function" },
-  // allowance
-  { inputs: [{ name: "_owner", type: "address" }, { name: "_spender", type: "address" }], name: "allowance", outputs: [{ name: "", type: "uint256" }], stateMutability: "view", type: "function" },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "name",
+    "outputs": [{"name": "", "type": "string"}],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "symbol",
+    "outputs": [{"name": "", "type": "string"}],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "decimals",
+    "outputs": [{"name": "", "type": "uint8"}],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [{"name": "_owner", "type": "address"}],
+    "name": "balanceOf",
+    "outputs": [{"name": "balance", "type": "uint256"}],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {"name": "_to", "type": "address"},
+      {"name": "_value", "type": "uint256"}
+    ],
+    "name": "transfer",
+    "outputs": [{"name": "", "type": "bool"}],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {"name": "_spender", "type": "address"},
+      {"name": "_value", "type": "uint256"}
+    ],
+    "name": "approve",
+    "outputs": [{"name": "", "type": "bool"}],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {"name": "_owner", "type": "address"},
+      {"name": "_spender", "type": "address"}
+    ],
+    "name": "allowance",
+    "outputs": [{"name": "", "type": "uint256"}],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  }
 ]
 
-// Helper function to get contract URLs
-export const getContractUrl = (contractName: keyof typeof CONTRACT_ADDRESSES): string => {
-  const address = CONTRACT_ADDRESSES[contractName]
-  return `https://basescan.org/address/${address}`
-}
+// PizzaParty contract ABI (simplified for frontend use)
+export const PIZZA_PARTY_ABI = [
+  {
+    "inputs": [
+      {"internalType": "address", "name": "_vmfToken", "type": "address"},
+      {"internalType": "address", "name": "_randomnessContract", "type": "address"},
+      {"internalType": "address", "name": "_priceOracle", "type": "address"}
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "internalType": "address", "name": "player", "type": "address"},
+      {"indexed": true, "internalType": "uint256", "name": "gameId", "type": "uint256"},
+      {"indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256"}
+    ],
+    "name": "PlayerEntered",
+    "type": "event"
+  },
+  {
+    "inputs": [{"internalType": "string", "name": "referralCode", "type": "string"}],
+    "name": "enterDailyGame",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "currentDailyJackpot",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "currentWeeklyJackpot",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "DAILY_ENTRY_FEE",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "DAILY_WINNERS_COUNT",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "WEEKLY_WINNERS_COUNT",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
 
-export const CONTRACT_URLS = {
-  PIZZA_PARTY: getContractUrl("PIZZA_PARTY"),
-  FREE_RANDOMNESS: getContractUrl("FREE_RANDOMNESS"),
-  FREE_PRICE_ORACLE: getContractUrl("FREE_PRICE_ORACLE"),
-} 
+// FreeRandomness contract ABI (simplified)
+export const FREE_RANDOMNESS_ABI = [
+  {
+    "inputs": [],
+    "name": "getCurrentRound",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint256", "name": "roundId", "type": "uint256"}],
+    "name": "getFinalRandomNumber",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
+
+// FreePriceOracle contract ABI (simplified)
+export const FREE_PRICE_ORACLE_ABI = [
+  {
+    "inputs": [],
+    "name": "getVMFPrice",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  }
+] 

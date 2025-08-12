@@ -501,20 +501,20 @@ export default function HomePage() {
                 }
 
                 return (
-                  <Button
-                    key={wallet.id}
-                    onClick={() => handleWalletConnect(wallet.id)}
-                    disabled={isConnecting === wallet.id}
+                <Button
+                  key={wallet.id}
+                  onClick={() => handleWalletConnect(wallet.id)}
+                  disabled={isConnecting === wallet.id}
                     className={`w-full font-bold py-6 px-4 rounded-xl border-2 shadow-lg transform hover:scale-105 transition-all flex items-center justify-between text-lg ${getWalletStyle(wallet.name)}`}
-                    style={customFontStyle}
-                  >
+                  style={customFontStyle}
+                >
                     <div className="flex items-center gap-3">
-                      {wallet.iconImage ? (
-                        <Image
+                    {wallet.iconImage ? (
+                      <Image
                           src={wallet.iconImage}
                           alt={wallet.name}
-                          width={24}
-                          height={24}
+                        width={24}
+                        height={24}
                           className="w-6 h-6"
                           onError={(e) => {
                             // Fallback to emoji if image fails to load
@@ -534,15 +534,15 @@ export default function HomePage() {
                         {wallet.icon}
                       </span>
                       <span>{wallet.name}</span>
-                    </div>
-                    <div className="flex-shrink-0">
-                      {isConnecting === wallet.id ? (
+                  </div>
+                  <div className="flex-shrink-0">
+                    {isConnecting === wallet.id ? (
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      ) : (
+                    ) : (
                         <ExternalLink className="h-4 w-4 text-white" />
-                      )}
-                    </div>
-                  </Button>
+                    )}
+                  </div>
+                </Button>
                 )
               })}
 

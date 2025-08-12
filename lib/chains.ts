@@ -1,29 +1,23 @@
-import { baseSepolia } from 'wagmi/chains'
+import { base } from 'wagmi/chains'
 
-// Pizza Party chain configuration for Base Sepolia
 export const pizzaPartyChain = {
-  ...baseSepolia,
-  name: 'Base Sepolia',
-  network: 'base-sepolia',
+  ...base,
+  id: 8453,
+  name: 'Base',
+  network: 'base',
   nativeCurrency: {
     decimals: 18,
-    name: 'Base',
-    symbol: 'BASE',
+    name: 'Ethereum',
+    symbol: 'ETH',
   },
   rpcUrls: {
-    default: {
-      http: ['https://sepolia.base.org'],
-    },
-    public: {
-      http: ['https://sepolia.base.org'],
-    },
+    public: { http: ['https://mainnet.base.org'] },
+    default: { http: ['https://mainnet.base.org'] },
   },
   blockExplorers: {
-    default: {
-      name: 'Base Sepolia Explorer',
-      url: 'https://sepolia.basescan.org',
-    },
+    etherscan: { name: 'Basescan', url: 'https://basescan.org' },
+    default: { name: 'Basescan', url: 'https://basescan.org' },
   },
 }
 
-export { baseSepolia } 
+export { base } 

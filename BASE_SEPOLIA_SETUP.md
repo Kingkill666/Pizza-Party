@@ -138,7 +138,7 @@ npm run start
 ## 📊 Monitoring Setup
 
 ### 1. Contract Monitoring
-```bash
+   ```bash
 # Monitor contract events
 npx hardhat console --network base
 ```

@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useAccount, useConnect, useDisconnect, useChainId, useSwitchChain } from 'wagmi'
-import { config, persistentConnection, refreshTokenManager, isMobile, isInWalletBrowser, switchToBaseSepolia, handleConnectionError } from '@/lib/wagmi-config'
-import { baseSepolia } from 'wagmi/chains'
+import { config, persistentConnection, refreshTokenManager, isMobile, isInWalletBrowser, switchToBase, handleConnectionError } from '@/lib/wagmi-config'
+import { base } from 'wagmi/chains'
 
 export const useWagmiWallet = () => {
   const [isConnecting, setIsConnecting] = useState(false)
@@ -28,9 +28,9 @@ export const useWagmiWallet = () => {
 
   // Handle network switching
   useEffect(() => {
-    if (isConnected && chainId !== baseSepolia.id) {
-      console.log('🔄 Switching to Base Sepolia network...')
-      switchChain({ chainId: baseSepolia.id })
+    if (isConnected && chainId !== base.id) {
+      console.log('🔄 Switching to Base network...')
+      switchChain({ chainId: base.id })
     }
   }, [isConnected, chainId, switchChain])
 
@@ -52,15 +52,15 @@ export const useWagmiWallet = () => {
       // Connect using Wagmi v2
       await connect({ connector: targetConnector })
 
-      // Switch to Base Sepolia if needed
-      if (chainId !== baseSepolia.id) {
-        await switchChain({ chainId: baseSepolia.id })
+      // Switch to Base if needed
+      if (chainId !== base.id) {
+        await switchChain({ chainId: base.id })
       }
 
       // Generate session token
       const token = generateSessionToken(address)
       setSessionToken(token)
-      if (address) {
+      if (address && token) {
         refreshTokenManager.set(address, token)
       }
 
@@ -125,7 +125,7 @@ export const useWagmiWallet = () => {
 
     try {
       // Use wagmi's built-in balance hook or fetch manually
-      const balance = await fetch(`https://sepolia.base.org/api?module=account&action=balance&address=${address}`)
+      const balance = await fetch(`https://mainnet.base.org/api?module=account&action=balance&address=${address}`)
         .then(res => res.json())
         .then(data => data.result)
       
@@ -223,7 +223,7 @@ export const useWagmiWallet = () => {
     
     // Network state
     chainId,
-    isCorrectNetwork: chainId === baseSepolia.id,
+    isCorrectNetwork: chainId === base.id,
     
     // Available connectors
     connectors: getAvailableConnectors(),
