@@ -120,7 +120,7 @@ export const PIZZA_PARTY_ABI = [
     "inputs": [{"internalType": "string", "name": "referralCode", "type": "string"}],
     "name": "enterDailyGame",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -157,6 +157,87 @@ export const PIZZA_PARTY_ABI = [
     "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "name": "dailyPlayerCount",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "name": "weeklyPlayerCount",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getCurrentEntryFee",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getCurrentVMFPrice",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "player", "type": "address"}],
+    "name": "getPlayerInfo",
+    "outputs": [
+      {
+        "components": [
+          {"internalType": "uint256", "name": "totalToppings", "type": "uint256"},
+          {"internalType": "uint256", "name": "dailyEntries", "type": "uint256"},
+          {"internalType": "uint256", "name": "weeklyEntries", "type": "uint256"},
+          {"internalType": "uint256", "name": "lastEntryTime", "type": "uint256"},
+          {"internalType": "uint256", "name": "streakDays", "type": "uint256"},
+          {"internalType": "uint256", "name": "lastStreakUpdate", "type": "uint256"},
+          {"internalType": "bool", "name": "isBlacklisted", "type": "bool"},
+          {"internalType": "uint256", "name": "lastVMFHoldingsCheck", "type": "uint256"},
+          {"internalType": "uint256", "name": "loyaltyPoints", "type": "uint256"},
+          {"internalType": "uint256", "name": "totalOrders", "type": "uint256"},
+          {"internalType": "uint256", "name": "weeklyChallengesCompleted", "type": "uint256"},
+          {"internalType": "uint256", "name": "jackpotEntries", "type": "uint256"},
+          {"internalType": "uint256", "name": "lastRewardClaim", "type": "uint256"},
+          {"internalType": "bool", "name": "hasCompletedFirstOrder", "type": "bool"},
+          {"internalType": "uint256", "name": "dailyRewardsClaimed", "type": "uint256"},
+          {"internalType": "uint256", "name": "lastSecurityCheck", "type": "uint256"},
+          {"internalType": "bool", "name": "isRateLimited", "type": "bool"}
+        ],
+        "internalType": "struct PizzaParty.Player",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "awardStreakBonus",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "awardVMFHoldingsToppings",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "createReferralCode",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   }
 ]
 
@@ -183,6 +264,13 @@ export const FREE_PRICE_ORACLE_ABI = [
   {
     "inputs": [],
     "name": "getVMFPrice",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getRequiredVMFForDollar",
     "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
     "stateMutability": "view",
     "type": "function"
