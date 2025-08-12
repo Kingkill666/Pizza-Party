@@ -442,7 +442,7 @@ export default function LeaderboardPage() {
                       style={customFontStyle}
                     >
                       <div className="flex items-center gap-3">
-                        {wallet.iconImage ? (
+                        {wallet.iconImage != null ? (
                           <Image
                             src={wallet.iconImage}
                             alt={wallet.name}
