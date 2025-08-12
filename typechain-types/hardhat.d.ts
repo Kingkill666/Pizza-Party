@@ -14,6 +14,26 @@ import * as Contracts from ".";
 declare module "hardhat/types/runtime" {
   interface HardhatEthersHelpers extends HardhatEthersHelpersBase {
     getContractFactory(
+      name: "AutomationBase",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.AutomationBase__factory>;
+    getContractFactory(
+      name: "AutomationCompatible",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.AutomationCompatible__factory>;
+    getContractFactory(
+      name: "AutomationCompatibleInterface",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.AutomationCompatibleInterface__factory>;
+    getContractFactory(
+      name: "VRFCoordinatorV2Interface",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.VRFCoordinatorV2Interface__factory>;
+    getContractFactory(
+      name: "VRFConsumerBaseV2",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.VRFConsumerBaseV2__factory>;
+    getContractFactory(
       name: "Ownable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Ownable__factory>;
@@ -50,6 +70,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ReentrancyGuard__factory>;
     getContractFactory(
+      name: "ChainlinkVRF",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ChainlinkVRF__factory>;
+    getContractFactory(
       name: "FreePriceOracle",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.FreePriceOracle__factory>;
@@ -57,6 +81,10 @@ declare module "hardhat/types/runtime" {
       name: "FreeRandomness",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.FreeRandomness__factory>;
+    getContractFactory(
+      name: "IPizzaParty",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPizzaParty__factory>;
     getContractFactory(
       name: "MockVMF",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -83,6 +111,31 @@ declare module "hardhat/types/runtime" {
     ): Promise<Contracts.UniswapPriceOracle__factory>;
 
     getContractAt(
+      name: "AutomationBase",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.AutomationBase>;
+    getContractAt(
+      name: "AutomationCompatible",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.AutomationCompatible>;
+    getContractAt(
+      name: "AutomationCompatibleInterface",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.AutomationCompatibleInterface>;
+    getContractAt(
+      name: "VRFCoordinatorV2Interface",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.VRFCoordinatorV2Interface>;
+    getContractAt(
+      name: "VRFConsumerBaseV2",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.VRFConsumerBaseV2>;
+    getContractAt(
       name: "Ownable",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -128,6 +181,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.ReentrancyGuard>;
     getContractAt(
+      name: "ChainlinkVRF",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ChainlinkVRF>;
+    getContractAt(
       name: "FreePriceOracle",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -137,6 +195,11 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.FreeRandomness>;
+    getContractAt(
+      name: "IPizzaParty",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPizzaParty>;
     getContractAt(
       name: "MockVMF",
       address: string | ethers.Addressable,
@@ -169,6 +232,26 @@ declare module "hardhat/types/runtime" {
     ): Promise<Contracts.UniswapPriceOracle>;
 
     deployContract(
+      name: "AutomationBase",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AutomationBase>;
+    deployContract(
+      name: "AutomationCompatible",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AutomationCompatible>;
+    deployContract(
+      name: "AutomationCompatibleInterface",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AutomationCompatibleInterface>;
+    deployContract(
+      name: "VRFCoordinatorV2Interface",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.VRFCoordinatorV2Interface>;
+    deployContract(
+      name: "VRFConsumerBaseV2",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.VRFConsumerBaseV2>;
+    deployContract(
       name: "Ownable",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Ownable>;
@@ -205,6 +288,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ReentrancyGuard>;
     deployContract(
+      name: "ChainlinkVRF",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ChainlinkVRF>;
+    deployContract(
       name: "FreePriceOracle",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.FreePriceOracle>;
@@ -212,6 +299,10 @@ declare module "hardhat/types/runtime" {
       name: "FreeRandomness",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.FreeRandomness>;
+    deployContract(
+      name: "IPizzaParty",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPizzaParty>;
     deployContract(
       name: "MockVMF",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -238,6 +329,31 @@ declare module "hardhat/types/runtime" {
     ): Promise<Contracts.UniswapPriceOracle>;
 
     deployContract(
+      name: "AutomationBase",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AutomationBase>;
+    deployContract(
+      name: "AutomationCompatible",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AutomationCompatible>;
+    deployContract(
+      name: "AutomationCompatibleInterface",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AutomationCompatibleInterface>;
+    deployContract(
+      name: "VRFCoordinatorV2Interface",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.VRFCoordinatorV2Interface>;
+    deployContract(
+      name: "VRFConsumerBaseV2",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.VRFConsumerBaseV2>;
+    deployContract(
       name: "Ownable",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -283,6 +399,11 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ReentrancyGuard>;
     deployContract(
+      name: "ChainlinkVRF",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ChainlinkVRF>;
+    deployContract(
       name: "FreePriceOracle",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -292,6 +413,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.FreeRandomness>;
+    deployContract(
+      name: "IPizzaParty",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPizzaParty>;
     deployContract(
       name: "MockVMF",
       args: any[],

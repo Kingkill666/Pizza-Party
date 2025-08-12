@@ -3,8 +3,10 @@
 /* eslint-disable */
 import type * as uniswapPriceOracleSol from "./UniswapPriceOracle.sol";
 export type { uniswapPriceOracleSol };
+export type { ChainlinkVRF } from "./ChainlinkVRF";
 export type { FreePriceOracle } from "./FreePriceOracle";
 export type { FreeRandomness } from "./FreeRandomness";
+export type { IPizzaParty } from "./IPizzaParty";
 export type { MockVMF } from "./MockVMF";
 export type { PizzaParty } from "./PizzaParty";
 export type { SecureReferralSystem } from "./SecureReferralSystem";

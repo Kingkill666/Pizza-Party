@@ -2,8 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as uniswapPriceOracleSol from "./UniswapPriceOracle.sol";
+export { ChainlinkVRF__factory } from "./ChainlinkVRF__factory";
 export { FreePriceOracle__factory } from "./FreePriceOracle__factory";
 export { FreeRandomness__factory } from "./FreeRandomness__factory";
+export { IPizzaParty__factory } from "./IPizzaParty__factory";
 export { MockVMF__factory } from "./MockVMF__factory";
 export { PizzaParty__factory } from "./PizzaParty__factory";
 export { SecureReferralSystem__factory } from "./SecureReferralSystem__factory";

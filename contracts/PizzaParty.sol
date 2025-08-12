@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./FreeRandomness.sol";
 import "./FreePriceOracle.sol";
+import "./IPizzaParty.sol";
+import "./ChainlinkVRF.sol";
 
 // Events
 event PlayerEntered(address indexed player, uint256 indexed gameId, uint256 amount);
@@ -33,6 +35,8 @@ event PlayerBlacklisted(address indexed player, bool blacklisted);
 event EmergencyPause(bool paused);
 event RandomnessRequested(uint256 gameId, uint256 randomnessRoundId);
 event WinnersSelectedWithRandomness(uint256 gameId, uint256 randomNumber, address[] winners);
+event VRFRequestSubmitted(uint256 indexed requestId, uint256 indexed gameId, string gameType);
+event VRFWinnersSelected(uint256 indexed gameId, string gameType, address[] winners, uint256[] randomWords);
 event RateLimitTriggered(address indexed user, uint256 cooldownEnd);
 event SecurityCheckFailed(address indexed user, string reason);
 event InputValidationFailed(address indexed user, string input, string reason);
@@ -52,15 +56,18 @@ event DynamicEntryFeeCalculated(uint256 vmfPrice, uint256 requiredVMF, uint256 t
  * - Input validation: Sanitized inputs
  * - Rate limiting: Cooldown periods
  * - DYNAMIC PRICING: $1 entry fee regardless of VMF price
- * - FREE SECURE RANDOMNESS: Multi-party commit-reveal scheme
+ * - CHAINLINK VRF: Truly random winner selection using Chainlink VRF v2.5
  */
-contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
+contract PizzaParty is ReentrancyGuard, Ownable, Pausable, IPizzaParty {
     
     // VMF Token contract
     IERC20 public immutable vmfToken;
     
-    // Free Randomness contract
+    // Free Randomness contract (legacy)
     FreeRandomness public randomnessContract;
+    
+    // Chainlink VRF contract for truly random winner selection
+    ChainlinkVRF public vrfContract;
     
     // Free Price Oracle for dynamic pricing
     FreePriceOracle public priceOracle;
@@ -112,6 +119,11 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     mapping(uint256 => address[]) public entropyContributors;
     uint256 public lastEntropyUpdate;
     uint256 public entropyRoundId;
+    
+    // VRF state for Chainlink VRF integration
+    mapping(uint256 => bool) public vrfRequests;
+    mapping(uint256 => address[]) public pendingWinners;
+    bool public useVRF = true; // Flag to switch between legacy and VRF
     
     // Race condition prevention for MED-003 fix
     mapping(uint256 => bool) public gameStateLocked;
@@ -242,7 +254,7 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         _;
     }
     
-    constructor(address _vmfToken, address _randomnessContract, address _priceOracle) Ownable(msg.sender) {
+    constructor(address _vmfToken, address _randomnessContract, address _priceOracle, address _vrfContract) Ownable(msg.sender) {
         // Allow zero address for VMF token in testnet (Base Sepolia testing)
         if (_vmfToken != address(0)) {
             vmfToken = IERC20(_vmfToken);
@@ -251,6 +263,11 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
         require(_priceOracle != address(0), "Invalid price oracle address");
         randomnessContract = FreeRandomness(_randomnessContract);
         priceOracle = FreePriceOracle(_priceOracle);
+        
+        // Set VRF contract (optional for backward compatibility)
+        if (_vrfContract != address(0)) {
+            vrfContract = ChainlinkVRF(payable(_vrfContract));
+        }
         
         // Initialize access control (MED-002 fix)
         _initializeAccessControl();
@@ -343,7 +360,163 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
     }
     
     /**
-     * @dev Select daily winners using enhanced secure randomness (MED-001 fix)
+     * @dev Process daily winners selected by VRF
+     * @param gameId Current game ID
+     * @param winners Array of selected winners
+     */
+    function processDailyWinners(uint256 gameId, address[] calldata winners) external override {
+        require(msg.sender == address(vrfContract), "Only VRF contract can call this");
+        require(winners.length > 0, "No winners provided");
+        
+        // Distribute jackpot to winners
+        uint256 prizePerWinner = currentDailyJackpot / winners.length;
+        
+        for (uint256 i = 0; i < winners.length; i++) {
+            if (winners[i] != address(0)) {
+                // Transfer VMF tokens to winner
+                require(vmfToken.transfer(winners[i], prizePerWinner), "Transfer failed");
+                
+                // Award toppings to winner
+                players[winners[i]].totalToppings += 10; // Bonus toppings for winning
+                emit ToppingsAwarded(winners[i], 10, "Daily winner bonus");
+            }
+        }
+        
+        emit DailyWinnersSelected(gameId, winners, currentDailyJackpot);
+        
+        // Reset for next game
+        _startNewDailyGame();
+    }
+    
+    /**
+     * @dev Process weekly winners selected by VRF
+     * @param gameId Current game ID
+     * @param winners Array of selected winners
+     */
+    function processWeeklyWinners(uint256 gameId, address[] calldata winners) external override {
+        require(msg.sender == address(vrfContract), "Only VRF contract can call this");
+        require(winners.length > 0, "No winners provided");
+        
+        // Distribute jackpot to winners
+        uint256 prizePerWinner = currentWeeklyJackpot / winners.length;
+        
+        for (uint256 i = 0; i < winners.length; i++) {
+            if (winners[i] != address(0)) {
+                // Transfer VMF tokens to winner
+                require(vmfToken.transfer(winners[i], prizePerWinner), "VMF prize transfer failed");
+            }
+        }
+        
+        emit WeeklyWinnersSelected(gameId, winners, currentWeeklyJackpot);
+        
+        // Reset weekly jackpot and toppings
+        _resetWeeklyGame();
+    }
+    
+    /**
+     * @dev Get eligible players for daily draw
+     * @param gameId Current game ID
+     * @return eligiblePlayers Array of eligible players
+     */
+    function getEligibleDailyPlayers(uint256 gameId) external view override returns (address[] memory eligiblePlayers) {
+        uint256 playerCount = dailyPlayerCount[gameId];
+        eligiblePlayers = new address[](playerCount);
+        
+        for (uint256 i = 0; i < playerCount; i++) {
+            eligiblePlayers[i] = dailyPlayers[gameId][i];
+        }
+        
+        return eligiblePlayers;
+    }
+    
+    /**
+     * @dev Get eligible players for weekly draw
+     * @param gameId Current game ID
+     * @return eligiblePlayers Array of eligible players
+     */
+    function getEligibleWeeklyPlayers(uint256 gameId) external view override returns (address[] memory eligiblePlayers) {
+        // This would need to be implemented based on your weekly player tracking
+        // For now, returning empty array - implement based on your weekly player logic
+        eligiblePlayers = new address[](0);
+        return eligiblePlayers;
+    }
+    
+    /**
+     * @dev Get current game ID
+     * @return gameId Current game ID
+     */
+    function getCurrentGameId() external view override returns (uint256 gameId) {
+        return _gameId;
+    }
+    
+    /**
+     * @dev Check if daily draw is ready
+     * @return ready Whether daily draw is ready
+     */
+    function isDailyDrawReady() external view override returns (bool ready) {
+        return block.timestamp >= lastDailyDraw + 1 days;
+    }
+    
+    /**
+     * @dev Check if weekly draw is ready
+     * @return ready Whether weekly draw is ready
+     */
+    function isWeeklyDrawReady() external view override returns (bool ready) {
+        return block.timestamp >= lastWeeklyDraw + 7 days;
+    }
+    
+    /**
+     * @dev Request VRF for daily winner selection
+     */
+    function requestDailyVRF() external onlyRole(OPERATOR_ROLE) whenNotPaused {
+        require(useVRF, "VRF not enabled");
+        require(address(vrfContract) != address(0), "VRF contract not set");
+        require(block.timestamp >= lastDailyDraw + 1 days, "Daily draw not ready");
+        
+        address[] memory eligiblePlayers = this.getEligibleDailyPlayers(_gameId);
+        require(eligiblePlayers.length > 0, "No eligible players for daily draw");
+        
+        uint256 requestId = vrfContract.requestDailyRandomness(_gameId, eligiblePlayers);
+        vrfRequests[requestId] = true;
+        
+        emit VRFRequestSubmitted(requestId, _gameId, "daily");
+    }
+    
+    /**
+     * @dev Request VRF for weekly winner selection
+     */
+    function requestWeeklyVRF() external onlyRole(OPERATOR_ROLE) whenNotPaused {
+        require(useVRF, "VRF not enabled");
+        require(address(vrfContract) != address(0), "VRF contract not set");
+        require(block.timestamp >= lastWeeklyDraw + 7 days, "Weekly draw not ready");
+        
+        address[] memory eligiblePlayers = this.getEligibleWeeklyPlayers(_gameId);
+        require(eligiblePlayers.length > 0, "No eligible players for weekly draw");
+        
+        uint256 requestId = vrfContract.requestWeeklyRandomness(_gameId, eligiblePlayers);
+        vrfRequests[requestId] = true;
+        
+        emit VRFRequestSubmitted(requestId, _gameId, "weekly");
+    }
+    
+    /**
+     * @dev Set VRF contract address
+     * @param _vrfContract Address of the VRF contract
+     */
+    function setVRFContract(address _vrfContract) external onlyOwner {
+        vrfContract = ChainlinkVRF(payable(_vrfContract));
+    }
+    
+    /**
+     * @dev Toggle VRF usage
+     * @param _useVRF Whether to use VRF or legacy randomness
+     */
+    function setUseVRF(bool _useVRF) external onlyOwner {
+        useVRF = _useVRF;
+    }
+    
+    /**
+     * @dev Select daily winners using enhanced secure randomness (MED-001 fix) - LEGACY
      */
     function selectDailyWinners() external onlyRole(OPERATOR_ROLE) whenNotPaused {
         require(currentRandomnessRound > 0, "No randomness round requested");

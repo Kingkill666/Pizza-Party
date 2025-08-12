@@ -194,7 +194,10 @@ export interface PizzaPartyInterface extends Interface {
       | "generateSecureRandomness"
       | "getCurrentEntryFee"
       | "getCurrentGame"
+      | "getCurrentGameId"
       | "getCurrentVMFPrice"
+      | "getEligibleDailyPlayers"
+      | "getEligibleWeeklyPlayers"
       | "getGame"
       | "getGasUsageStats"
       | "getJackpotState"
@@ -203,6 +206,8 @@ export interface PizzaPartyInterface extends Interface {
       | "grantRole"
       | "hasEnteredToday"
       | "hasRole"
+      | "isDailyDrawReady"
+      | "isWeeklyDrawReady"
       | "jackpotStateHash"
       | "jackpotUpdateCooldown"
       | "jackpotUpdateNonce"
@@ -214,15 +219,20 @@ export interface PizzaPartyInterface extends Interface {
       | "optimizeGasUsage"
       | "owner"
       | "paused"
+      | "pendingWinners"
       | "players"
       | "priceOracle"
       | "processBatchPlayers"
+      | "processDailyWinners"
+      | "processWeeklyWinners"
       | "randomnessContract"
       | "randomnessSeeds"
       | "referralCodes"
       | "referrals"
       | "renounceOwnership"
       | "requestDailyRandomness"
+      | "requestDailyVRF"
+      | "requestWeeklyVRF"
       | "revealRandomness"
       | "revokeRole"
       | "roleAdmins"
@@ -231,13 +241,18 @@ export interface PizzaPartyInterface extends Interface {
       | "setJackpotUpdateCooldown"
       | "setPlayerBlacklist"
       | "setRoleAdmin"
+      | "setUseVRF"
+      | "setVRFContract"
       | "submitRandomnessCommitment"
       | "transferOwnership"
       | "updateJackpotAtomic"
+      | "useVRF"
       | "userDailyRewards"
       | "userLastActivity"
       | "userRateLimitEnd"
       | "vmfToken"
+      | "vrfContract"
+      | "vrfRequests"
       | "weeklyChallenges"
       | "weeklyPlayerCount"
       | "weeklyPlayers"
@@ -247,6 +262,7 @@ export interface PizzaPartyInterface extends Interface {
     nameOrSignatureOrTopic:
       | "BatchPlayersProcessed"
       | "DailyWinnersSelected"
+      | "DynamicEntryFeeCalculated"
       | "EmergencyPause"
       | "EntropyContributed"
       | "FirstOrderRewardClaimed"
@@ -271,6 +287,7 @@ export interface PizzaPartyInterface extends Interface {
       | "SecureRandomnessGenerated"
       | "ToppingsAwarded"
       | "Unpaused"
+      | "VRFRequestSubmitted"
       | "WeeklyChallengeCompleted"
       | "WeeklyWinnersSelected"
       | "WinnersSelectedWithRandomness"
@@ -506,8 +523,20 @@ export interface PizzaPartyInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "getCurrentGameId",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getCurrentVMFPrice",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getEligibleDailyPlayers",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getEligibleWeeklyPlayers",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getGame",
@@ -540,6 +569,14 @@ export interface PizzaPartyInterface extends Interface {
   encodeFunctionData(
     functionFragment: "hasRole",
     values: [BytesLike, AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isDailyDrawReady",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isWeeklyDrawReady",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "jackpotStateHash",
@@ -580,6 +617,10 @@ export interface PizzaPartyInterface extends Interface {
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "pendingWinners",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "players",
     values: [AddressLike]
   ): string;
@@ -590,6 +631,14 @@ export interface PizzaPartyInterface extends Interface {
   encodeFunctionData(
     functionFragment: "processBatchPlayers",
     values: [AddressLike[], BigNumberish[]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "processDailyWinners",
+    values: [BigNumberish, AddressLike[]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "processWeeklyWinners",
+    values: [BigNumberish, AddressLike[]]
   ): string;
   encodeFunctionData(
     functionFragment: "randomnessContract",
@@ -613,6 +662,14 @@ export interface PizzaPartyInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "requestDailyRandomness",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "requestDailyVRF",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "requestWeeklyVRF",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -647,6 +704,11 @@ export interface PizzaPartyInterface extends Interface {
     functionFragment: "setRoleAdmin",
     values: [BytesLike, AddressLike]
   ): string;
+  encodeFunctionData(functionFragment: "setUseVRF", values: [boolean]): string;
+  encodeFunctionData(
+    functionFragment: "setVRFContract",
+    values: [AddressLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "submitRandomnessCommitment",
     values: [BigNumberish, BytesLike]
@@ -659,6 +721,7 @@ export interface PizzaPartyInterface extends Interface {
     functionFragment: "updateJackpotAtomic",
     values: [BigNumberish, BigNumberish, BytesLike]
   ): string;
+  encodeFunctionData(functionFragment: "useVRF", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "userDailyRewards",
     values: [AddressLike]
@@ -672,6 +735,14 @@ export interface PizzaPartyInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "vmfToken", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "vrfContract",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "vrfRequests",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "weeklyChallenges",
     values: [BigNumberish]
@@ -909,7 +980,19 @@ export interface PizzaPartyInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getCurrentGameId",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getCurrentVMFPrice",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getEligibleDailyPlayers",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getEligibleWeeklyPlayers",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getGame", data: BytesLike): Result;
@@ -935,6 +1018,14 @@ export interface PizzaPartyInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "isDailyDrawReady",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "isWeeklyDrawReady",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "jackpotStateHash",
     data: BytesLike
@@ -973,6 +1064,10 @@ export interface PizzaPartyInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "pendingWinners",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "players", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "priceOracle",
@@ -980,6 +1075,14 @@ export interface PizzaPartyInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "processBatchPlayers",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "processDailyWinners",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "processWeeklyWinners",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -1001,6 +1104,14 @@ export interface PizzaPartyInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "requestDailyRandomness",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "requestDailyVRF",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "requestWeeklyVRF",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -1026,6 +1137,11 @@ export interface PizzaPartyInterface extends Interface {
     functionFragment: "setRoleAdmin",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "setUseVRF", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setVRFContract",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "submitRandomnessCommitment",
     data: BytesLike
@@ -1038,6 +1154,7 @@ export interface PizzaPartyInterface extends Interface {
     functionFragment: "updateJackpotAtomic",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "useVRF", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "userDailyRewards",
     data: BytesLike
@@ -1051,6 +1168,14 @@ export interface PizzaPartyInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "vmfToken", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "vrfContract",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "vrfRequests",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "weeklyChallenges",
     data: BytesLike
@@ -1102,6 +1227,28 @@ export namespace DailyWinnersSelectedEvent {
     gameId: bigint;
     winners: string[];
     jackpot: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace DynamicEntryFeeCalculatedEvent {
+  export type InputTuple = [
+    vmfPrice: BigNumberish,
+    requiredVMF: BigNumberish,
+    timestamp: BigNumberish
+  ];
+  export type OutputTuple = [
+    vmfPrice: bigint,
+    requiredVMF: bigint,
+    timestamp: bigint
+  ];
+  export interface OutputObject {
+    vmfPrice: bigint;
+    requiredVMF: bigint;
+    timestamp: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -1469,6 +1616,28 @@ export namespace UnpausedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
+export namespace VRFRequestSubmittedEvent {
+  export type InputTuple = [
+    requestId: BigNumberish,
+    gameId: BigNumberish,
+    gameType: string
+  ];
+  export type OutputTuple = [
+    requestId: bigint,
+    gameId: bigint,
+    gameType: string
+  ];
+  export interface OutputObject {
+    requestId: bigint;
+    gameId: bigint;
+    gameType: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export namespace WeeklyChallengeCompletedEvent {
   export type InputTuple = [
     player: AddressLike,
@@ -1632,7 +1801,7 @@ export interface PizzaParty extends BaseContract {
 
   WEEKLY_WINNERS_COUNT: TypedContractMethod<[], [bigint], "view">;
 
-  addJackpotEntry: TypedContractMethod<[], [void], "payable">;
+  addJackpotEntry: TypedContractMethod<[], [void], "nonpayable">;
 
   awardBaseSepoliaHoldingsToppings: TypedContractMethod<
     [],
@@ -1709,7 +1878,7 @@ export interface PizzaParty extends BaseContract {
   enterDailyGame: TypedContractMethod<
     [referralCode: string],
     [void],
-    "payable"
+    "nonpayable"
   >;
 
   entropyContributions: TypedContractMethod<
@@ -1756,7 +1925,21 @@ export interface PizzaParty extends BaseContract {
     "view"
   >;
 
+  getCurrentGameId: TypedContractMethod<[], [bigint], "view">;
+
   getCurrentVMFPrice: TypedContractMethod<[], [bigint], "view">;
+
+  getEligibleDailyPlayers: TypedContractMethod<
+    [gameId: BigNumberish],
+    [string[]],
+    "view"
+  >;
+
+  getEligibleWeeklyPlayers: TypedContractMethod<
+    [gameId: BigNumberish],
+    [string[]],
+    "view"
+  >;
 
   getGame: TypedContractMethod<
     [gameId: BigNumberish],
@@ -1818,6 +2001,10 @@ export interface PizzaParty extends BaseContract {
     "view"
   >;
 
+  isDailyDrawReady: TypedContractMethod<[], [boolean], "view">;
+
+  isWeeklyDrawReady: TypedContractMethod<[], [boolean], "view">;
+
   jackpotStateHash: TypedContractMethod<[arg0: BigNumberish], [string], "view">;
 
   jackpotUpdateCooldown: TypedContractMethod<[], [bigint], "view">;
@@ -1843,6 +2030,12 @@ export interface PizzaParty extends BaseContract {
   owner: TypedContractMethod<[], [string], "view">;
 
   paused: TypedContractMethod<[], [boolean], "view">;
+
+  pendingWinners: TypedContractMethod<
+    [arg0: BigNumberish, arg1: BigNumberish],
+    [string],
+    "view"
+  >;
 
   players: TypedContractMethod<
     [arg0: AddressLike],
@@ -1896,6 +2089,18 @@ export interface PizzaParty extends BaseContract {
     "nonpayable"
   >;
 
+  processDailyWinners: TypedContractMethod<
+    [gameId: BigNumberish, winners: AddressLike[]],
+    [void],
+    "nonpayable"
+  >;
+
+  processWeeklyWinners: TypedContractMethod<
+    [gameId: BigNumberish, winners: AddressLike[]],
+    [void],
+    "nonpayable"
+  >;
+
   randomnessContract: TypedContractMethod<[], [string], "view">;
 
   randomnessSeeds: TypedContractMethod<[arg0: BigNumberish], [string], "view">;
@@ -1918,6 +2123,10 @@ export interface PizzaParty extends BaseContract {
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
   requestDailyRandomness: TypedContractMethod<[], [void], "nonpayable">;
+
+  requestDailyVRF: TypedContractMethod<[], [void], "nonpayable">;
+
+  requestWeeklyVRF: TypedContractMethod<[], [void], "nonpayable">;
 
   revealRandomness: TypedContractMethod<
     [roundId: BigNumberish, randomValue: BigNumberish, salt: BytesLike],
@@ -1959,6 +2168,14 @@ export interface PizzaParty extends BaseContract {
     "nonpayable"
   >;
 
+  setUseVRF: TypedContractMethod<[_useVRF: boolean], [void], "nonpayable">;
+
+  setVRFContract: TypedContractMethod<
+    [_vrfContract: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   submitRandomnessCommitment: TypedContractMethod<
     [roundId: BigNumberish, commitment: BytesLike],
     [void],
@@ -1981,6 +2198,8 @@ export interface PizzaParty extends BaseContract {
     "nonpayable"
   >;
 
+  useVRF: TypedContractMethod<[], [boolean], "view">;
+
   userDailyRewards: TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
 
   userLastActivity: TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
@@ -1988,6 +2207,10 @@ export interface PizzaParty extends BaseContract {
   userRateLimitEnd: TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
 
   vmfToken: TypedContractMethod<[], [string], "view">;
+
+  vrfContract: TypedContractMethod<[], [string], "view">;
+
+  vrfRequests: TypedContractMethod<[arg0: BigNumberish], [boolean], "view">;
 
   weeklyChallenges: TypedContractMethod<
     [arg0: BigNumberish],
@@ -2102,7 +2325,7 @@ export interface PizzaParty extends BaseContract {
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "addJackpotEntry"
-  ): TypedContractMethod<[], [void], "payable">;
+  ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "awardBaseSepoliaHoldingsToppings"
   ): TypedContractMethod<[], [void], "nonpayable">;
@@ -2169,7 +2392,7 @@ export interface PizzaParty extends BaseContract {
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "enterDailyGame"
-  ): TypedContractMethod<[referralCode: string], [void], "payable">;
+  ): TypedContractMethod<[referralCode: string], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "entropyContributions"
   ): TypedContractMethod<[arg0: BigNumberish], [bigint], "view">;
@@ -2216,8 +2439,17 @@ export interface PizzaParty extends BaseContract {
     nameOrSignature: "getCurrentGame"
   ): TypedContractMethod<[], [PizzaParty.GameStructOutput], "view">;
   getFunction(
+    nameOrSignature: "getCurrentGameId"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
     nameOrSignature: "getCurrentVMFPrice"
   ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getEligibleDailyPlayers"
+  ): TypedContractMethod<[gameId: BigNumberish], [string[]], "view">;
+  getFunction(
+    nameOrSignature: "getEligibleWeeklyPlayers"
+  ): TypedContractMethod<[gameId: BigNumberish], [string[]], "view">;
   getFunction(
     nameOrSignature: "getGame"
   ): TypedContractMethod<
@@ -2283,6 +2515,12 @@ export interface PizzaParty extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "isDailyDrawReady"
+  ): TypedContractMethod<[], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "isWeeklyDrawReady"
+  ): TypedContractMethod<[], [boolean], "view">;
+  getFunction(
     nameOrSignature: "jackpotStateHash"
   ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
   getFunction(
@@ -2315,6 +2553,13 @@ export interface PizzaParty extends BaseContract {
   getFunction(
     nameOrSignature: "paused"
   ): TypedContractMethod<[], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "pendingWinners"
+  ): TypedContractMethod<
+    [arg0: BigNumberish, arg1: BigNumberish],
+    [string],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "players"
   ): TypedContractMethod<
@@ -2371,6 +2616,20 @@ export interface PizzaParty extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "processDailyWinners"
+  ): TypedContractMethod<
+    [gameId: BigNumberish, winners: AddressLike[]],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "processWeeklyWinners"
+  ): TypedContractMethod<
+    [gameId: BigNumberish, winners: AddressLike[]],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
     nameOrSignature: "randomnessContract"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
@@ -2398,6 +2657,12 @@ export interface PizzaParty extends BaseContract {
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "requestDailyRandomness"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "requestDailyVRF"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "requestWeeklyVRF"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "revealRandomness"
@@ -2444,6 +2709,12 @@ export interface PizzaParty extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "setUseVRF"
+  ): TypedContractMethod<[_useVRF: boolean], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setVRFContract"
+  ): TypedContractMethod<[_vrfContract: AddressLike], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "submitRandomnessCommitment"
   ): TypedContractMethod<
     [roundId: BigNumberish, commitment: BytesLike],
@@ -2465,6 +2736,9 @@ export interface PizzaParty extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "useVRF"
+  ): TypedContractMethod<[], [boolean], "view">;
+  getFunction(
     nameOrSignature: "userDailyRewards"
   ): TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
   getFunction(
@@ -2476,6 +2750,12 @@ export interface PizzaParty extends BaseContract {
   getFunction(
     nameOrSignature: "vmfToken"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "vrfContract"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "vrfRequests"
+  ): TypedContractMethod<[arg0: BigNumberish], [boolean], "view">;
   getFunction(
     nameOrSignature: "weeklyChallenges"
   ): TypedContractMethod<
@@ -2515,6 +2795,13 @@ export interface PizzaParty extends BaseContract {
     DailyWinnersSelectedEvent.InputTuple,
     DailyWinnersSelectedEvent.OutputTuple,
     DailyWinnersSelectedEvent.OutputObject
+  >;
+  getEvent(
+    key: "DynamicEntryFeeCalculated"
+  ): TypedContractEvent<
+    DynamicEntryFeeCalculatedEvent.InputTuple,
+    DynamicEntryFeeCalculatedEvent.OutputTuple,
+    DynamicEntryFeeCalculatedEvent.OutputObject
   >;
   getEvent(
     key: "EmergencyPause"
@@ -2685,6 +2972,13 @@ export interface PizzaParty extends BaseContract {
     UnpausedEvent.OutputObject
   >;
   getEvent(
+    key: "VRFRequestSubmitted"
+  ): TypedContractEvent<
+    VRFRequestSubmittedEvent.InputTuple,
+    VRFRequestSubmittedEvent.OutputTuple,
+    VRFRequestSubmittedEvent.OutputObject
+  >;
+  getEvent(
     key: "WeeklyChallengeCompleted"
   ): TypedContractEvent<
     WeeklyChallengeCompletedEvent.InputTuple,
@@ -2727,6 +3021,17 @@ export interface PizzaParty extends BaseContract {
       DailyWinnersSelectedEvent.InputTuple,
       DailyWinnersSelectedEvent.OutputTuple,
       DailyWinnersSelectedEvent.OutputObject
+    >;
+
+    "DynamicEntryFeeCalculated(uint256,uint256,uint256)": TypedContractEvent<
+      DynamicEntryFeeCalculatedEvent.InputTuple,
+      DynamicEntryFeeCalculatedEvent.OutputTuple,
+      DynamicEntryFeeCalculatedEvent.OutputObject
+    >;
+    DynamicEntryFeeCalculated: TypedContractEvent<
+      DynamicEntryFeeCalculatedEvent.InputTuple,
+      DynamicEntryFeeCalculatedEvent.OutputTuple,
+      DynamicEntryFeeCalculatedEvent.OutputObject
     >;
 
     "EmergencyPause(bool)": TypedContractEvent<
@@ -2991,6 +3296,17 @@ export interface PizzaParty extends BaseContract {
       UnpausedEvent.InputTuple,
       UnpausedEvent.OutputTuple,
       UnpausedEvent.OutputObject
+    >;
+
+    "VRFRequestSubmitted(uint256,uint256,string)": TypedContractEvent<
+      VRFRequestSubmittedEvent.InputTuple,
+      VRFRequestSubmittedEvent.OutputTuple,
+      VRFRequestSubmittedEvent.OutputObject
+    >;
+    VRFRequestSubmitted: TypedContractEvent<
+      VRFRequestSubmittedEvent.InputTuple,
+      VRFRequestSubmittedEvent.OutputTuple,
+      VRFRequestSubmittedEvent.OutputObject
     >;
 
     "WeeklyChallengeCompleted(address,uint256,uint256)": TypedContractEvent<
