@@ -52,7 +52,7 @@ export default function LeaderboardPage() {
   const { connection, isConnected, connectWallet, isConnecting, error, setError } = useWallet()
 
   const customFontStyle = {
-    fontFamily: 'Comic Sans MS, cursive, sans-serif',
+    fontFamily: 'Comic Sans MS, sans-serif',
     fontWeight: 'bold',
   }
 
