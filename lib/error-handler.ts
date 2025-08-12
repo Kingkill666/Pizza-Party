@@ -55,7 +55,7 @@ export class ErrorHandler {
       'VALIDATION_ERROR': 'Invalid input. Please check your data and try again.',
       'RATE_LIMIT_EXCEEDED': 'Too many requests. Please wait a moment and try again.',
       'USER_REJECTED': 'Transaction was cancelled by user.',
-      'CHAIN_NOT_FOUND': 'Please add Base Sepolia network to your wallet.',
+      'CHAIN_NOT_FOUND': 'Please add Base Mainnet network to your wallet.',
       'DEFAULT': 'An unexpected error occurred. Please try again.'
     };
 

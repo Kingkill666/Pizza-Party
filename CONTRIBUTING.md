@@ -29,7 +29,7 @@ Thank you for your interest in contributing to Pizza Party! This document provid
 - npm or yarn
 - Git
 - MetaMask or other Web3 wallet
-- Base Sepolia testnet access
+- Base Mainnet access
 
 ### Local Development
 ```bash
@@ -57,7 +57,7 @@ cp .env.example .env
 
 # Add your configuration
 BASE_RPC_URL=https://mainnet.base.org
-BASE_SEPOLIA_RPC_URL=https://sepolia.base.org
+BASE_RPC_URL=https://mainnet.base.org
 PRIVATE_KEY=your_private_key
 BASESCAN_API_KEY=your_api_key
 ```

@@ -207,7 +207,7 @@ export const connectMobileWallet = async (walletId: string): Promise<any> => {
       
       const provider = await EthereumProvider.init({
         projectId: 'c4f79cc821944d9680842e34466bfbd9',
-        chains: [84532], // Base Sepolia
+        chains: [8453], // Base Mainnet
         showQrModal: true,
         qrModalOptions: {
           themeMode: 'dark',

@@ -197,10 +197,10 @@ export class PrizeService implements IPrizeService {
         totalToppings += 1 // First time user
       }
 
-      // Base Sepolia Holdings (1 topping per 0.001 ETH minimum)
+      // VMF Holdings (3 toppings per 10 VMF minimum)
       const balance = parseFloat(localStorage.getItem(`balance_${address}`) || '0')
-      if (balance >= 0.001) {
-        totalToppings += 1
+      if (balance >= 10) {
+        totalToppings += 3
       }
 
       // Referrals (1 topping per referral)

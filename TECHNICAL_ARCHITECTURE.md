@@ -37,7 +37,7 @@ modifier validReferralCode(string memory code) {
 ## Prize Distribution System
 
 ### Daily Jackpot Flow
-1. **Entry Collection**: Players pay 0.001 Base Sepolia ETH
+1. **Entry Collection**: Players pay 1 VMF token
 2. **Prize Pool Accumulation**: All entry fees go to `currentDailyJackpot`
 3. **Game End Detection**: Automatic at 12pm PST daily
 4. **Winner Selection**: 8 random winners using secure randomness
@@ -181,23 +181,7 @@ function processBatchPlayers(address[] memory players, uint256[] memory amounts)
 
 ## Network Configuration
 
-### Base Sepolia Testnet (Beta)
-```typescript
-export const BASE_SEPOLIA_NETWORK = {
-  chainId: 84532,
-  chainName: "Base Sepolia",
-  nativeCurrency: {
-    name: "Ethereum",
-    symbol: "ETH", 
-    decimals: 18,
-  },
-  rpcUrls: [
-    "https://sepolia.base.org",
-    "https://base-sepolia.g.alchemy.com/v2/demo",
-  ],
-  blockExplorerUrls: ["https://sepolia.basescan.org"],
-}
-```
+
 
 ### Base Mainnet (Production)
 ```typescript
@@ -235,11 +219,8 @@ export const BASE_NETWORK = {
 
 ### Smart Contract Deployment
 ```bash
-# Deploy to Base Sepolia
-npx hardhat run scripts/deploy-testnet.ts --network base-sepolia
-
 # Deploy to Base Mainnet  
-npx hardhat run scripts/deploy.ts --network base-mainnet
+npx hardhat run scripts/deploy.ts --network base
 ```
 
 ### Frontend Deployment

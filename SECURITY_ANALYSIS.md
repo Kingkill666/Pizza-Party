@@ -18,7 +18,7 @@ contract PizzaParty is ReentrancyGuard, Ownable, Pausable {
 **Protected Functions:**
 - `enterDailyGame()` - Entry point with ETH transfer
 - `createReferralCode()` - Referral code creation
-- `awardBaseSepoliaHoldingsToppings()` - Toppings distribution
+- `awardVMFHoldingsToppings()` - Toppings distribution
 - `awardStreakBonus()` - Streak bonus distribution
 - `claimWeeklyChallengeReward()` - Challenge reward claiming
 - `addJackpotEntry()` - Jackpot entry with ETH
@@ -133,10 +133,10 @@ event JackpotUpdateCooldownSet(uint256 cooldown);
 #### Daily Jackpot Contributions
 ```solidity
 function enterDailyGame(string memory referralCode) external nonReentrant whenNotPaused notBlacklisted(msg.sender) rateLimited securityCheck payable {
-    // Fixed entry fee for Base Sepolia testing
-    uint256 requiredETH = 1 * 10**15; // 0.001 Base Sepolia ETH
-    
-    require(msg.value >= requiredETH, "Insufficient Base Sepolia ETH balance");
+    // Fixed entry fee for VMF token
+uint256 requiredVMF = 1 * 10**18; // 1 VMF token
+
+require(msg.value >= requiredVMF, "Insufficient VMF token balance");
     
     // Update jackpot with player contribution
     currentDailyJackpot = currentDailyJackpot + msg.value;
@@ -154,7 +154,7 @@ function enterDailyGame(string memory referralCode) external nonReentrant whenNo
 #### Weekly Jackpot Contributions
 ```solidity
 function addJackpotEntry() external nonReentrant whenNotPaused notBlacklisted(msg.sender) payable {
-    require(msg.value >= JACKPOT_ENTRY_COST, "Insufficient Base Sepolia ETH for jackpot entry");
+    require(msg.value >= JACKPOT_ENTRY_COST, "Insufficient VMF tokens for jackpot entry");
     
     // Update weekly jackpot with multiplier
     currentWeeklyJackpot = currentWeeklyJackpot + msg.value * JACKPOT_MULTIPLIER;
@@ -180,7 +180,7 @@ function drawDailyWinners() external onlyOwner {
     address[] memory winners = _selectWinners(DAILY_WINNERS_COUNT, currentGame.totalEntries);
     uint256 prizePerWinner = currentDailyJackpot / DAILY_WINNERS_COUNT;
     
-    // Distribute Base Sepolia ETH prizes automatically
+    // Distribute VMF token prizes automatically
     for (uint256 i = 0; i < winners.length; i++) {
         if (winners[i] != address(0)) {
             (bool success, ) = winners[i].call{value: prizePerWinner}("");

@@ -136,7 +136,7 @@ export class InputValidator {
     }
 
     // Allow only specific chain IDs
-    const allowedChainIds = [1, 8453, 84532]; // Ethereum, Base, Base Sepolia
+    const allowedChainIds = [1, 8453]; // Ethereum, Base
     if (!allowedChainIds.includes(numChainId)) {
       return { valid: false, error: 'Chain ID not supported' };
     }

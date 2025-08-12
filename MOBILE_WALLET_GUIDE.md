@@ -69,11 +69,11 @@
 
 ### "Base network not found"
 **Solution:**
-1. Add Base Sepolia network to your wallet:
-   - **Chain ID**: 84532
-   - **RPC URL**: https://sepolia.base.org
-   - **Block Explorer**: https://sepolia.basescan.org
-2. Switch to Base Sepolia network in your wallet
+1. Add Base Mainnet network to your wallet:
+   - **Chain ID**: 8453
+- **RPC URL**: https://mainnet.base.org
+- **Block Explorer**: https://basescan.org
+2. Switch to Base Mainnet network in your wallet
 3. Try connecting again
 
 ### "Connection request pending"
@@ -90,18 +90,18 @@
 
 ## Network Configuration
 
-### Base Sepolia Testnet (Beta Testing)
+### Base Mainnet (Production)
 ```json
 {
   "chainId": "0x14A34",
-  "chainName": "Base Sepolia",
+  "chainName": "Base",
   "nativeCurrency": {
     "name": "Ethereum",
     "symbol": "ETH",
     "decimals": 18
   },
-  "rpcUrls": ["https://sepolia.base.org"],
-  "blockExplorerUrls": ["https://sepolia.basescan.org"]
+  "rpcUrls": ["https://mainnet.base.org"],
+"blockExplorerUrls": ["https://basescan.org"]
 }
 ```
 
@@ -142,9 +142,8 @@
 
 ## Getting Testnet ETH
 
-### Base Sepolia Faucets
-1. **Chainlink Faucet**: https://faucets.chain.link/base-sepolia
-2. **QuickNode Faucet**: https://faucet.quicknode.com/base/sepolia
+### Base Mainnet
+Base Mainnet uses real ETH and VMF tokens. No faucet needed.
 
 ### How to Get Testnet ETH
 1. **Visit a faucet** from the list above
