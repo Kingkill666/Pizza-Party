@@ -4,7 +4,7 @@
 import { sdk } from '@farcaster/miniapp-sdk'
 
 // Preconnect to Quick Auth Server for optimal performance
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   const link = document.createElement('link')
   link.rel = 'preconnect'
   link.href = 'https://auth.farcaster.xyz'
