@@ -16,6 +16,7 @@ export const WALLETS: WalletInfo[] = [
     id: "metamask",
     name: "MetaMask",
     icon: "🦊",
+    iconImage: "/images/metamask-icon.svg",
     color: "bg-orange-500 hover:bg-orange-600",
     mobile: true,
     deepLink: "metamask://",
@@ -26,7 +27,7 @@ export const WALLETS: WalletInfo[] = [
     id: "coinbase",
     name: "Coinbase Wallet",
     icon: "🪙", // Fallback emoji if image fails to load
-    iconImage: "/images/Coinbase-icon.png?v=2",
+    iconImage: "/images/Coinbase-icon.png",
     color: "bg-blue-500 hover:bg-blue-600",
     mobile: true,
     deepLink: "coinbasewallet://",
@@ -37,6 +38,7 @@ export const WALLETS: WalletInfo[] = [
     id: "trust",
     name: "Trust Wallet",
     icon: "🛡️",
+    iconImage: "/images/trust-wallet-icon.svg",
     color: "bg-blue-600 hover:bg-blue-700",
     mobile: true,
     deepLink: "trust://",
@@ -47,6 +49,7 @@ export const WALLETS: WalletInfo[] = [
     id: "rainbow",
     name: "Rainbow",
     icon: "🌈",
+    iconImage: "/images/rainbow-wallet-icon.svg",
     color: "bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600",
     mobile: true,
     deepLink: "rainbow://",
@@ -57,6 +60,7 @@ export const WALLETS: WalletInfo[] = [
     id: "phantom",
     name: "Phantom",
     icon: "👻",
+    iconImage: "/images/phantom-wallet-icon.svg",
     color: "bg-purple-500 hover:bg-purple-600",
     mobile: true,
     deepLink: "phantom://",
@@ -82,21 +86,21 @@ export const BASE_NETWORK = {
   blockExplorerUrls: ["https://basescan.org"],
 }
 
-// Base Sepolia testnet configuration
-export const BASE_SEPOLIA_NETWORK = {
-  chainId: 84532,
-  chainName: "Base Sepolia",
+// Base mainnet configuration
+export const BASE_MAINNET_NETWORK = {
+  chainId: 8453,
+  chainName: "Base",
   nativeCurrency: {
     name: "Ethereum",
     symbol: "ETH",
     decimals: 18,
   },
   rpcUrls: [
-    "https://sepolia.base.org",
-    "https://base-sepolia.g.alchemy.com/v2/demo",
-    "https://base-sepolia.gateway.tenderly.co",
+    "https://mainnet.base.org",
+    "https://base-mainnet.g.alchemy.com/v2/demo",
+    "https://base.gateway.tenderly.co",
   ],
-  blockExplorerUrls: ["https://sepolia.basescan.org"],
+  blockExplorerUrls: ["https://basescan.org"],
 }
 
 // Mobile detection
@@ -791,46 +795,46 @@ export const ensureBaseNetwork = async (provider?: any): Promise<void> => {
   }
 }
 
-// Ensure Base Sepolia testnet is added/switched (for beta testing)
-export const ensureBaseSepoliaNetwork = async (provider?: any): Promise<void> => {
+// Ensure Base mainnet is added/switched (for production)
+export const ensureBaseMainnetNetwork = async (provider?: any): Promise<void> => {
   const targetProvider = provider || window.ethereum
   if (typeof window === "undefined" || !targetProvider) return
 
   try {
-    // Try to switch to Base Sepolia network
+    // Try to switch to Base mainnet
     await targetProvider.request({
       method: "wallet_switchEthereumChain",
-      params: [{ chainId: `0x${BASE_SEPOLIA_NETWORK.chainId.toString(16)}` }],
+      params: [{ chainId: `0x${BASE_MAINNET_NETWORK.chainId.toString(16)}` }],
     })
-    console.log("✅ Switched to Base Sepolia testnet")
+    console.log("✅ Switched to Base mainnet")
   } catch (switchError: any) {
-    console.log("⚠️ Switch failed, trying to add Base Sepolia network...")
+    console.log("⚠️ Switch failed, trying to add Base mainnet...")
 
-    // If Base Sepolia network is not added, add it
+    // If Base mainnet is not added, add it
     if (switchError.code === 4902) {
       try {
         await targetProvider.request({
           method: "wallet_addEthereumChain",
           params: [
             {
-              chainId: `0x${BASE_SEPOLIA_NETWORK.chainId.toString(16)}`,
-              chainName: BASE_SEPOLIA_NETWORK.chainName,
-              nativeCurrency: BASE_SEPOLIA_NETWORK.nativeCurrency,
-              rpcUrls: BASE_SEPOLIA_NETWORK.rpcUrls,
-              blockExplorerUrls: BASE_SEPOLIA_NETWORK.blockExplorerUrls,
+              chainId: `0x${BASE_MAINNET_NETWORK.chainId.toString(16)}`,
+              chainName: BASE_MAINNET_NETWORK.chainName,
+              nativeCurrency: BASE_MAINNET_NETWORK.nativeCurrency,
+              rpcUrls: BASE_MAINNET_NETWORK.rpcUrls,
+              blockExplorerUrls: BASE_MAINNET_NETWORK.blockExplorerUrls,
             },
           ],
         })
-        console.log("✅ Added Base Sepolia testnet")
+        console.log("✅ Added Base mainnet")
       } catch (addError) {
-        console.error("❌ Failed to add Base Sepolia network:", addError)
-        throw new Error("Please add Base Sepolia testnet to your wallet manually")
+        console.error("❌ Failed to add Base mainnet:", addError)
+        throw new Error("Please add Base mainnet to your wallet manually")
       }
     } else {
-      console.error("❌ Failed to switch to Base Sepolia network:", switchError)
+      console.error("❌ Failed to switch to Base mainnet:", switchError)
       // Don't throw error for mobile wallets, they might handle network switching differently
       if (!isMobile()) {
-        throw new Error("Please switch to Base Sepolia testnet in your wallet")
+        throw new Error("Please switch to Base mainnet in your wallet")
       }
     }
   }

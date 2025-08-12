@@ -5,6 +5,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { useWagmiWallet } from '@/hooks/useWagmiWallet'
 import { isMobile, isInWalletBrowser } from '@/lib/wagmi-config'
+import { WALLETS } from '@/lib/wallet-config'
+import Image from 'next/image'
+import { ExternalLink } from 'lucide-react'
 
 interface WagmiWalletModalProps {
   isOpen: boolean
@@ -62,119 +65,117 @@ export const WagmiWalletModal = ({ isOpen, onClose, onConnect }: WagmiWalletModa
     const names: Record<string, string> = {
       metaMask: 'MetaMask',
       coinbaseWallet: 'Coinbase Wallet',
-      walletConnect: 'WalletConnect',
-      injected: 'Browser Wallet',
+      walletConnect: 'Rainbow',
+      injected: 'Trust Wallet',
     }
     return names[connectorId] || connectorId
   }
 
-  const getConnectorIcon = (connectorId: string) => {
-    const icons: Record<string, string> = {
-      metaMask: '🦊',
-      coinbaseWallet: '🪙',
-      walletConnect: '🔗',
-      injected: '💉',
+  const getWalletIcon = (connectorId: string) => {
+    const walletMap: Record<string, string> = {
+      metaMask: '/images/metamask-icon.svg',
+      coinbaseWallet: '/images/Coinbase-icon.png',
+      walletConnect: '/images/rainbow-wallet-icon.svg',
+      injected: '/images/trust-wallet-icon.svg',
     }
-    return icons[connectorId] || '🔗'
+    return walletMap[connectorId] || '/images/metamask-icon.svg'
   }
 
   const getConnectorColor = (connectorId: string) => {
     const colors: Record<string, string> = {
       metaMask: 'bg-orange-500 hover:bg-orange-600',
-      coinbaseWallet: 'bg-blue-500 hover:bg-blue-600',
-      walletConnect: 'bg-blue-600 hover:bg-blue-700',
-      injected: 'bg-gray-500 hover:bg-gray-600',
+      coinbaseWallet: 'bg-blue-600 hover:bg-blue-700',
+      walletConnect: 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600',
+      injected: 'bg-blue-600 hover:bg-blue-700', // Trust Wallet uses the same blue
     }
     return colors[connectorId] || 'bg-gray-500 hover:bg-gray-600'
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-w-md mx-auto bg-white border-2 border-red-500 rounded-3xl">
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl font-bold">
+          <DialogTitle className="text-xl sm:text-2xl text-red-800 flex items-center gap-2 justify-center">
             🍕 Connect Your Wallet 🍕
           </DialogTitle>
         </DialogHeader>
-
-        <div className="space-y-4">
-          {/* Mobile Tips */}
-          {isMobileDevice && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-800 mb-2">📱 Mobile Tips</h3>
-              <ul className="text-sm text-blue-700 space-y-1">
-                <li>• Make sure your wallet app is installed</li>
-                <li>• Try opening this site in your wallet's browser</li>
-                <li>• Use WalletConnect for better mobile support</li>
-              </ul>
-            </div>
-          )}
-
-          {/* Available Connectors */}
+        <div className="space-y-4 p-4">
+          <p className="text-center text-gray-800">
+            Choose your preferred wallet to connect to Pizza Party
+          </p>
+          
           <div className="space-y-3">
-            {connectors
-              .filter(connector => connector.ready)
-              .map((connector) => (
-                <Button
-                  key={connector.id}
-                  onClick={() => handleConnect(connector.id)}
-                  disabled={isProcessing && selectedConnector === connector.id}
-                  className={`w-full h-14 text-lg font-semibold ${getConnectorColor(connector.id)} transition-all duration-200 transform hover:scale-105 active:scale-95`}
-                >
-                  <span className="mr-3 text-xl">{getConnectorIcon(connector.id)}</span>
-                  {isProcessing && selectedConnector === connector.id ? (
-                    'Connecting...'
+            {/* Show all 5 wallets */}
+            {[
+              { id: 'metaMask', name: 'MetaMask', icon: '/images/metamask-icon.svg', color: 'bg-orange-500 hover:bg-orange-600' },
+              { id: 'coinbaseWallet', name: 'Coinbase Wallet', icon: '/images/Coinbase-icon.png', color: 'bg-blue-600 hover:bg-blue-700' },
+              { id: 'trust', name: 'Trust Wallet', icon: '/images/trust-wallet-icon.svg', color: 'bg-blue-600 hover:bg-blue-700' },
+              { id: 'rainbow', name: 'Rainbow', icon: '/images/rainbow-wallet-icon.svg', color: 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600' },
+              { id: 'phantom', name: 'Phantom', icon: '/images/phantom-wallet-icon.svg', color: 'bg-purple-600 hover:bg-purple-700' }
+            ].map((wallet) => (
+              <Button
+                key={wallet.id}
+                onClick={() => handleConnect(wallet.id)}
+                disabled={isProcessing && selectedConnector === wallet.id}
+                className={`w-full font-bold py-6 px-4 rounded-xl border-2 shadow-lg transform hover:scale-105 transition-all flex items-center justify-between text-lg ${wallet.color}`}
+              >
+                <div className="flex items-center gap-3">
+                  <Image
+                    src={wallet.icon}
+                    alt={`${wallet.name} icon`}
+                    width={24}
+                    height={24}
+                    className="w-6 h-6"
+                    onError={(e) => {
+                      // Fallback to emoji if image fails to load
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const emojiSpan = target.nextElementSibling as HTMLElement;
+                      if (emojiSpan) {
+                        emojiSpan.style.display = 'block';
+                      }
+                    }}
+                  />
+                  <span 
+                    className="text-lg"
+                    style={{ display: 'none' }}
+                  >
+                    {wallet.id === 'metaMask' ? '🦊' : 
+                     wallet.id === 'coinbaseWallet' ? '🪙' : 
+                     wallet.id === 'trust' ? '🛡️' :
+                     wallet.id === 'rainbow' ? '🌈' : '👻'}
+                  </span>
+                  <span>{wallet.name}</span>
+                </div>
+                <div className="flex-shrink-0">
+                  {isProcessing && selectedConnector === wallet.id ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                   ) : (
-                    getConnectorDisplayName(connector.id)
+                    <ExternalLink className="h-4 w-4 text-white" />
                   )}
-                </Button>
-              ))}
+                </div>
+              </Button>
+            ))}
           </div>
-
-          {/* Error Display */}
+          
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-800 text-sm font-medium">❌ {error}</p>
-              {error.includes('network') && (
-                <p className="text-red-700 text-xs mt-2">
-                  Make sure you're connected to Base Sepolia network
-                </p>
-              )}
+            <div className="bg-red-100 border-2 border-red-300 rounded-lg p-3 text-center">
+              <p className="text-red-800 font-bold">{error}</p>
             </div>
           )}
 
-          {/* Security Notice */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h3 className="font-semibold text-yellow-800 mb-2">🔒 Security Notice</h3>
-            <ul className="text-sm text-yellow-700 space-y-1">
-              <li>• Only connect to trusted dApps</li>
-              <li>• Never share your private keys</li>
-              <li>• Review transaction details before signing</li>
-              <li>• Disconnect when you're done</li>
+          {/* Why Connect Your Wallet Section */}
+          <div className="bg-blue-50 p-4 rounded-xl border border-gray-300">
+            <h3 className="text-lg font-bold text-blue-800 mb-2 flex items-center gap-2">
+              🔒 Why Connect Your Wallet?
+            </h3>
+            <ul className="space-y-1 text-sm text-blue-700">
+              <li>• Earn VMF tokens and toppings</li>
+              <li>• Participate in daily & weekly jackpots</li>
+              <li>• Track your game history</li>
+              <li>• Secure and decentralized</li>
             </ul>
           </div>
-
-          {/* Mobile Wallet Instructions */}
-          {isMobileDevice && !inWalletBrowser && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <h3 className="font-semibold text-green-800 mb-2">📱 Mobile Wallet Instructions</h3>
-              <ol className="text-sm text-green-700 space-y-1">
-                <li>1. Open your wallet app</li>
-                <li>2. Go to the browser/dApp section</li>
-                <li>3. Enter this website URL</li>
-                <li>4. Try connecting again</li>
-              </ol>
-            </div>
-          )}
-
-          {/* Disconnect Button */}
-          <Button
-            onClick={handleDisconnect}
-            variant="outline"
-            className="w-full"
-          >
-            🔌 Disconnect Wallet
-          </Button>
         </div>
       </DialogContent>
     </Dialog>

@@ -1,4 +1,4 @@
-import { CONTRACT_ADDRESSES, PIZZA_PARTY_ABI, FREE_PRICE_ORACLE_ABI, FREE_RANDOMNESS_ABI } from './contract-config'
+import { CONTRACT_ADDRESSES, PIZZA_PARTY_ABI, FREE_PRICE_ORACLE_ABI, FREE_RANDOMNESS_ABI, VMF_TOKEN_ABI } from './contract-config'
 
 // Web3 provider interface
 export interface Web3Provider {
@@ -102,20 +102,48 @@ export class PizzaPartyContract {
     }
   }
 
-  // Enter daily game
+  // Enter daily game with VMF tokens
   async enterDailyGame(referralCode: string = '') {
     try {
       const accounts = await this.provider.request({ method: 'eth_requestAccounts' })
       const account = accounts[0]
       
+      // First, approve VMF token transfer to the contract
+      const vmfContractAddress = "0x2213414893259b0c48066acd1763e7fba97859e5" // VMF token address on Base
+      const vmfAmount = '0xDE0B6B3A7640000' // 1 VMF in wei (18 decimals)
+      
+      // Approve VMF transfer using VMF token ABI
+      const approveData = this.encodeFunctionCallWithABI('approve', [this.pizzaPartyAddress, vmfAmount], VMF_TOKEN_ABI)
+      const approveGasEstimate = await this.provider.request({
+        method: 'eth_estimateGas',
+        params: [{
+          from: account,
+          to: vmfContractAddress,
+          data: approveData
+        }]
+      })
+
+      const approveTxHash = await this.provider.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: account,
+          to: vmfContractAddress,
+          data: approveData,
+          gas: approveGasEstimate
+        }]
+      })
+
+      // Wait for approval transaction to be mined
+      await this.waitForTransaction(approveTxHash)
+      
+      // Now enter the game (contract will transfer VMF tokens)
       const data = this.encodeFunctionCall('enterDailyGame', [referralCode])
       const gasEstimate = await this.provider.request({
         method: 'eth_estimateGas',
         params: [{
           from: account,
           to: this.pizzaPartyAddress,
-          data: data,
-          value: '0x3B9ACA00' // 0.001 ETH in wei
+          data: data
         }]
       })
 
@@ -125,7 +153,6 @@ export class PizzaPartyContract {
           from: account,
           to: this.pizzaPartyAddress,
           data: data,
-          value: '0x3B9ACA00', // 0.001 ETH in wei
           gas: gasEstimate
         }]
       })
@@ -135,6 +162,30 @@ export class PizzaPartyContract {
       console.error('Error entering daily game:', error)
       throw error
     }
+  }
+
+  // Wait for transaction to be mined
+  private async waitForTransaction(txHash: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const checkTransaction = async () => {
+        try {
+          const receipt = await this.provider.request({
+            method: 'eth_getTransactionReceipt',
+            params: [txHash]
+          })
+          
+          if (receipt && receipt.blockNumber) {
+            resolve()
+          } else {
+            setTimeout(checkTransaction, 2000) // Check again in 2 seconds
+          }
+        } catch (error) {
+          reject(error)
+        }
+      }
+      
+      checkTransaction()
+    })
   }
 
   // Create referral code
@@ -297,6 +348,32 @@ export class PizzaPartyContract {
     }
     
     return selector
+  }
+
+  // Encode function call with specific ABI
+  private encodeFunctionCallWithABI(functionName: string, params: any[], abi: any[]): string {
+    const functionAbi = abi.find(item => item.name === functionName && item.type === 'function')
+    if (!functionAbi) {
+      throw new Error(`Function ${functionName} not found in ABI`)
+    }
+    
+    const functionSignature = `${functionName}(${functionAbi.inputs.map((input: any) => input.type).join(',')})`
+    const functionSelector = this.keccak256(functionSignature).slice(0, 10)
+    
+    const encodedParams = params.map((param, index) => {
+      const inputType = functionAbi.inputs[index].type
+      if (inputType === 'address') {
+        return param.slice(2).padStart(64, '0')
+      } else if (inputType === 'uint256') {
+        if (typeof param === 'string' && param.startsWith('0x')) {
+          return param.slice(2).padStart(64, '0')
+        }
+        return BigInt(param).toString(16).padStart(64, '0')
+      }
+      return param.toString(16).padStart(64, '0')
+    }).join('')
+    
+    return `0x${functionSelector}${encodedParams}`
   }
 
   private decodePlayerData(data: string) {

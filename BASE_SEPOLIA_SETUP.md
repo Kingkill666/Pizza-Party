@@ -1,287 +1,315 @@
-# 🧪 Base Sepolia Testnet Setup Guide
+# Base Mainnet Setup Guide
 
-## Overview
+## 🚀 Overview
 
-This guide will help you set up and test Pizza Party on Base Sepolia testnet. Base Sepolia is the official testnet for Base network, providing a safe environment for testing before mainnet deployment.
+This guide covers the complete setup process for the Pizza Party dApp on Base Mainnet, including network configuration, wallet setup, and deployment procedures.
 
-## 🌐 Network Information
+## 📋 Prerequisites
 
-### Base Sepolia Testnet
-- **Network Name**: Base Sepolia
-- **RPC URL**: https://sepolia.base.org
-- **Chain ID**: 84532
-- **Currency Symbol**: ETH
-- **Block Explorer**: https://sepolia.basescan.org
-- **Faucet**: Multiple options available (see below)
+### Required Tools
+- **Node.js** (v18 or higher)
+- **npm** or **pnpm**
+- **Git**
+- **Hardhat** (installed globally or locally)
 
-## 💰 Free Base Sepolia ETH Faucets
+### Required Accounts
+- **Base Network** account with ETH for gas
+- **Basescan** API key for contract verification
+- **Private Key** for deployment
 
-### Official Faucets
-Based on the [Base documentation](https://docs.base.org/base-chain/tools/network-faucets), here are the available faucets:
+## 🔧 Environment Setup
 
-#### 1. Coinbase Developer Platform Faucet
-- **URL**: https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet
-- **Limit**: One claim per 24 hours
-- **Requirements**: Coinbase account
-- **Amount**: 0.1-0.5 Base Sepolia ETH
+### 1. Clone Repository
+```bash
+git clone https://github.com/Kingkill666/pizza-party-dapp.git
+cd pizza-party-dapp
+```
 
-#### 2. thirdweb Faucet
-- **URL**: https://thirdweb.com/faucet/base-sepolia
-- **Limit**: One claim per 24 hours
-- **Requirements**: Wallet connection (EOA or social logins)
-- **Amount**: 0.1-0.5 Base Sepolia ETH
+### 2. Install Dependencies
+```bash
+npm install
+```
 
-#### 3. Superchain Faucet
-- **URL**: https://superchain.com/faucet
-- **Limit**: One claim per 24 hours
-- **Requirements**: Onchain identity authentication
-- **Amount**: More ETH for authenticated users
-- **Note**: Supports all OP Chains including Base
+### 3. Environment Configuration
+Create a `.env` file in the root directory:
 
-#### 4. Alchemy Faucet
-- **URL**: https://www.alchemy.com/faucets/base-sepolia-faucet
-- **Limit**: One claim per 24 hours
-- **Requirements**: Free Alchemy account
-- **Amount**: 0.1-0.5 Base Sepolia ETH
+```bash
+# Base Network RPC URLs
+BASE_RPC_URL=https://mainnet.base.org
 
-#### 5. Bware Labs Faucet
-- **URL**: https://faucet.bwarelabs.com/
-- **Limit**: One claim per 24 hours
-- **Requirements**: No registration required
-- **Amount**: 0.1-0.5 Base Sepolia ETH
+# Basescan API Key (for contract verification)
+BASESCAN_API_KEY=your_api_key
 
-#### 6. Chainstack Faucet
-- **URL**: https://faucet.chainstack.com/
-- **Limit**: 0.5 ETH every 24 hours
-- **Requirements**: Chainstack platform API key
-- **Amount**: 0.5 Base Sepolia ETH
+# Private Key (for deployment)
+PRIVATE_KEY=your_private_key
 
-#### 7. QuickNode Faucet
-- **URL**: https://faucet.quicknode.com/base-sepolia
-- **Limit**: One drip every 12 hours
-- **Requirements**: Multi-chain faucet
-- **Amount**: 0.1-0.5 Base Sepolia ETH
+# Gas Reporter
+REPORT_GAS=true
+COINMARKETCAP_API_KEY=your_coinmarketcap_api_key
 
-#### 8. LearnWeb3 Faucet
-- **URL**: https://learnweb3.io/faucets/base-sepolia
-- **Limit**: One claim every 24 hours
-- **Requirements**: LearnWeb3 account
-- **Amount**: 0.1-0.5 Base Sepolia ETH
+# VMF Token Contract Address on Base
+VMF_TOKEN_ADDRESS=0x2213414893259b0C48066Acd1763e7fbA97859E5
+```
 
-#### 9. Ethereum Ecosystem Faucet
-- **URL**: https://base-sepolia-faucet.pk910.de/
-- **Limit**: 0.5 ETH every 24 hours
-- **Requirements**: No login required
-- **Amount**: 0.5 Base Sepolia ETH
-- **Note**: Very generous drips, no authentication needed
+### 4. Verify Configuration
+```bash
+# Test configuration
+npx hardhat compile
+```
 
-## 🔧 Wallet Setup
+## 🧪 Local Development
 
-### MetaMask Configuration
+### 1. Start Local Network
+```bash
+npx hardhat node
+```
 
-#### Adding Base Sepolia to MetaMask
+### 2. Deploy to Local Network
+```bash
+npx hardhat run scripts/deploy.ts --network localhost
+```
 
-1. **Open MetaMask**
-2. **Click the network dropdown** (top of wallet)
-3. **Select "Base Sepolia"** if available
-4. **If not available**, click "Add network" and enter:
-   ```
-   Network Name: Base Sepolia
-   RPC URL: https://sepolia.base.org
-   Chain ID: 84532
-   Currency Symbol: ETH
-   Block Explorer: https://sepolia.basescan.org
-   ```
+### 3. Start Frontend
+```bash
+npm run dev
+```
 
-#### Manual Network Addition
-If Base Sepolia doesn't appear in the list:
+### 4. Test Locally
+- Open http://localhost:3000
+- Connect wallet to local network
+- Test all functionality
 
-1. **Open MetaMask Settings**
-2. **Go to Networks**
-3. **Click "Add Network"**
-4. **Enter the details above**
-5. **Save the network**
+## 🚀 Mainnet Deployment (Base)
 
-### Other Wallet Support
+### 1. Pre-deployment Checklist
+- [ ] Smart contract audited
+- [ ] All tests passing
+- [ ] Security review completed
+- [ ] Team approval received
+- [ ] VMF token integration tested
+- [ ] Wallet connections verified
 
-#### Coinbase Wallet
-- **Automatic Detection**: Base Sepolia should be auto-detected
-- **Manual Addition**: Use the same network details as MetaMask
+### 2. Deploy to Mainnet
+```bash
+npx hardhat run scripts/deploy.ts --network base
+```
 
-#### Trust Wallet
-- **Network**: Add custom network with Base Sepolia details
-- **RPC**: https://sepolia.base.org
+### 3. Verify Contract
+```bash
+npx hardhat verify --network base 0xCONTRACT_ADDRESS "0x2213414893259b0C48066Acd1763e7fbA97859E5"
+```
 
-#### Rainbow Wallet
-- **Built-in Support**: Base Sepolia should be available
-- **Manual Addition**: Use network configuration
+### 4. Update Frontend
+Update the contract address in your frontend configuration:
 
-## 🚀 Getting Testnet ETH
+```typescript
+// lib/contract-config.ts
+export const PIZZA_PARTY_CONTRACT_ADDRESS = "0xDEPLOYED_CONTRACT_ADDRESS"
+```
 
-### Step-by-Step Process
+### 5. Deploy Frontend
+```bash
+npm run build
+npm run start
+```
 
-1. **Choose a Faucet**
-   - Start with Coinbase or thirdweb for easiest access
-   - Try multiple faucets if you need more ETH
+## 🔍 Post-Deployment Verification
 
-2. **Connect Your Wallet**
-   - Use MetaMask or your preferred wallet
-   - Ensure you're on Base Sepolia network
+### 1. Contract Verification
+- [ ] Contract deployed successfully
+- [ ] Contract verified on Basescan
+- [ ] All functions accessible
+- [ ] Events firing correctly
+- [ ] VMF token integration working
 
-3. **Request Testnet ETH**
-   - Enter your wallet address
-   - Complete any verification steps
-   - Wait for confirmation (usually 1-5 minutes)
+### 2. Frontend Verification
+- [ ] Frontend deployed successfully
+- [ ] Wallet connections working
+- [ ] Game functionality operational
+- [ ] Admin panel accessible
+- [ ] VMF token approval working
 
-4. **Verify Receipt**
-   - Check your wallet balance
-   - Verify on https://sepolia.basescan.org
+### 3. Security Verification
+- [ ] Access controls working
+- [ ] Emergency functions tested
+- [ ] Blacklist system operational
+- [ ] Pause functionality working
 
-### Recommended Faucet Order
+## 📊 Monitoring Setup
 
-1. **Coinbase Developer Platform** (easiest)
-2. **thirdweb Faucet** (no account needed)
-3. **Ethereum Ecosystem Faucet** (generous amounts)
-4. **Superchain Faucet** (more for authenticated users)
-5. **Other faucets** as needed
+### 1. Contract Monitoring
+```bash
+# Monitor contract events
+npx hardhat console --network base
+```
 
-## 🧪 Testing Pizza Party
+### 2. Frontend Monitoring
+- Set up error tracking (Sentry, LogRocket)
+- Monitor user interactions
+- Track performance metrics
 
-### Beta Testing Requirements
+### 3. Security Monitoring
+- Set up alerts for suspicious transactions
+- Monitor blacklist changes
+- Track emergency function calls
 
-- **Network**: Base Sepolia testnet
-- **Entry Fee**: 0.001 Base Sepolia ETH per game
-- **Gas Fees**: ~0.0001-0.001 Base Sepolia ETH per transaction
-- **Minimum Balance**: 0.01 Base Sepolia ETH recommended
+## 🔧 Configuration Management
 
-### Testing Process
+### Environment Variables
+```bash
+# Development
+NODE_ENV=development
+BASE_RPC_URL=https://mainnet.base.org
 
-1. **Deploy Contract**
-   ```bash
-   npm run deploy:testnet
-   ```
+# Production
+NODE_ENV=production
+BASE_RPC_URL=https://mainnet.base.org
+```
 
-2. **Get Testnet ETH**
-   - Use faucets listed above
-   - Get at least 0.01 Base Sepolia ETH
+### Network Configuration
+```typescript
+// hardhat.config.ts
+networks: {
+  base: {
+    url: process.env.BASE_RPC_URL,
+    accounts: [process.env.PRIVATE_KEY],
+    chainId: 8453,
+  },
+}
+```
 
-3. **Test Game Features**
-   - Daily game entries
-   - Weekly jackpot participation
-   - Referral system
-   - Toppings rewards
+## 🚨 Emergency Procedures
 
-4. **Monitor Transactions**
-   - Use https://sepolia.basescan.org
-   - Track gas usage and costs
+### 1. Contract Pause
+```bash
+# Pause contract in emergency
+npx hardhat console --network base
+> const contract = await ethers.getContractAt("PizzaParty", "0xCONTRACT_ADDRESS")
+> await contract.emergencyPause(true)
+```
 
-## 🔍 Troubleshooting
+### 2. Emergency Withdrawal
+```bash
+# Withdraw funds in emergency
+npx hardhat console --network base
+> const contract = await ethers.getContractAt("PizzaParty", "0xCONTRACT_ADDRESS")
+> await contract.emergencyWithdraw()
+```
+
+### 3. Blacklist Management
+```bash
+# Blacklist malicious address
+npx hardhat console --network base
+> const contract = await ethers.getContractAt("PizzaParty", "0xCONTRACT_ADDRESS")
+> await contract.setPlayerBlacklist("0xMALICIOUS_ADDRESS", true)
+```
+
+## 🔄 Update Procedures
+
+### 1. Contract Updates
+```bash
+# Deploy new contract
+npx hardhat run scripts/deploy.ts --network base
+
+# Verify new contract
+npx hardhat verify --network base 0xNEW_CONTRACT_ADDRESS "0x2213414893259b0C48066Acd1763e7fbA97859E5"
+
+# Update frontend
+# Update contract address in configuration
+```
+
+### 2. Frontend Updates
+```bash
+# Build new version
+npm run build
+
+# Deploy to hosting platform
+# (Vercel, Netlify, etc.)
+```
+
+### 3. Configuration Updates
+```bash
+# Update environment variables
+# Update contract addresses
+# Update RPC endpoints
+```
+
+## 📋 Deployment Checklist
+
+### Pre-deployment
+- [ ] Code review completed
+- [ ] Tests passing
+- [ ] Security audit completed
+- [ ] Environment configured
+- [ ] Team approval received
+- [ ] VMF token integration verified
+
+### Deployment
+- [ ] Contract deployed
+- [ ] Contract verified
+- [ ] Frontend deployed
+- [ ] Configuration updated
+- [ ] Monitoring active
+
+### Post-deployment
+- [ ] Functionality tested
+- [ ] Security verified
+- [ ] Performance monitored
+- [ ] Documentation updated
+- [ ] Team notified
+
+## 🛠️ Troubleshooting
 
 ### Common Issues
 
-#### "Insufficient Balance"
-```
-Solution:
-1. Get more Base Sepolia ETH from faucets
-2. Account for gas fees (~0.001 ETH per transaction)
-3. Keep some ETH for future transactions
-```
+#### Contract Deployment Fails
+```bash
+# Check gas settings
+npx hardhat run scripts/deploy.ts --network base --gas-price 1000000000
 
-#### "Wrong Network"
-```
-Solution:
-1. Switch wallet to Base Sepolia
-2. Add network if not available
-3. Refresh the page
-4. Reconnect wallet
+# Check network connection
+npx hardhat console --network base
 ```
 
-#### "Transaction Failed"
-```
-Solution:
-1. Check gas fees
-2. Ensure sufficient balance
-3. Try with higher gas limit
-4. Check network congestion
+#### Contract Verification Fails
+```bash
+# Verify manually on Basescan
+# Check constructor arguments
+# Verify network configuration
 ```
 
-#### "Faucet Not Working"
-```
-Solution:
-1. Try different faucet
-2. Wait 24 hours between requests
-3. Check faucet status
-4. Use alternative faucet
+#### Frontend Connection Issues
+```bash
+# Check RPC endpoint
+# Verify contract address
+# Check wallet connection
 ```
 
-### Gas Optimization
+#### VMF Token Issues
+```bash
+# Verify VMF token address
+# Check token approval
+# Verify token balance
+```
 
-- **Base Sepolia**: Generally low gas fees
-- **Recommended**: 1-2 gwei gas price
-- **Max Fee**: 5 gwei for reliability
-- **Priority Fee**: 0.1 gwei
-
-## 📊 Monitoring
-
-### Block Explorer
-- **URL**: https://sepolia.basescan.org
-- **Features**: Transaction tracking, contract verification
-- **Search**: By address, transaction hash, or block
-
-### Network Status
-- **Base Status**: https://status.base.org
-- **Network Stats**: https://basescan.org
-- **Gas Tracker**: https://basescan.org/gastracker
-
-## 🔗 Useful Links
-
-### Official Resources
-- **Base Documentation**: https://docs.base.org
-- **Base Sepolia Faucets**: https://docs.base.org/base-chain/tools/network-faucets
-- **Base Explorer**: https://basescan.org
-- **Base Sepolia Explorer**: https://sepolia.basescan.org
-
-### Community Resources
-- **Base Discord**: https://discord.gg/base
-- **Base Twitter**: https://twitter.com/buildonbase
-- **Base GitHub**: https://github.com/base-org
-
-## 🎯 Beta Testing Checklist
-
-### Pre-Testing
-- [ ] Wallet configured for Base Sepolia
-- [ ] Sufficient testnet ETH (0.01+)
-- [ ] Contract deployed to testnet
-- [ ] Environment variables set
-
-### Testing Tasks
-- [ ] Daily game entry
-- [ ] Weekly jackpot entry
-- [ ] Referral code generation
-- [ ] Toppings claiming
-- [ ] Wallet connection
-- [ ] Transaction monitoring
-
-### Post-Testing
-- [ ] Report any bugs
-- [ ] Provide feedback
-- [ ] Test edge cases
-- [ ] Document issues
+### Support Resources
+- **Documentation**: This repository
+- **Discord**: Pizza Party community
+- **GitHub Issues**: Bug reports
+- **Security**: vmf@vmfcoin.com
 
 ## 📞 Support
 
-### Technical Support
-- **Email**: vmf@vmfcoin.com
-- **GitHub Issues**: Report bugs and feature requests
-- **Discord**: Community support
+### Deployment Support
+- **Email**: deploy@pizzaparty.app
+- **Discord**: #deployment channel
+- **GitHub**: Issues and discussions
 
-### Faucet Issues
-- **Contact faucet providers directly**
-- **Try alternative faucets**
-- **Check faucet status pages**
+### Emergency Support
+- **24/7**: Emergency contact available
+- **Response Time**: 1 hour for critical issues
+- **Escalation**: Team lead contact available
 
 ---
 
-**Happy testing on Base Sepolia! 🍕**
-
-Remember: Base Sepolia ETH has no real value and is only for testing purposes. 
+**Remember**: Always test thoroughly in local development before mainnet deployment! 

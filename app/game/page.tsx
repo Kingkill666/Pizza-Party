@@ -6,6 +6,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useWallet } from '@/hooks/useWallet'
 import { WALLETS, initMobileOptimizations, isMobile, isIOS, isAndroid, isFarcaster } from '@/lib/wallet-config'
 import { createPizzaPartyContract } from '@/lib/contract-interactions'
+import { getVMFBalanceUltimate } from '@/lib/vmf-contract'
+import { 
+  earnDailyPlayToppings, 
+  earnVMFHoldingsToppings,
+  selectDailyJackpotWinners,
+  payDailyJackpotWinners,
+  isDailyJackpotTime,
+  getDailyJackpotAmount,
+  getRealTimeDailyPlayerCount,
+  getRealTimeJackpotValue
+} from '@/lib/jackpot-data'
 import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Clock, Users, Coins, Copy, Share2, ExternalLink, UsersIcon, AlertCircle, X, ArrowLeft } from 'lucide-react'
@@ -32,6 +43,12 @@ export default function GamePage() {
 
   const [playerCount, setPlayerCount] = useState(0)
   const [jackpot, setJackpot] = useState(0)
+  const [vmfBalance, setVmfBalance] = useState<string>('0')
+  const [dailyJackpotAmount, setDailyJackpotAmount] = useState(0)
+  const [dailyWinners, setDailyWinners] = useState<string[]>([])
+  const [isDailyDrawComplete, setIsDailyDrawComplete] = useState(false)
+  const [realTimeDailyPlayers, setRealTimeDailyPlayers] = useState(0)
+  const [realTimeJackpotValue, setRealTimeJackpotValue] = useState(0)
   const [timeLeftInWindow, setTimeLeftInWindow] = useState({
     hours: 14,
     minutes: 53,
@@ -123,6 +140,19 @@ export default function GamePage() {
     return localStorage.getItem(entryKey) === 'true'
   }
 
+  // Check VMF balance
+  const checkVMFBalance = async (address: string) => {
+    try {
+      const balance = await getVMFBalanceUltimate(address)
+      setVmfBalance(balance)
+      return parseFloat(balance)
+    } catch (error) {
+      console.error('Error checking VMF balance:', error)
+      setVmfBalance('0')
+      return 0
+    }
+  }
+
   // Handle game entry
   const handleEnterGame = async () => {
     if (!isConnected || !connection) {
@@ -135,6 +165,13 @@ export default function GamePage() {
       return
     }
 
+    // Check VMF balance before allowing entry
+    const balance = await checkVMFBalance(connection.address)
+    if (balance < 1) {
+      setGameError('You need at least 1 VMF to enter the game. Please get some VMF tokens first.')
+      return
+    }
+
     setIsProcessing(true)
     setGameError(null)
     setSuccess(null)
@@ -143,25 +180,30 @@ export default function GamePage() {
       // Create contract instance using window.ethereum as provider
       const contract = createPizzaPartyContract(window.ethereum)
       
-      // Enter the daily game with 0.001 ETH
+      // Enter the daily game with $1 VMF
       const txHash = await contract.enterDailyGame('')
       
-      // Mark as entered for today
-      const now = new Date()
-      const pstOffset = -8
-      const pstTime = new Date(now.getTime() + (pstOffset * 60 * 60 * 1000))
-      const isBeforeNoonPST = pstTime.getHours() < 12
-      const today = pstTime.toDateString()
-      const yesterday = new Date(pstTime.getTime() - (24 * 60 * 60 * 1000)).toDateString()
-      const gameDate = isBeforeNoonPST ? today : yesterday
-      const entryKey = `pizza_entry_${connection.address}_${gameDate}`
-      localStorage.setItem(entryKey, 'true')
+      // Earn toppings for daily play (only when wallet is connected)
+      if (isConnected && connection?.address) {
+        const earnedDaily = earnDailyPlayToppings(connection.address, isConnected)
+        if (earnedDaily) {
+          console.log('🍕 Earned daily play topping!')
+        }
+        
+        // Check VMF balance and earn VMF holdings toppings
+        const vmfBalance = await checkVMFBalance(connection.address)
+        if (vmfBalance > 0) {
+          earnVMFHoldingsToppings(connection.address, isConnected, vmfBalance)
+        }
+      }
       
       setSuccess('Transaction submitted!')
       console.log('✅ Game entry successful:', txHash)
       
-      // Update player count
+      // Update player count, VMF balance, and real-time data
       updatePlayerCount()
+      await checkVMFBalance(connection.address)
+      updateRealTimeData()
       
     } catch (error: any) {
       console.error('❌ Error entering game:', error)
@@ -358,12 +400,81 @@ export default function GamePage() {
     initializePlayerCount()
   }, [])
 
-  // Update player count when wallet connects or changes
+  // Update real-time data
+  const updateRealTimeData = async () => {
+    try {
+      // Get real-time daily player count
+      const dailyPlayers = getRealTimeDailyPlayerCount()
+      setRealTimeDailyPlayers(dailyPlayers)
+      
+      // Get real-time jackpot value
+      const jackpotValue = await getRealTimeJackpotValue()
+      setRealTimeJackpotValue(jackpotValue)
+      
+      console.log('📊 Real-time data updated:', {
+        dailyPlayers,
+        jackpotValue: `$${jackpotValue.toFixed(2)}`
+      })
+    } catch (error) {
+      console.error('❌ Error updating real-time data:', error)
+    }
+  }
+
+  // Update real-time data continuously
+  useEffect(() => {
+    updateRealTimeData()
+    
+    // Update every 5 seconds for real-time data
+    const interval = setInterval(() => {
+      updateRealTimeData()
+    }, 5000)
+    
+    return () => clearInterval(interval)
+  }, [])
+
+  // Update player count and VMF balance when wallet connects or changes
   useEffect(() => {
     if (isConnected && connection) {
       updatePlayerCount()
+      checkVMFBalance(connection.address)
     }
   }, [isConnected, connection])
+
+  // Daily jackpot draw logic
+  useEffect(() => {
+    const checkDailyJackpot = () => {
+      if (isDailyJackpotTime() && !isDailyDrawComplete) {
+        const performDailyDraw = async () => {
+          console.log("🏆 Time for daily jackpot draw!")
+          
+          // Get daily jackpot amount
+          const dailyAmount = getDailyJackpotAmount()
+          setDailyJackpotAmount(dailyAmount)
+          
+          // Select 8 daily winners
+          const selectedWinners = selectDailyJackpotWinners()
+          setDailyWinners(selectedWinners)
+          setIsDailyDrawComplete(true)
+          
+          if (selectedWinners.length > 0) {
+            // Pay daily winners
+            await payDailyJackpotWinners(selectedWinners, dailyAmount)
+            console.log("✅ Daily jackpot draw completed!")
+          } else {
+            console.log("⚠️ No players found for daily jackpot draw")
+          }
+        }
+        
+        performDailyDraw()
+      }
+    }
+
+    // Check every minute for daily jackpot time
+    const interval = setInterval(checkDailyJackpot, 60000)
+    checkDailyJackpot() // Check immediately
+
+    return () => clearInterval(interval)
+  }, [isDailyDrawComplete])
 
   // Auto-hide success/error messages after 5 seconds
   useEffect(() => {
@@ -452,46 +563,9 @@ export default function GamePage() {
               </Link>
             </div>
             
-            {/* MASSIVE Pizza Party Title */}
-            <div className="mb-4">
-              <div
-                className="text-8xl font-black transform -rotate-3 drop-shadow-2xl"
-                style={{
-                  ...customFontStyle,
-                  color: "#DC2626",
-                  textShadow: "4px 4px 0px #991B1B, 8px 8px 0px #7F1D1D, 12px 12px 20px rgba(0,0,0,0.5)",
-                  letterSpacing: "3px",
-                  fontWeight: "900",
-                  WebkitTextStroke: "2px #450A0A",
-                  background: "linear-gradient(45deg, #DC2626, #EF4444, #F87171)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  filter: "drop-shadow(0 0 6px #DC2626)",
-                }}
-              >
-                PIZZA
-              </div>
-              <div style={{ height: "10px" }}></div>
-              <div
-                className="text-8xl font-black transform -rotate-3 drop-shadow-2xl"
-                style={{
-                  ...customFontStyle,
-                  color: "#DC2626",
-                  textShadow: "4px 4px 0px #991B1B, 8px 8px 0px #7F1D1D, 12px 12px 20px rgba(0,0,0,0.5)",
-                  letterSpacing: "3px",
-                  fontWeight: "900",
-                  WebkitTextStroke: "2px #450A0A",
-                  background: "linear-gradient(45deg, #DC2626, #EF4444, #F87171)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  filter: "drop-shadow(0 0 6px #DC2626)",
-                }}
-              >
-                PARTY
-              </div>
-            </div>
+
             
-            <CardTitle className="text-4xl text-red-800" style={customFontStyle}>
+            <CardTitle className="text-red-800" style={{...customFontStyle, fontSize: '32px'}}>
               8 Slices, 8 Winners!
             </CardTitle>
             <p className="text-2xl text-gray-700 text-center" style={customFontStyle}>
@@ -554,7 +628,13 @@ export default function GamePage() {
               onClick={handleEnterGame}
               disabled={isProcessing}
               >
-              {isProcessing ? 'Processing...' : 'ENTER GAME .001 Base Sepolia'}
+              {isProcessing ? 'Processing...' : (
+                <>
+                  <img src="/images/pepperoni-art.png" alt="Pizza Slice" className="w-6 h-6 mr-2" />
+                  ENTER GAME $1 VMF
+                  <img src="/images/pepperoni-art.png" alt="Pizza Slice" className="w-6 h-6 ml-2" />
+                </>
+              )}
               </Button>
 
             {/* Wallet Status Display */}
@@ -563,6 +643,14 @@ export default function GamePage() {
                 <p className="text-green-800 font-bold text-sm" style={customFontStyle}>
                   ✅ Connected to {connection.walletName || 'Wallet'} {connection.address?.slice(0, 6)}...{connection.address?.slice(-4)}
                 </p>
+                <p className="text-green-700 text-xs mt-1" style={customFontStyle}>
+                  💰 VMF Balance: {parseFloat(vmfBalance).toFixed(2)} VMF
+                </p>
+                {parseFloat(vmfBalance) < 1 && (
+                  <p className="text-red-600 text-xs mt-1 font-bold" style={customFontStyle}>
+                    ⚠️ You need at least 1 VMF to play!
+                  </p>
+                )}
               </div>
             )}
 
@@ -576,9 +664,25 @@ export default function GamePage() {
                     fontSize: "1.25rem",
                   }}
                 >
-                  🏆 Weekly Jackpot 🏆
+                  <img src="/images/star-favicon.png" alt="Star" className="w-6 h-6 rounded-full mx-1" />
+                  Weekly Jackpot
+                  <img src="/images/star-favicon.png" alt="Star" className="w-6 h-6 rounded-full mx-1" />
                 </Button>
               </Link>
+
+            {/* Leaderboard Button */}
+            <Link href="/leaderboard">
+              <Button
+                className="w-full bg-green-600 hover:bg-green-700 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-green-800 shadow-lg transform hover:scale-105 transition-all"
+                style={{
+                  ...customFontStyle,
+                  letterSpacing: "1px",
+                  fontSize: "1.25rem",
+                }}
+              >
+                🏆 LEADERBOARD 🏆
+              </Button>
+            </Link>
 
             {/* Invite Friends Button */}
               <Button
@@ -599,7 +703,7 @@ export default function GamePage() {
 
             {/* Wallet Required Hint */}
             {!isConnected && (
-              <p className="text-xs text-gray-500 text-center mt-1" style={customFontStyle}>
+              <p className="text-xs text-gray-500 text-center -mt-1" style={customFontStyle}>
                 💡 Connect wallet to invite friends
               </p>
             )}
@@ -652,7 +756,7 @@ export default function GamePage() {
                   Players Today
                 </p>
                 <p className="text-xl font-bold text-blue-800" style={customFontStyle}>
-                  {playerCount.toLocaleString()}
+                  {realTimeDailyPlayers.toLocaleString()}
                 </p>
               </div>
               <div className="bg-green-100 p-3 rounded-lg text-center">
@@ -661,25 +765,12 @@ export default function GamePage() {
                   Jackpot
                 </p>
                 <p className="text-xl font-bold text-green-800" style={customFontStyle}>
-                  ${jackpot.toLocaleString()}
+                  ${realTimeJackpotValue.toFixed(2)} VMF
                 </p>
               </div>
             </div>
 
-            {/* Game Rules - Moved to BOTTOM */}
-            <div className="bg-gray-50 p-2 rounded-lg border border-gray-200">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <span className="text-sm">🎯</span>
-                <p className="text-sm font-semibold text-gray-800" style={customFontStyle}>
-                  Game Rules:
-                </p>
-              </div>
-              <ul className="space-y-1 text-xs text-gray-700" style={customFontStyle}>
-                <li>• One entry per wallet per day</li>
-                <li>• Equal chance for all players</li>
-                <li>• New game starts daily at 12pm PST</li>
-              </ul>
-            </div>
+
           </CardContent>
         </Card>
 
@@ -984,39 +1075,70 @@ export default function GamePage() {
               )}
 
               {/* Show all wallets on both mobile and desktop */}
-              {WALLETS.map((wallet) => (
-                <Button
-                  key={wallet.id}
-                  onClick={() => handleWalletConnect(wallet.id)}
-                  disabled={isConnecting === wallet.id}
-                  className={`w-full p-4 sm:p-4 rounded-xl border-2 border-gray-200 text-white font-bold text-left flex items-center justify-between hover:scale-105 transition-all min-h-[60px] sm:min-h-[70px] touch-manipulation ${wallet.color}`}
-                  style={customFontStyle}
-                >
-                  <div className="flex items-center flex-1 min-w-0 pr-4">
-                    {wallet.iconImage ? (
-                      <Image
-                        src={wallet.iconImage || "/placeholder.svg"}
-                        alt={`${wallet.name} icon`}
-                        width={24}
-                        height={24}
-                        className="w-6 h-6 sm:w-6 sm:h-6 mr-3 sm:mr-3 flex-shrink-0 rounded"
-                      />
-                    ) : (
-                      <span className="text-2xl sm:text-2xl mr-3 sm:mr-3 flex-shrink-0">{wallet.icon}</span>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-lg sm:text-lg font-bold mb-1 sm:mb-1">{wallet.name}</div>
+              {WALLETS.map((wallet) => {
+                // Define colors for each wallet based on the image
+                const getWalletStyle = (walletName: string) => {
+                  switch (walletName.toLowerCase()) {
+                    case 'metamask':
+                      return 'bg-orange-500 hover:bg-orange-600 text-white border-orange-600'
+                    case 'coinbase wallet':
+                      return 'bg-blue-600 hover:bg-blue-700 text-white border-blue-700'
+                    case 'trust wallet':
+                      return 'bg-blue-600 hover:bg-blue-700 text-white border-blue-700'
+                    case 'rainbow':
+                      return 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white border-purple-600'
+                    case 'phantom':
+                      return 'bg-purple-600 hover:bg-purple-700 text-white border-purple-700'
+                    default:
+                      return 'bg-gray-600 hover:bg-gray-700 text-white border-gray-700'
+                  }
+                }
+
+                return (
+                  <Button
+                    key={wallet.id}
+                    onClick={() => handleWalletConnect(wallet.id)}
+                    disabled={isConnecting === wallet.id}
+                    className={`w-full font-bold py-6 px-4 rounded-xl border-2 shadow-lg transform hover:scale-105 transition-all flex items-center justify-between text-lg ${getWalletStyle(wallet.name)}`}
+                    style={customFontStyle}
+                  >
+                    <div className="flex items-center gap-3">
+                      {wallet.iconImage ? (
+                        <Image
+                          src={wallet.iconImage}
+                          alt={wallet.name}
+                          width={24}
+                          height={24}
+                          className="w-6 h-6"
+                          onError={(e) => {
+                            // Fallback to emoji if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const emojiSpan = target.nextElementSibling as HTMLElement;
+                            if (emojiSpan) {
+                              emojiSpan.style.display = 'block';
+                            }
+                          }}
+                        />
+                      ) : null}
+                      <span 
+                        className={`text-lg ${wallet.iconImage ? 'hidden' : 'block'}`}
+                        style={{ display: wallet.iconImage ? 'none' : 'block' }}
+                      >
+                        {wallet.icon}
+                      </span>
+                      <span>{wallet.name}</span>
                     </div>
-                  </div>
-                  <div className="flex-shrink-0">
-                    {isConnecting === wallet.id ? (
-                      <div className="animate-spin rounded-full h-5 w-5 sm:h-5 sm:w-5 border-b-2 border-white"></div>
-                    ) : (
-                      <ExternalLink className="h-4 w-4 sm:h-4 sm:w-4" />
-                    )}
-                  </div>
-                </Button>
-              ))}
+                    <div className="flex-shrink-0">
+                      {isConnecting === wallet.id ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      ) : (
+                        <ExternalLink className="h-4 w-4 text-white" />
+                      )}
+                    </div>
+                  </Button>
+                )
+              })}
 
               {/* Info Section */}
               <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 mt-6">

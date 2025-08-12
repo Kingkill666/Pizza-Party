@@ -21,7 +21,7 @@ npm run dev
 ## 🎮 Game Overview
 
 ### Daily Game
-- **Entry Fee**: 0.001 Base Sepolia ETH (for beta testing)
+- **Entry Fee**: $1 VMF tokens
 - **Jackpot**: 100% of daily entry fees
 - **Winners**: 8 random daily winners
 - **Frequency**: One entry per wallet per day
@@ -38,14 +38,14 @@ npm run dev
 ### Daily Jackpot Winners
 - **Selection**: 8 random winners selected from all daily players
 - **Randomness**: Secure on-chain randomness using FreeRandomness contract
-- **Payout**: Automatic Base Sepolia ETH distribution to winners' wallets
+- **Payout**: Automatic VMF token distribution to winners' wallets
 - **Timing**: Daily at 12pm PST when game ends
 - **Process**: Fully automated - no manual intervention required
 
 ### Weekly Jackpot Winners  
 - **Selection**: 10 random winners selected from all weekly players
 - **Randomness**: Secure on-chain randomness using FreeRandomness contract
-- **Payout**: Automatic Base Sepolia ETH distribution to winners' wallets
+- **Payout**: Automatic VMF token distribution to winners' wallets
 - **Timing**: Weekly on Monday at 12pm PST
 - **Process**: Fully automated - no manual intervention required
 
@@ -59,14 +59,14 @@ npm run dev
 1. **Game End Detection**: System automatically detects when daily/weekly games end
 2. **Winner Selection**: 8 daily winners or 10 weekly winners selected randomly
 3. **Prize Calculation**: Total jackpot divided equally among winners
-4. **Automatic Transfer**: Base Sepolia ETH sent directly to winners' wallets
+4. **Automatic Transfer**: VMF tokens sent directly to winners' wallets
 5. **Transaction Verification**: All transfers verified on-chain
 6. **New Game Start**: New game automatically starts after payout
 
 ### Payout Example
-- **Daily Jackpot**: 100 players × 0.001 ETH = 0.1 ETH total
-- **Prize per Winner**: 0.1 ETH ÷ 8 winners = 0.0125 ETH each
-- **Automatic Transfer**: Each winner receives 0.0125 Base Sepolia ETH directly to their wallet
+- **Daily Jackpot**: 100 players × $1 VMF = 100 VMF total
+- **Prize per Winner**: 100 VMF ÷ 8 winners = 12.5 VMF each
+- **Automatic Transfer**: Each winner receives 12.5 VMF tokens directly to their wallet
 
 ### Security Features
 - ✅ **No Manual Intervention**: Fully automated system
@@ -92,10 +92,9 @@ function drawDailyWinners() external {
     address[] memory winners = _selectWinners(DAILY_WINNERS_COUNT, totalEntries);
     uint256 prizePerWinner = currentDailyJackpot / DAILY_WINNERS_COUNT;
     
-    // Automatic ETH transfer to winners
+    // Automatic VMF token transfer to winners
     for (uint256 i = 0; i < winners.length; i++) {
-        (bool success, ) = winners[i].call{value: prizePerWinner}("");
-        require(success, "Prize transfer failed");
+        IERC20(vmfToken).transfer(winners[i], prizePerWinner);
     }
 }
 ```
@@ -112,7 +111,7 @@ The contract emits comprehensive events for monitoring:
 - **Multi-Wallet Support**: MetaMask, Coinbase, Trust, Rainbow, Phantom
 - **Mobile Optimization**: Automatic mobile browser detection and deep linking
 - **Security Disconnect**: Complete localStorage cleanup and session management
-- **Network Switching**: Automatic Base Sepolia network detection and switching
+- **Network Switching**: Automatic Base Mainnet network detection and switching
 
 ### Gas Efficiency Features
 - **Batch Processing**: Gas-optimized operations for multiple players
@@ -120,30 +119,25 @@ The contract emits comprehensive events for monitoring:
 - **Event Optimization**: Minimal event emissions for cost reduction
 - **Memory Management**: Proper cleanup of temporary data structures
 
-## 🧪 Beta Testing on Base Sepolia
+## 🚀 Live on Base Mainnet
 
-### Testnet Information
-- **Network**: Base Sepolia Testnet
-- **Chain ID**: 84532
-- **RPC URL**: https://sepolia.base.org
-- **Block Explorer**: https://sepolia.basescan.org
-- **Entry Fee**: 0.001 Base Sepolia ETH (for testing)
+### Mainnet Information
+- **Network**: Base Mainnet
+- **Chain ID**: 8453
+- **RPC URL**: https://mainnet.base.org
+- **Block Explorer**: https://basescan.org
+- **Entry Fee**: $1 VMF tokens
+- **VMF Token Address**: 0x2213414893259b0C48066Acd1763e7fbA97859E5
 
-### Recommended Base Sepolia ETH Faucets
-For beta testing, you'll need Base Sepolia ETH for gas fees. Get free testnet ETH from:
-
-- **Chainlink Faucet**: https://faucets.chain.link/base-sepolia
-- **QuickNode Faucet**: https://faucet.quicknode.com/base/sepolia
-
-### Adding Base Sepolia to MetaMask
+### Adding Base Mainnet to MetaMask
 1. Open MetaMask
 2. Click network dropdown
-3. Select "Base Sepolia" or add manually:
-   - **Network Name**: Base Sepolia
-   - **RPC URL**: https://sepolia.base.org
-   - **Chain ID**: 84532
+3. Select "Base" or add manually:
+   - **Network Name**: Base
+   - **RPC URL**: https://mainnet.base.org
+   - **Chain ID**: 8453
    - **Currency Symbol**: ETH
-   - **Block Explorer**: https://sepolia.basescan.org
+   - **Block Explorer**: https://basescan.org
 
 ## 🔒 Security Features
 
@@ -181,6 +175,7 @@ app/
 ├── page.tsx               # Main landing page
 ├── game/page.tsx          # Game interface
 ├── jackpot/page.tsx       # Jackpot display
+├── leaderboard/page.tsx   # Leaderboard display
 ├── admin/page.tsx         # Admin panel
 └── debug/page.tsx         # Debug tools
 
@@ -233,12 +228,6 @@ lib/
 - **Social Sharing** - Referral code sharing
 
 ## 🚀 Deployment
-
-### Testnet Deployment
-```bash
-# Deploy to Base Sepolia
-npx hardhat run scripts/deploy.ts --network baseSepolia
-```
 
 ### Mainnet Deployment
 ```bash
@@ -312,7 +301,6 @@ npx hardhat run scripts/deploy.ts --network localhost
 ```bash
 # .env
 BASE_RPC_URL=https://mainnet.base.org
-BASE_SEPOLIA_RPC_URL=https://sepolia.base.org
 BASESCAN_API_KEY=your_api_key
 PRIVATE_KEY=your_private_key
 ```
@@ -323,7 +311,7 @@ PRIVATE_KEY=your_private_key
 - **README-SMART-CONTRACTS.md** - Smart contract documentation
 - **SECURITY.md** - Security documentation
 - **DEPLOYMENT.md** - Deployment guide
-- **BETA_USER_GUIDE.md** - Beta testing guide
+- **BETA_USER_GUIDE.md** - User guide
 
 ### Key Features Documented
 - **Game Mechanics** - Complete game rules

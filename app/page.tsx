@@ -386,7 +386,23 @@ export default function HomePage() {
                     minHeight: deviceInfo.isMobile ? "56px" : "auto",
                   }}
                 >
-                  🏆 Weekly Jackpot 🏆
+                  <img src="/images/star-favicon.png" alt="Star" className="w-6 h-6 rounded-full mx-1" />
+                  Weekly Jackpot
+                  <img src="/images/star-favicon.png" alt="Star" className="w-6 h-6 rounded-full mx-1" />
+                </Button>
+              </Link>
+
+              <Link href="/leaderboard">
+                <Button
+                  className="w-full bg-green-600 hover:bg-green-700 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-green-800 shadow-lg transform hover:scale-105 transition-all touch-manipulation"
+                  style={{
+                    ...customFontStyle,
+                    letterSpacing: "1px",
+                    fontSize: deviceInfo.isMobile ? "1.1rem" : "1.25rem",
+                    minHeight: deviceInfo.isMobile ? "56px" : "auto",
+                  }}
+                >
+                  🏆 LEADERBOARD 🏆
                 </Button>
               </Link>
 
@@ -465,45 +481,70 @@ export default function HomePage() {
               )}
 
               {/* Show all wallets on both mobile and desktop */}
-              {WALLETS.map((wallet) => (
-                <Button
-                  key={wallet.id}
-                  onClick={() => handleWalletConnect(wallet.id)}
-                  disabled={isConnecting === wallet.id}
-                  className={`w-full p-4 sm:p-4 rounded-xl border-2 border-gray-200 text-white font-bold text-left flex items-center justify-between hover:scale-105 transition-all min-h-[60px] sm:min-h-[70px] touch-manipulation ${wallet.color}`}
-                  style={customFontStyle}
-                >
-                  <div className="flex items-center flex-1 min-w-0 pr-4">
-                    {wallet.iconImage ? (
-                      <Image
-                        src={wallet.iconImage || "/placeholder.svg"}
-                        alt={`${wallet.name} icon`}
-                        width={24}
-                        height={24}
-                        className="w-6 h-6 sm:w-6 sm:h-6 mr-3 sm:mr-3 flex-shrink-0 rounded"
-                      />
-                    ) : (
-                      <span className="text-2xl sm:text-2xl mr-3 sm:mr-3 flex-shrink-0">{wallet.icon}</span>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-lg sm:text-lg font-bold mb-1 sm:mb-1">{wallet.name}</div>
-                      {/* Only show description on desktop */}
-                      {!deviceInfo.isMobile && (
-                        <div className="text-xs sm:text-xs opacity-90 leading-relaxed whitespace-normal">
-                          {wallet.description}
-                        </div>
+              {WALLETS.map((wallet) => {
+                // Define colors for each wallet based on the image
+                const getWalletStyle = (walletName: string) => {
+                  switch (walletName.toLowerCase()) {
+                    case 'metamask':
+                      return 'bg-orange-500 hover:bg-orange-600 text-white border-orange-600'
+                    case 'coinbase wallet':
+                      return 'bg-blue-600 hover:bg-blue-700 text-white border-blue-700'
+                    case 'trust wallet':
+                      return 'bg-blue-600 hover:bg-blue-700 text-white border-blue-700'
+                    case 'rainbow':
+                      return 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white border-purple-600'
+                    case 'phantom':
+                      return 'bg-purple-600 hover:bg-purple-700 text-white border-purple-700'
+                    default:
+                      return 'bg-gray-600 hover:bg-gray-700 text-white border-gray-700'
+                  }
+                }
+
+                return (
+                  <Button
+                    key={wallet.id}
+                    onClick={() => handleWalletConnect(wallet.id)}
+                    disabled={isConnecting === wallet.id}
+                    className={`w-full font-bold py-6 px-4 rounded-xl border-2 shadow-lg transform hover:scale-105 transition-all flex items-center justify-between text-lg ${getWalletStyle(wallet.name)}`}
+                    style={customFontStyle}
+                  >
+                    <div className="flex items-center gap-3">
+                      {wallet.iconImage ? (
+                        <Image
+                          src={wallet.iconImage}
+                          alt={wallet.name}
+                          width={24}
+                          height={24}
+                          className="w-6 h-6"
+                          onError={(e) => {
+                            // Fallback to emoji if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const emojiSpan = target.nextElementSibling as HTMLElement;
+                            if (emojiSpan) {
+                              emojiSpan.style.display = 'block';
+                            }
+                          }}
+                        />
+                      ) : null}
+                      <span 
+                        className={`text-lg ${wallet.iconImage ? 'hidden' : 'block'}`}
+                        style={{ display: wallet.iconImage ? 'none' : 'block' }}
+                      >
+                        {wallet.icon}
+                      </span>
+                      <span>{wallet.name}</span>
+                    </div>
+                    <div className="flex-shrink-0">
+                      {isConnecting === wallet.id ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      ) : (
+                        <ExternalLink className="h-4 w-4 text-white" />
                       )}
                     </div>
-                  </div>
-                  <div className="flex-shrink-0">
-                    {isConnecting === wallet.id ? (
-                      <div className="animate-spin rounded-full h-5 w-5 sm:h-5 sm:w-5 border-b-2 border-white"></div>
-                    ) : (
-                      <ExternalLink className="h-4 w-4 sm:h-4 sm:w-4" />
-                    )}
-                  </div>
-                </Button>
-              ))}
+                  </Button>
+                )
+              })}
 
               {/* Info Section */}
               <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 mt-6">

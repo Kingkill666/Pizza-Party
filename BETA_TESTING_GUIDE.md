@@ -1,255 +1,348 @@
-# 🍕 Pizza Party Beta Testing Guide
+# Production Testing Guide
 
-Welcome to the Pizza Party beta! We're excited to have you test our decentralized gaming platform on the Base blockchain using VMF coin. Your feedback is crucial in making Pizza Party the best gaming experience possible.
+## 🎮 Welcome to Pizza Party Production Testing!
+
+This guide will help you understand how to test the Pizza Party dApp in production on Base Mainnet and provide valuable feedback for improvements.
 
 ## 🚀 Getting Started
 
-### Prerequisites
-- **Wallet**: MetaMask, Coinbase Wallet, Trust Wallet, or any Base-compatible wallet
-- **Network**: Base Sepolia testnet (recommended for beta testing)
-- **VMF Tokens**: Available on Base network
-- **Base Sepolia ETH**: For gas fees (get from faucets listed below)
+### 1. Connect Your Wallet
+- **Supported Wallets**: MetaMask, Coinbase Wallet, Trust Wallet, Rainbow, Phantom, Farcaster
+- **Network**: Base Mainnet
+- **Token**: VMF tokens required for game entry
 
-### Quick Setup
-1. **Add Base Sepolia Network** to your wallet:
-   - **Network Name**: Base Sepolia
-   - **RPC URL**: https://sepolia.base.org
-   - **Chain ID**: 84532
+#### **How to Switch to Base Mainnet (MetaMask):**
+1. **Open MetaMask**
+2. **Click the network dropdown** (top of wallet)
+3. **Select "Base"** from the list
+4. **If Base isn't listed**, click "Add network" and enter:
+   - **Network Name**: Base
+   - **RPC URL**: https://mainnet.base.org
+   - **Chain ID**: 8453
    - **Currency Symbol**: ETH
-   - **Block Explorer**: https://sepolia.basescan.org
+   - **Block Explorer**: https://basescan.org
 
-2. **Get Base Sepolia ETH** from these faucets:
-   - [Chainlink Faucet](https://faucets.chain.link/base-sepolia)
-   - [QuickNode Faucet](https://faucet.quicknode.com/base/sepolia)
+### 2. Get VMF Tokens
+You'll need VMF tokens to play the game. Here's how to get them:
 
-## 🎮 Testing Areas
+#### **VMF Token Information:**
+- **Token Address**: 0x2213414893259b0C48066Acd1763e7fbA97859E5
+- **Entry Fee**: $1 VMF tokens per game
+- **Gas Fees**: ETH required for transaction fees
 
-### Core Game Features
-- [ ] **Daily Game Entry** - Test entering the daily jackpot
-- [ ] **Weekly Jackpot** - Test weekly game participation
-- [ ] **Referral System** - Test referral code generation and sharing
-- [ ] **Toppings System** - Test claiming and using toppings
-- [ ] **Wallet Integration** - Test all supported wallets
+#### **How to Get VMF Tokens:**
+1. **Visit a DEX** (like Uniswap on Base)
+2. **Swap ETH for VMF tokens**
+3. **Ensure you have enough for entry fees**
+4. **Keep some ETH for gas fees**
 
-### Platform Features
-- [ ] **Web App** - Test on desktop and mobile browsers
-- [ ] **Farcaster Integration** - Test Farcaster mini-app functionality
-- [ ] **Mobile Experience** - Test responsive design
-- [ ] **Cross-platform** - Test on different devices and browsers
+#### **Important Notes:**
+- **VMF tokens have real value** - this is mainnet
+- **Keep some ETH for gas fees** - transactions cost ~0.001-0.01 ETH
+- **Entry fee is $1 VMF** - ensure you have sufficient balance
 
-### Technical Features
-- [ ] **Smart Contract Interactions** - Test all blockchain transactions
-- [ ] **Gas Optimization** - Monitor gas usage and costs
-- [ ] **Error Handling** - Test various error scenarios
-- [ ] **Network Switching** - Test wallet network changes
+### 3. Start Playing
+- **Daily Game**: Enter once per day for $1 VMF tokens
+- **Weekly Jackpot**: Earn toppings to participate in weekly draws
+- **Referrals**: Invite friends to earn bonus toppings
+- **All gameplay uses real VMF tokens for jackpots**
 
-## 🐛 How to Report Bugs
+## 🎯 Game Mechanics
 
-### Primary Method: GitHub Issues
-1. **Go to**: https://github.com/Kingkill666/Pizza-Party/issues
-2. **Click**: "New Issue"
-3. **Select**: "Bug Report" template
-4. **Fill out**: All required fields with detailed information
-5. **Submit**: Your bug report
+### Daily Game
+- **Entry Fee**: $1 VMF tokens
+- **Winners**: 8 random winners per day
+- **Prize**: Equal split of daily jackpot (all entry fees collected)
+- **Timing**: New game starts daily at 12pm PST
 
-### Bug Report Template Fields
-- **Bug Description**: Clear description of the issue
-- **Steps to Reproduce**: Step-by-step instructions
-- **Expected vs Actual Behavior**: What should happen vs what happened
-- **Environment**: Wallet, network, browser, device
-- **Screenshots/Videos**: Visual evidence of the bug
-- **Transaction Details**: Hash, block number, gas used (if applicable)
-- **Technical Details**: Console errors, network tab info
+### Weekly Jackpot
+- **Prize Pool**: Total toppings claimed by all users
+- **Funding**: Automatically from VMF token contract
+- **Winners**: 10 random winners
+- **Timing**: Draw every Monday at 12pm PST
+- **Weighting**: More toppings = higher chance to win
 
-### Alternative Reporting Methods
-- **Email**: vmf@vmfcoin.com (for private or urgent issues)
-- **Telegram**: https://t.me/vmfcoin_official
-- **X/Twitter**: https://x.com/VMFCoin
+### Toppings System
+- **Daily Play**: 1 topping per day (earned by playing)
+- **VMF Holdings**: 3 toppings per 10 VMF held
+- **Referrals**: 2 toppings per successful referral
+- **Claiming Window**: Sunday 12pm PST to Monday 12pm PST
 
-## 📋 Testing Checklist
+## 📱 Multi-Platform Support
 
-### Daily Game Testing
-- [ ] Connect wallet successfully
-- [ ] Enter daily game with 1 VMF
-- [ ] Verify transaction confirmation
-- [ ] Check jackpot updates
-- [ ] Test multiple entries (should be blocked)
-- [ ] Test wallet disconnection/reconnection
+### Desktop Experience
+- **Full Features**: All functionality available
+- **Multiple Wallets**: Support for all wallet types
+- **Enhanced UI**: Optimized for larger screens
 
-### Weekly Jackpot Testing
-- [ ] View weekly jackpot display
-- [ ] Enter weekly game
-- [ ] Check toppings influence on odds
-- [ ] Verify jackpot calculations
-- [ ] Test winner selection (if applicable)
+### Mobile Experience
+- **Responsive Design**: Works on all mobile devices
+- **Wallet Integration**: Native wallet app support
+- **Touch Optimized**: Large buttons and touch-friendly interface
 
-### Referral System Testing
-- [ ] Generate referral code
-- [ ] Share referral code
-- [ ] Test referral link functionality
-- [ ] Verify referral rewards
-- [ ] Check referral tracking
+### Farcaster Integration
+- **Social Gaming**: Share your referral code
+- **Frame Support**: Play directly in Farcaster
+- **Community Features**: Connect with other players
 
-### Toppings System Testing
-- [ ] Claim daily toppings
-- [ ] Check VMF holdings for toppings
-- [ ] Use toppings in weekly game
-- [ ] Verify topping calculations
-- [ ] Test topping expiration (if applicable)
+## 🔒 Security Features
 
-### Wallet Integration Testing
-- [ ] MetaMask connection
-- [ ] Coinbase Wallet connection
-- [ ] Trust Wallet connection
-- [ ] Rainbow Wallet connection
-- [ ] Phantom Wallet connection
-- [ ] Network switching
-- [ ] Balance updates
+### Smart Contract Security
+- **Reentrancy Protection**: Prevents attack vectors
+- **Access Control**: Admin functions restricted
+- **Input Validation**: All inputs sanitized
+- **Emergency Controls**: Pause functionality available
 
-### UI/UX Testing
-- [ ] Responsive design on mobile
-- [ ] Button functionality
-- [ ] Modal interactions
-- [ ] Loading states
-- [ ] Error messages
-- [ ] Success confirmations
-- [ ] Navigation between pages
+### Frontend Security
+- **On-chain Data**: All critical data from blockchain
+- **Wallet Security**: Secure connection protocols
+- **Input Sanitization**: User input validation
+- **Rate Limiting**: Prevents spam attacks
 
-### Performance Testing
-- [ ] Page load times
-- [ ] Transaction confirmation times
-- [ ] Gas usage optimization
-- [ ] Memory usage
-- [ ] Network requests
+## 🎁 Referral System
 
-## 🔍 Common Issues to Test
+### How It Works
+1. **Create Referral**: Generate your unique referral code
+2. **Share Code**: Share with friends via social media
+3. **Earn Rewards**: Get 2 toppings per successful referral
+4. **Track Progress**: Monitor your referral success
 
-### Wallet Connection Issues
-- **Problem**: Wallet not connecting
-- **Test**: Try different wallets, check network settings
-- **Report**: Include wallet type, browser, error messages
+### Sharing Options
+- **Social Media**: Twitter, Facebook, Telegram
+- **Messaging**: WhatsApp, Discord, Reddit
+- **Direct Link**: Share your referral URL
+- **QR Code**: Mobile-friendly sharing
 
-### Transaction Failures
-- **Problem**: Transactions failing
-- **Test**: Check gas fees, wallet balance, network
-- **Report**: Include transaction hash, error message, gas settings
+## 🏆 Winning Strategies
 
-### UI Display Issues
-- **Problem**: Elements not displaying correctly
-- **Test**: Different screen sizes, browsers, devices
-- **Report**: Include screenshots, device info, browser version
+### Daily Game Tips
+- **Consistent Play**: Enter every day for maximum chances
+- **Timing**: Enter early in the game window
+- **Network**: Ensure stable internet connection
+- **Gas Fees**: Keep ETH for transaction fees
 
-### Game Logic Issues
-- **Problem**: Incorrect game behavior
-- **Test**: Follow exact steps, check blockchain state
-- **Report**: Include detailed steps, expected vs actual results
+### Weekly Jackpot Tips
+- **Earn Toppings**: Maximize your topping count
+- **Referrals**: Invite friends to earn bonus toppings
+- **VMF Holdings**: Hold more VMF for extra toppings
+- **Claim Toppings**: Claim during the Sunday-Monday window
 
-## 📊 Reporting Guidelines
+### General Tips
+- **Wallet Security**: Never share private keys
+- **Network Selection**: Always use Base Mainnet
+- **Transaction Confirmation**: Wait for confirmations
+- **Error Handling**: Check error messages carefully
 
-### High Priority Issues
-- **Game-breaking bugs** - Report immediately
-- **Security vulnerabilities** - Use security template
-- **Financial issues** - Report with transaction details
-- **Data loss** - Report with backup information
+## 🐛 Known Issues
 
-### Medium Priority Issues
-- **UI/UX problems** - Include screenshots
-- **Performance issues** - Include timing data
-- **Feature requests** - Use feature request template
+### Current Limitations
+- **Network Congestion**: May experience delays during peak times
+- **Wallet Compatibility**: Some wallets may need updates
+- **Mobile Optimization**: Some features optimized for desktop
+- **Error Messages**: Some error messages may be technical
 
-### Low Priority Issues
-- **Cosmetic issues** - Still important to report
-- **Minor inconveniences** - Help improve user experience
+### Workarounds
+- **Retry Transactions**: If transaction fails, try again
+- **Refresh Page**: Reload if UI becomes unresponsive
+- **Check Network**: Ensure you're on Base Mainnet
+- **Clear Cache**: Clear browser cache if needed
 
-## 🏆 Beta Tester Rewards
+## 📊 Analytics & Tracking
 
-### Recognition
-- **Beta Tester Badge** - Special recognition for contributors
-- **Early Access** - First to try new features
-- **Community Recognition** - Featured in updates
+### What We Track
+- **Game Participation**: Daily and weekly entry counts
+- **Referral Activity**: Successful referral tracking
+- **Wallet Usage**: Which wallets are most popular
+- **Error Rates**: Technical issues and solutions
 
-### Rewards System
-- **Bug Reports** - Earn rewards for quality reports
-- **Feature Suggestions** - Recognition for helpful ideas
-- **Community Support** - Help other testers
+### Privacy Protection
+- **No Personal Data**: We don't collect personal information
+- **Anonymous Analytics**: All data anonymized
+- **Wallet Privacy**: Your wallet data stays private
+- **Opt-out Available**: Can disable analytics
 
-## 📞 Support Channels
+## 🆘 Troubleshooting
 
-### Technical Support
-- **GitHub Issues**: Primary bug reporting
-- **Email**: vmf@vmfcoin.com (urgent issues)
-- **Telegram**: https://t.me/vmfcoin_official
+### Common Issues
 
-### Community
-- **X/Twitter**: https://x.com/VMFCoin
-- **VMF Website**: https://vmfcoin.com
-- **Base Network**: https://base.org
+#### Wallet Connection Problems
+```
+Issue: "No Web3 wallet detected"
+Solution: 
+1. Install MetaMask or another supported wallet
+2. Switch to Base Mainnet
+3. Refresh the page
+4. Try connecting again
+```
 
-## 🔄 Feedback Process
+#### Transaction Failures
+```
+Issue: "Transaction failed"
+Solution:
+1. Check your VMF balance
+2. Ensure you have ETH for gas fees
+3. Verify you're on Base Mainnet
+4. Try again with higher gas limit
+```
 
-### Bug Report Lifecycle
-1. **Submit** - Create detailed bug report
-2. **Acknowledge** - We'll respond within 24 hours
-3. **Investigate** - Team investigates the issue
-4. **Fix** - Develop and test the fix
-5. **Deploy** - Deploy to testnet/mainnet
-6. **Close** - Issue resolved and closed
+#### Network Issues
+```
+Issue: "Wrong network"
+Solution:
+1. Switch wallet to Base Mainnet
+2. Add Base network if not available
+3. Refresh the page
+4. Reconnect wallet
+```
 
-### Feature Request Process
-1. **Submit** - Create feature request
-2. **Review** - Team reviews the request
-3. **Prioritize** - Add to roadmap if approved
-4. **Develop** - Build the feature
-5. **Test** - Beta test the new feature
-6. **Release** - Deploy to production
+#### VMF Token Issues
+```
+Issue: "Insufficient VMF balance"
+Solution:
+1. Purchase VMF tokens from a DEX
+2. Ensure you have at least $1 VMF for entry
+3. Account for gas fees (~0.001-0.01 ETH)
+4. Try entry again
+```
 
-## 📈 Beta Testing Timeline
+#### Entry Fee Issues
+```
+Issue: "Insufficient balance for entry fee"
+Solution:
+1. Ensure you have at least $1 VMF tokens
+2. Account for gas fees (~0.001-0.01 ETH)
+3. Purchase more VMF tokens if needed
+4. Try entry again
+```
 
-### Phase 1: Core Testing (Week 1-2)
-- Smart contract functionality
-- Wallet integration
-- Basic game mechanics
+#### UI Problems
+```
+Issue: "Page not loading"
+Solution:
+1. Clear browser cache
+2. Try different browser
+3. Check internet connection
+4. Disable browser extensions
+```
 
-### Phase 2: Feature Testing (Week 3-4)
-- Referral system
-- Toppings rewards
-- Admin features
+### Getting Help
+- **Discord**: Join our community for support
+- **GitHub Issues**: Report bugs and feature requests
+- **Email**: Contact vmf@vmfcoin.com
+- **Documentation**: Check our comprehensive docs
 
-### Phase 3: Performance Testing (Week 5-6)
-- Load testing
-- Gas optimization
-- Security review
+## 🎯 Testing Goals
 
-### Phase 4: Launch Preparation (Week 7-8)
-- Final bug fixes
-- Feature freeze
-- Mainnet deployment
+### What We're Testing
+- **User Experience**: How intuitive is the interface
+- **Performance**: Speed and reliability
+- **Security**: Vulnerability testing
+- **Scalability**: Handle multiple users
 
-## 🎯 Success Metrics
+### Feedback We Need
+- **Bug Reports**: Technical issues you encounter
+- **Feature Requests**: What you'd like to see
+- **UI/UX Feedback**: Design and usability
+- **Performance Issues**: Speed and responsiveness
 
-### Quality Metrics
-- **Bug Report Quality** - Detailed, reproducible reports
-- **Response Time** - Quick acknowledgment and resolution
-- **User Satisfaction** - Positive feedback and engagement
+## 🏅 Community Rewards
 
-### Technical Metrics
-- **Bug Resolution Rate** - Percentage of bugs fixed
-- **Performance Improvements** - Speed and efficiency gains
-- **Security Score** - Vulnerability reduction
+### Player Benefits
+- **Daily Rewards**: Earn VMF tokens daily
+- **Weekly Jackpots**: Big prizes for top players
+- **Referral Bonuses**: Earn extra toppings
+- **Community Recognition**: Top player badges
 
-## 🍕 Happy Testing!
+### How to Earn Rewards
+- **Active Participation**: Play regularly
+- **Referrals**: Bring friends to the platform
+- **Community Engagement**: Help other players
+- **Feedback**: Provide valuable suggestions
 
-Thank you for being part of the Pizza Party beta testing program! Your feedback and bug reports are invaluable in creating the best decentralized gaming experience on Base network.
+## 📈 Development Timeline
 
-**Remember**: 
-- Be detailed in your reports
-- Include screenshots when possible
-- Test on different devices and browsers
-- Report issues promptly
-- Help other beta testers
+### Phase 1: Core Features ✅
+- **Smart Contract**: Security and functionality
+- **Wallet Integration**: Multi-wallet compatibility
+- **Basic Gameplay**: Daily and weekly games
 
-**Let's make Pizza Party amazing together! 🍕**
+### Phase 2: Enhanced Features 🔄
+- **Referral System**: Social features and rewards
+- **Admin Panel**: Management and monitoring tools
+- **Mobile Optimization**: Responsive design
+
+### Phase 3: Advanced Features 📋
+- **Advanced Analytics**: Player statistics
+- **Governance**: Community voting
+- **Mobile App**: Native mobile application
+
+## 🔄 Updates & Changes
+
+### Regular Updates
+- **Feature Updates**: New features and improvements
+- **Bug Fixes**: Address reported issues
+- **Security Updates**: Enhanced security measures
+- **Performance Improvements**: Speed and reliability
+
+### Change Log
+- **Version Tracking**: Document all changes
+- **Release Notes**: Detailed update information
+- **Migration Support**: Seamless updates
+- **Backward Compatibility**: Preserve user data
+
+## 🎉 Community
+
+### Join the Community
+- **Discord Server**: Real-time chat and support
+- **Telegram Group**: Updates and announcements
+- **Twitter**: Follow for latest news
+- **GitHub**: Contribute to development
+
+### Community Guidelines
+- **Respectful**: Be kind to other community members
+- **Constructive**: Provide helpful feedback
+- **Supportive**: Help other players
+- **Positive**: Maintain a positive gaming environment
+
+## 📞 Contact & Support
+
+### Support Team
+- **Technical Issues**: vmf@vmfcoin.com
+- **General Questions**: vmf@vmfcoin.com
+- **Security Issues**: vmf@vmfcoin.com
+- **Feature Requests**: vmf@vmfcoin.com
+
+### Response Times
+- **Critical Issues**: 2-4 hours
+- **General Support**: 24 hours
+- **Feature Requests**: 48 hours
+- **Bug Reports**: 72 hours
 
 ---
 
-*For urgent issues or security vulnerabilities, contact vmf@vmfcoin.com immediately.* 
+**Welcome to Pizza Party! Start playing and earning VMF tokens today!**
+
+🍕 **Happy Pizza Partying!** 🍕 
+
+## 💰 Jackpot Mechanics
+
+### Daily Jackpot
+- **Entry Fee**: $1 VMF tokens per player
+- **Prize Pool**: 100% of all daily entry fees
+- **Distribution**: Equal split among 8 winners
+- **Example**: If 100 players enter, jackpot = 100 VMF tokens
+- **Winner Prize**: 12.5 VMF tokens each (100 ÷ 8)
+
+### Weekly Jackpot
+- **Prize Pool**: Total toppings claimed by all users
+- **Funding**: Automatically from VMF token contract
+- **Distribution**: Equal split among 10 winners
+- **Example**: If 1000 toppings claimed, jackpot = 1000 VMF tokens
+- **Winner Prize**: 100 VMF tokens each (1000 ÷ 10)
+
+### Important Notes
+- **VMF tokens have real value** - this is mainnet
+- **Entry fees fund the daily jackpots** - community-driven
+- **Toppings fund the weekly jackpots** - earned through gameplay
+- **More players = bigger jackpots** - community-driven
+- **Gas fees are separate** - ~0.001-0.01 ETH per transaction 

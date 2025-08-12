@@ -1,75 +1,72 @@
-# Beta User Guide
+# User Guide
 
-## 🎮 Welcome to Pizza Party Beta!
+## 🎮 Welcome to Pizza Party!
 
-Thank you for being part of our beta testing program! This guide will help you understand how to use the Pizza Party dApp and provide valuable feedback.
+Welcome to Pizza Party! This guide will help you understand how to use the Pizza Party dApp and start earning VMF tokens.
 
 ## 🚀 Getting Started
 
 ### 1. Connect Your Wallet
 - **Supported Wallets**: MetaMask, Coinbase Wallet, Trust Wallet, Rainbow, Phantom, Farcaster
-- **Network**: Base Sepolia Testnet (for beta testing)
-- **Token**: Base Sepolia ETH required for gas fees
+- **Network**: Base Mainnet
+- **Token**: VMF tokens required for game entry
 
-#### **How to Switch to Base Sepolia Testnet (MetaMask):**
+#### **How to Switch to Base Mainnet (MetaMask):**
 1. **Open MetaMask**
 2. **Click the network dropdown** (top of wallet)
-3. **Select "Base Sepolia"** from the list
-4. **If Base Sepolia isn't listed**, click "Add network" and enter:
-   - **Network Name**: Base Sepolia
-   - **RPC URL**: https://sepolia.base.org
-   - **Chain ID**: 84532
+3. **Select "Base"** from the list
+4. **If Base isn't listed**, click "Add network" and enter:
+   - **Network Name**: Base
+   - **RPC URL**: https://mainnet.base.org
+   - **Chain ID**: 8453
    - **Currency Symbol**: ETH
-   - **Block Explorer**: https://sepolia.basescan.org
+   - **Block Explorer**: https://basescan.org
 
-### 2. Get Base Sepolia ETH (Free)
-Since we're testing on Base Sepolia testnet, you'll need Base Sepolia ETH for gas fees. Here are free faucets:
+### 2. Get VMF Tokens
+You'll need VMF tokens to play the game. Here's how to get them:
 
-#### **Recommended Base Sepolia ETH Faucets:**
-- **Chainlink Faucet**: https://faucets.chain.link/base-sepolia
-- **QuickNode Faucet**: https://faucet.quicknode.com/base/sepolia
+#### **VMF Token Information:**
+- **Token Address**: 0x2213414893259b0C48066Acd1763e7fbA97859E5
+- **Entry Fee**: $1 VMF tokens per game
+- **Gas Fees**: ETH required for transaction fees
 
-#### **How to Get Free Base Sepolia ETH:**
-1. **Visit Chainlink Faucet**: https://faucets.chain.link/base-sepolia
-2. **Connect your wallet** (MetaMask recommended)
-3. **Enter your wallet address**
-4. **Complete verification** (if required)
-5. **Receive Base Sepolia ETH** (usually within minutes)
-
-#### **Alternative Faucet:**
-If Chainlink faucet is busy, try **QuickNode Faucet**: https://faucet.quicknode.com/base/sepolia
+#### **How to Get VMF Tokens:**
+1. **Visit a DEX** (like Uniswap on Base)
+2. **Swap ETH for VMF tokens**
+3. **Ensure you have enough for entry fees**
+4. **Keep some ETH for gas fees**
 
 #### **Important Notes:**
-- **Base Sepolia ETH has no real value** - it's only for testing
-- **Keep some ETH for gas fees** - transactions cost ~0.001-0.01 Base Sepolia ETH
-- **Faucets may require social media verification** - this is normal
+- **VMF tokens have real value** - this is mainnet
+- **Keep some ETH for gas fees** - transactions cost ~0.001-0.01 ETH
+- **Entry fee is $1 VMF** - ensure you have sufficient balance
 
-### 3. Start Playing (Beta Version)
-- **Daily Game**: Enter once per day for 0.001 Base Sepolia ETH
-- **Weekly Jackpot**: Enter for 0.001 Base Sepolia ETH to participate
+### 3. Start Playing
+- **Daily Game**: Enter once per day for $1 VMF tokens
+- **Weekly Jackpot**: Earn toppings to participate in weekly draws
 - **Referrals**: Invite friends to earn bonus toppings
-- **All gameplay uses real Base Sepolia ETH for jackpots**
+- **All gameplay uses real VMF tokens for jackpots**
 
-## 🎯 Game Mechanics (Beta Version)
+## 🎯 Game Mechanics
 
 ### Daily Game
-- **Entry Fee**: 0.001 Base Sepolia ETH (cheapest transferable amount)
+- **Entry Fee**: $1 VMF tokens
 - **Winners**: 8 random winners per day
 - **Prize**: Equal split of daily jackpot (all entry fees collected)
 - **Timing**: New game starts daily at 12pm PST
 
 ### Weekly Jackpot
-- **Entry Fee**: 0.001 Base Sepolia ETH (cheapest transferable amount)
-- **Prize Pool**: Total Base Sepolia ETH from all weekly entries
+- **Prize Pool**: Total toppings claimed by all users
+- **Funding**: Automatically from VMF token contract
 - **Winners**: 10 random winners
-- **Timing**: Draw every Sunday at 12pm PST
-- **Weighting**: More entries = higher chance to win
+- **Timing**: Draw every Monday at 12pm PST
+- **Weighting**: More toppings = higher chance to win
 
-### Toppings System (Simulated)
+### Toppings System
 - **Daily Play**: 1 topping per day (earned by playing)
-- **VMF Holdings**: 2 toppings per 10 VMF held (simulated)
+- **VMF Holdings**: 3 toppings per 10 VMF held
 - **Referrals**: 2 toppings per successful referral
-- **Streak Bonus**: 3 toppings for 7-day streak
+- **Claiming Window**: Sunday 12pm PST to Monday 12pm PST
 
 ## 📱 Multi-Platform Support
 
@@ -128,17 +125,17 @@ If Chainlink faucet is busy, try **QuickNode Faucet**: https://faucet.quicknode.
 - **Earn Toppings**: Maximize your topping count
 - **Referrals**: Invite friends to earn bonus toppings
 - **VMF Holdings**: Hold more VMF for extra toppings
-- **Streaks**: Maintain daily play streaks
+- **Claim Toppings**: Claim during the Sunday-Monday window
 
 ### General Tips
 - **Wallet Security**: Never share private keys
-- **Network Selection**: Always use Base Sepolia network
+- **Network Selection**: Always use Base Mainnet
 - **Transaction Confirmation**: Wait for confirmations
 - **Error Handling**: Check error messages carefully
 
 ## 🐛 Known Issues
 
-### Beta Limitations
+### Current Limitations
 - **Network Congestion**: May experience delays during peak times
 - **Wallet Compatibility**: Some wallets may need updates
 - **Mobile Optimization**: Some features optimized for desktop
@@ -147,7 +144,7 @@ If Chainlink faucet is busy, try **QuickNode Faucet**: https://faucet.quicknode.
 ### Workarounds
 - **Retry Transactions**: If transaction fails, try again
 - **Refresh Page**: Reload if UI becomes unresponsive
-- **Check Network**: Ensure you're on Base Sepolia network
+- **Check Network**: Ensure you're on Base Mainnet
 - **Clear Cache**: Clear browser cache if needed
 
 ## 📊 Analytics & Tracking
@@ -173,7 +170,7 @@ If Chainlink faucet is busy, try **QuickNode Faucet**: https://faucet.quicknode.
 Issue: "No Web3 wallet detected"
 Solution: 
 1. Install MetaMask or another supported wallet
-2. Switch to Base Sepolia network
+2. Switch to Base Mainnet
 3. Refresh the page
 4. Try connecting again
 ```
@@ -184,7 +181,7 @@ Issue: "Transaction failed"
 Solution:
 1. Check your VMF balance
 2. Ensure you have ETH for gas fees
-3. Verify you're on Base Sepolia network
+3. Verify you're on Base Mainnet
 4. Try again with higher gas limit
 ```
 
@@ -192,39 +189,30 @@ Solution:
 ```
 Issue: "Wrong network"
 Solution:
-1. Switch wallet to Base Sepolia testnet
-2. Add Base Sepolia network if not available
+1. Switch wallet to Base Mainnet
+2. Add Base network if not available
 3. Refresh the page
 4. Reconnect wallet
 ```
 
-#### Base Sepolia ETH Issues
+#### VMF Token Issues
 ```
-Issue: "Insufficient gas fees"
+Issue: "Insufficient VMF balance"
 Solution:
-1. Visit a Base Sepolia faucet (listed above)
-2. Request free Base Sepolia ETH
-3. Wait for confirmation (usually 1-5 minutes)
-4. Try transaction again
+1. Purchase VMF tokens from a DEX
+2. Ensure you have at least $1 VMF for entry
+3. Account for gas fees (~0.001-0.01 ETH)
+4. Try entry again
 ```
 
 #### Entry Fee Issues
 ```
 Issue: "Insufficient balance for entry fee"
 Solution:
-1. Ensure you have at least 0.001 Base Sepolia ETH
-2. Account for gas fees (~0.0001-0.001 Base Sepolia ETH)
-3. Get more Base Sepolia ETH from faucets if needed
+1. Ensure you have at least $1 VMF tokens
+2. Account for gas fees (~0.001-0.01 ETH)
+3. Purchase more VMF tokens if needed
 4. Try entry again
-```
-
-#### Beta Testing Notes
-```
-Important: This is beta testing on Base Sepolia testnet
-- Entry fees are 0.001 Base Sepolia ETH per game
-- Base Sepolia ETH has no real value but is used for jackpots
-- All gameplay is simulated except for entry fees
-- Perfect for testing without real money risk
 ```
 
 #### UI Problems
@@ -243,71 +231,66 @@ Solution:
 - **Email**: Contact vmf@vmfcoin.com
 - **Documentation**: Check our comprehensive docs
 
-## 🎯 Beta Testing Goals
+## 🎯 Game Goals
 
-### What We're Testing
-- **User Experience**: How intuitive is the interface
+### What We're Building
+- **User Experience**: Intuitive and engaging interface
 - **Performance**: Speed and reliability
-- **Security**: Vulnerability testing
+- **Security**: Robust security measures
 - **Scalability**: Handle multiple users
 
-### Feedback We Need
+### Community Feedback
 - **Bug Reports**: Technical issues you encounter
 - **Feature Requests**: What you'd like to see
 - **UI/UX Feedback**: Design and usability
 - **Performance Issues**: Speed and responsiveness
 
-## 🏅 Beta Rewards
+## 🏅 Community Rewards
 
-### Early Adopter Benefits
-- **Exclusive Access**: First to try new features
-- **Special Rewards**: Bonus toppings for beta testers
-- **Community Recognition**: Beta tester badges
-- **Influence**: Help shape the final product
+### Player Benefits
+- **Daily Rewards**: Earn VMF tokens daily
+- **Weekly Jackpots**: Big prizes for top players
+- **Referral Bonuses**: Earn extra toppings
+- **Community Recognition**: Top player badges
 
 ### How to Earn Rewards
-- **Active Participation**: Play regularly during beta
-- **Bug Reports**: Help identify and fix issues
-- **Feedback**: Provide valuable suggestions
+- **Active Participation**: Play regularly
 - **Referrals**: Bring friends to the platform
+- **Community Engagement**: Help other players
+- **Feedback**: Provide valuable suggestions
 
-## 📈 Beta Timeline
+## 📈 Development Timeline
 
-### Phase 1: Core Testing (Week 1-2)
-- **Smart Contract**: Security and functionality testing
+### Phase 1: Core Features ✅
+- **Smart Contract**: Security and functionality
 - **Wallet Integration**: Multi-wallet compatibility
 - **Basic Gameplay**: Daily and weekly games
 
-### Phase 2: Feature Testing (Week 3-4)
+### Phase 2: Enhanced Features 🔄
 - **Referral System**: Social features and rewards
 - **Admin Panel**: Management and monitoring tools
-- **Mobile Optimization**: Responsive design testing
+- **Mobile Optimization**: Responsive design
 
-### Phase 3: Performance Testing (Week 5-6)
-- **Load Testing**: Multiple concurrent users
-- **Security Audit**: Comprehensive security review
-- **Final Polish**: UI/UX improvements
-
-### Phase 4: Launch Preparation (Week 7-8)
-- **Bug Fixes**: Address all reported issues
-- **Feature Freeze**: Finalize feature set
-- **Launch Readiness**: Prepare for mainnet launch
+### Phase 3: Advanced Features 📋
+- **Advanced Analytics**: Player statistics
+- **Governance**: Community voting
+- **Mobile App**: Native mobile application
 
 ## 🔄 Updates & Changes
 
-### Beta Updates
-- **Regular Updates**: New features and bug fixes
-- **Notification System**: Stay informed of changes
-- **Migration Support**: Seamless updates
-- **Backward Compatibility**: Preserve user data
+### Regular Updates
+- **Feature Updates**: New features and improvements
+- **Bug Fixes**: Address reported issues
+- **Security Updates**: Enhanced security measures
+- **Performance Improvements**: Speed and reliability
 
 ### Change Log
 - **Version Tracking**: Document all changes
 - **Release Notes**: Detailed update information
-- **Breaking Changes**: Important modifications
-- **Migration Guides**: How to handle updates
+- **Migration Support**: Seamless updates
+- **Backward Compatibility**: Preserve user data
 
-## 🎉 Beta Community
+## 🎉 Community
 
 ### Join the Community
 - **Discord Server**: Real-time chat and support
@@ -318,12 +301,12 @@ Solution:
 ### Community Guidelines
 - **Respectful**: Be kind to other community members
 - **Constructive**: Provide helpful feedback
-- **Patient**: Understand this is beta software
-- **Supportive**: Help other beta testers
+- **Supportive**: Help other players
+- **Positive**: Maintain a positive gaming environment
 
 ## 📞 Contact & Support
 
-### Beta Support Team
+### Support Team
 - **Technical Issues**: vmf@vmfcoin.com
 - **General Questions**: vmf@vmfcoin.com
 - **Security Issues**: vmf@vmfcoin.com
@@ -337,28 +320,29 @@ Solution:
 
 ---
 
-**Thank you for being part of our beta testing program! Your feedback is invaluable in making Pizza Party the best decentralized gaming platform on Base network.**
+**Welcome to Pizza Party! Start playing and earning VMF tokens today!**
 
 🍕 **Happy Pizza Partying!** 🍕 
 
 ## 💰 Jackpot Mechanics
 
 ### Daily Jackpot
-- **Entry Fee**: 0.001 Base Sepolia ETH per player
+- **Entry Fee**: $1 VMF tokens per player
 - **Prize Pool**: 100% of all daily entry fees
 - **Distribution**: Equal split among 8 winners
-- **Example**: If 100 players enter, jackpot = 0.1 Base Sepolia ETH
-- **Winner Prize**: 0.0125 Base Sepolia ETH each (0.1 ÷ 8)
+- **Example**: If 100 players enter, jackpot = 100 VMF tokens
+- **Winner Prize**: 12.5 VMF tokens each (100 ÷ 8)
 
 ### Weekly Jackpot
-- **Entry Fee**: 0.001 Base Sepolia ETH per entry
-- **Prize Pool**: 100% of all weekly entry fees
+- **Prize Pool**: Total toppings claimed by all users
+- **Funding**: Automatically from VMF token contract
 - **Distribution**: Equal split among 10 winners
-- **Example**: If 500 entries, jackpot = 0.5 Base Sepolia ETH
-- **Winner Prize**: 0.05 Base Sepolia ETH each (0.5 ÷ 10)
+- **Example**: If 1000 toppings claimed, jackpot = 1000 VMF tokens
+- **Winner Prize**: 100 VMF tokens each (1000 ÷ 10)
 
 ### Important Notes
-- **Base Sepolia ETH has no real value** - it's only for testing
-- **Entry fees fund the jackpots** - no external funding
+- **VMF tokens have real value** - this is mainnet
+- **Entry fees fund the daily jackpots** - community-driven
+- **Toppings fund the weekly jackpots** - earned through gameplay
 - **More players = bigger jackpots** - community-driven
-- **Gas fees are separate** - ~0.0001-0.001 Base Sepolia ETH per transaction 
+- **Gas fees are separate** - ~0.001-0.01 ETH per transaction 

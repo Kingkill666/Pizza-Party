@@ -2,7 +2,7 @@
 
 ## 🚀 Overview
 
-This guide covers the complete deployment process for the Pizza Party dApp, from local development to mainnet deployment on Base network.
+This guide covers the complete deployment process for the Pizza Party dApp on Base Mainnet, from local development to production deployment.
 
 ## 📋 Prerequisites
 
@@ -36,7 +36,6 @@ Create a `.env` file in the root directory:
 ```bash
 # Base Network RPC URLs
 BASE_RPC_URL=https://mainnet.base.org
-BASE_SEPOLIA_RPC_URL=https://sepolia.base.org
 
 # Basescan API Key (for contract verification)
 BASESCAN_API_KEY=your_api_key
@@ -80,42 +79,19 @@ npm run dev
 - Connect wallet to local network
 - Test all functionality
 
-## 🧪 Testnet Deployment (Base Sepolia)
-
-### 1. Prepare Testnet
-```bash
-# Get Sepolia ETH from faucets:
-# Chainlink Faucet: https://faucets.chain.link/base-sepolia
-# QuickNode Faucet: https://faucet.quicknode.com/base/sepolia
-```
-
-### 2. Deploy to Testnet
-```bash
-npm run deploy:testnet
-```
-
-### 3. Verify Contract
-```bash
-npx hardhat verify --network baseSepolia 0xCONTRACT_ADDRESS "0x2213414893259b0C48066Acd1763e7fbA97859E5"
-```
-
-### 4. Test on Testnet
-- Update frontend with testnet contract address
-- Test all functionality on testnet
-- Verify all features work correctly
-
 ## 🚀 Mainnet Deployment (Base)
 
 ### 1. Pre-deployment Checklist
 - [ ] Smart contract audited
 - [ ] All tests passing
-- [ ] Testnet deployment successful
 - [ ] Security review completed
 - [ ] Team approval received
+- [ ] VMF token integration tested
+- [ ] Wallet connections verified
 
 ### 2. Deploy to Mainnet
 ```bash
-npm run deploy:mainnet
+npx hardhat run scripts/deploy.ts --network base
 ```
 
 ### 3. Verify Contract
@@ -127,7 +103,7 @@ npx hardhat verify --network base 0xCONTRACT_ADDRESS "0x2213414893259b0C48066Acd
 Update the contract address in your frontend configuration:
 
 ```typescript
-// lib/pizza-party-contract.ts
+// lib/contract-config.ts
 export const PIZZA_PARTY_CONTRACT_ADDRESS = "0xDEPLOYED_CONTRACT_ADDRESS"
 ```
 
@@ -144,12 +120,14 @@ npm run start
 - [ ] Contract verified on Basescan
 - [ ] All functions accessible
 - [ ] Events firing correctly
+- [ ] VMF token integration working
 
 ### 2. Frontend Verification
 - [ ] Frontend deployed successfully
 - [ ] Wallet connections working
 - [ ] Game functionality operational
 - [ ] Admin panel accessible
+- [ ] VMF token approval working
 
 ### 3. Security Verification
 - [ ] Access controls working
@@ -181,7 +159,7 @@ npx hardhat console --network base
 ```bash
 # Development
 NODE_ENV=development
-BASE_RPC_URL=https://sepolia.base.org
+BASE_RPC_URL=https://mainnet.base.org
 
 # Production
 NODE_ENV=production
@@ -196,11 +174,6 @@ networks: {
     url: process.env.BASE_RPC_URL,
     accounts: [process.env.PRIVATE_KEY],
     chainId: 8453,
-  },
-  baseSepolia: {
-    url: process.env.BASE_SEPOLIA_RPC_URL,
-    accounts: [process.env.PRIVATE_KEY],
-    chainId: 84532,
   },
 }
 ```
@@ -236,7 +209,7 @@ npx hardhat console --network base
 ### 1. Contract Updates
 ```bash
 # Deploy new contract
-npm run deploy:mainnet
+npx hardhat run scripts/deploy.ts --network base
 
 # Verify new contract
 npx hardhat verify --network base 0xNEW_CONTRACT_ADDRESS "0x2213414893259b0C48066Acd1763e7fbA97859E5"
@@ -269,6 +242,7 @@ npm run build
 - [ ] Security audit completed
 - [ ] Environment configured
 - [ ] Team approval received
+- [ ] VMF token integration verified
 
 ### Deployment
 - [ ] Contract deployed
@@ -311,6 +285,13 @@ npx hardhat console --network base
 # Check wallet connection
 ```
 
+#### VMF Token Issues
+```bash
+# Verify VMF token address
+# Check token approval
+# Verify token balance
+```
+
 ### Support Resources
 - **Documentation**: This repository
 - **Discord**: Pizza Party community
@@ -331,4 +312,4 @@ npx hardhat console --network base
 
 ---
 
-**Remember**: Always test thoroughly on testnet before mainnet deployment! 
+**Remember**: Always test thoroughly in local development before mainnet deployment! 
