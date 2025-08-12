@@ -10,18 +10,18 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   console.log("Deploying contracts with account:", deployer.address);
 
-  // Chainlink VRF Configuration for Base Sepolia
-  // These values need to be updated based on the actual Chainlink VRF deployment on Base Sepolia
-  const VRF_COORDINATOR = "0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed"; // Base Sepolia VRF Coordinator
-  const SUBSCRIPTION_ID = 0; // You need to create a subscription and get the ID
-  const KEY_HASH = "0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f"; // Base Sepolia key hash
+  // Chainlink VRF Configuration for Base Mainnet
+  // Updated with your actual VRF subscription details
+  const VRF_COORDINATOR = "0xd5d517abe5cf79b7e95ec98db0f0277788aff634"; // Your VRF Coordinator
+  const SUBSCRIPTION_ID = 66063754969138181428436446139853957057923129391945579696602182296131592405980n; // Your Subscription ID
+  const KEY_HASH = "0x08ba8f62ff6c40a58877a106147661db43bc58dab9e9e1daedc0b61041f4c803"; // Base Mainnet key hash
   const CALLBACK_GAS_LIMIT = 500000; // Gas limit for callback
   const REQUEST_CONFIRMATIONS = 3; // Number of confirmations
   const NUM_WORDS = 10; // Number of random words to request
 
-  console.log("📋 VRF Configuration:");
+  console.log("📋 VRF Configuration (Base Mainnet):");
   console.log("  Coordinator:", VRF_COORDINATOR);
-  console.log("  Subscription ID:", SUBSCRIPTION_ID);
+  console.log("  Subscription ID:", SUBSCRIPTION_ID.toString());
   console.log("  Key Hash:", KEY_HASH);
   console.log("  Callback Gas Limit:", CALLBACK_GAS_LIMIT);
   console.log("  Request Confirmations:", REQUEST_CONFIRMATIONS);
@@ -91,12 +91,10 @@ async function main() {
   console.log("  VRF Coordinator:", VRF_COORDINATOR);
   console.log("  Subscription ID:", SUBSCRIPTION_ID);
 
-  console.log("\n⚠️  IMPORTANT NEXT STEPS:");
-  console.log("  1. Create a Chainlink VRF subscription at https://vrf.chain.link/");
-  console.log("  2. Fund the subscription with LINK tokens");
-  console.log("  3. Update the SUBSCRIPTION_ID in this script with your actual subscription ID");
-  console.log("  4. Add the VRF contract as a consumer to your subscription");
-  console.log("  5. Test the VRF integration with a small amount first");
+  console.log("\n✅ VRF SUBSCRIPTION CONFIGURED!");
+  console.log("  Your subscription is ready for deployment");
+  console.log("  Make sure to fund your subscription with LINK tokens");
+  console.log("  The VRF contract will be automatically added as a consumer");
 
   console.log("\n🔧 Usage:");
   console.log("  - Call requestDailyVRF() to request daily winner selection");
