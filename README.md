@@ -18,10 +18,22 @@ npm run dev
 # Open http://localhost:3000
 ```
 
+## 💰 Dynamic Pricing System
+
+**NEW!** Pizza Party now features **dynamic VMF pricing** ensuring a consistent $1 USD entry fee regardless of VMF token price fluctuations.
+
+📖 **[Read the Dynamic Pricing Documentation](DYNAMIC_PRICING_README.md)** for detailed technical information.
+
+### Key Features:
+- ✅ **Always $1 USD** - Entry fee adjusts automatically with VMF price
+- ✅ **Real-time Pricing** - Uses price oracle for current market rates
+- ✅ **Fair Gameplay** - No advantage based on token price volatility
+- ✅ **Transparent** - All pricing calculations visible on-chain
+
 ## 🎮 Game Overview
 
 ### Daily Game
-- **Entry Fee**: $1 VMF tokens
+- **Entry Fee**: $1 worth of VMF tokens (dynamic pricing)
 - **Jackpot**: 100% of daily entry fees
 - **Winners**: 8 random daily winners
 - **Frequency**: One entry per wallet per day
