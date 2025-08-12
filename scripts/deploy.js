@@ -9,10 +9,23 @@ async function main() {
   console.log("📄 VMF Token Address:", VMF_TOKEN_ADDRESS);
   console.log("🌐 Network: Base");
 
+  // Get the signer
+  const [deployer] = await ethers.getSigners();
+  console.log("👤 Deploying with account:", deployer.address);
+
+  // Get current nonce and gas price
+  const nonce = await deployer.getNonce();
+  const gasPrice = await ethers.provider.getFeeData();
+  console.log("🔢 Current nonce:", nonce);
+  console.log("⛽ Gas price:", ethers.formatUnits(gasPrice.gasPrice, "gwei"), "gwei");
+
   // Deploy FreeRandomness contract first
   console.log("🎲 Deploying FreeRandomness contract...");
   const FreeRandomness = await ethers.getContractFactory("FreeRandomness");
-  const randomnessContract = await FreeRandomness.deploy();
+  const randomnessContract = await FreeRandomness.deploy({
+    gasPrice: gasPrice.gasPrice * BigInt(120) / BigInt(100), // 20% higher gas price
+    nonce: nonce
+  });
   await randomnessContract.waitForDeployment();
   const randomnessAddress = await randomnessContract.getAddress();
   console.log("✅ FreeRandomness deployed at:", randomnessAddress);
@@ -20,7 +33,10 @@ async function main() {
   // Deploy FreePriceOracle contract
   console.log("📊 Deploying FreePriceOracle contract...");
   const FreePriceOracle = await ethers.getContractFactory("FreePriceOracle");
-  const priceOracle = await FreePriceOracle.deploy();
+  const priceOracle = await FreePriceOracle.deploy({
+    gasPrice: gasPrice.gasPrice * BigInt(120) / BigInt(100), // 20% higher gas price
+    nonce: nonce + 1
+  });
   await priceOracle.waitForDeployment();
   const priceOracleAddress = await priceOracle.getAddress();
   console.log("✅ FreePriceOracle deployed at:", priceOracleAddress);
@@ -31,7 +47,11 @@ async function main() {
   const pizzaParty = await PizzaParty.deploy(
     VMF_TOKEN_ADDRESS,
     randomnessAddress,
-    priceOracleAddress
+    priceOracleAddress,
+    {
+      gasPrice: gasPrice.gasPrice * BigInt(120) / BigInt(100), // 20% higher gas price
+      nonce: nonce + 2
+    }
   );
 
   await pizzaParty.waitForDeployment();
