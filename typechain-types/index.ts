@@ -48,6 +48,8 @@ export type { MockVMF } from "./contracts/MockVMF";
 export { MockVMF__factory } from "./factories/contracts/MockVMF__factory";
 export type { PizzaParty } from "./contracts/PizzaParty";
 export { PizzaParty__factory } from "./factories/contracts/PizzaParty__factory";
+export type { PizzaPartyCore } from "./contracts/PizzaPartyCore";
+export { PizzaPartyCore__factory } from "./factories/contracts/PizzaPartyCore__factory";
 export type { SecureReferralSystem } from "./contracts/SecureReferralSystem";
 export { SecureReferralSystem__factory } from "./factories/contracts/SecureReferralSystem__factory";
 export type { IUniswapV3Factory } from "./contracts/UniswapPriceOracle.sol/IUniswapV3Factory";

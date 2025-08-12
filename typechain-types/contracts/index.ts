@@ -9,4 +9,5 @@ export type { FreeRandomness } from "./FreeRandomness";
 export type { IPizzaParty } from "./IPizzaParty";
 export type { MockVMF } from "./MockVMF";
 export type { PizzaParty } from "./PizzaParty";
+export type { PizzaPartyCore } from "./PizzaPartyCore";
 export type { SecureReferralSystem } from "./SecureReferralSystem";

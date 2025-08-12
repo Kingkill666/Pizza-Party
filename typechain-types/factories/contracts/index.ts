@@ -8,4 +8,5 @@ export { FreeRandomness__factory } from "./FreeRandomness__factory";
 export { IPizzaParty__factory } from "./IPizzaParty__factory";
 export { MockVMF__factory } from "./MockVMF__factory";
 export { PizzaParty__factory } from "./PizzaParty__factory";
+export { PizzaPartyCore__factory } from "./PizzaPartyCore__factory";
 export { SecureReferralSystem__factory } from "./SecureReferralSystem__factory";

@@ -94,6 +94,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.PizzaParty__factory>;
     getContractFactory(
+      name: "PizzaPartyCore",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.PizzaPartyCore__factory>;
+    getContractFactory(
       name: "SecureReferralSystem",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.SecureReferralSystem__factory>;
@@ -211,6 +215,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.PizzaParty>;
     getContractAt(
+      name: "PizzaPartyCore",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.PizzaPartyCore>;
+    getContractAt(
       name: "SecureReferralSystem",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -312,6 +321,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.PizzaParty>;
     deployContract(
+      name: "PizzaPartyCore",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PizzaPartyCore>;
+    deployContract(
       name: "SecureReferralSystem",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.SecureReferralSystem>;
@@ -428,6 +441,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.PizzaParty>;
+    deployContract(
+      name: "PizzaPartyCore",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PizzaPartyCore>;
     deployContract(
       name: "SecureReferralSystem",
       args: any[],

@@ -4,13 +4,18 @@ const { ethers } = require("ethers");
 class ScheduledWinnerSelection {
   constructor() {
     this.vrfContract = null;
+    this.pizzaPartyContract = null;
+    this.vmfTokenContract = null;
     this.provider = null;
     this.signer = null;
     this.VRF_ADDRESS = "0xCCa74Fb01e4aec664b8F57Db1Ce6b702AF8f5a59";
+    this.PIZZA_PARTY_ADDRESS = "0x8ef20E4C2c2Be6d2E1B800B6dd1F12636A096D63"; // Your deployed Pizza Party contract
+    this.VMF_TOKEN_ADDRESS = "0x2213414893259b0C48066Acd1763e7fbA97859E5";
     this.isRunning = false;
     this.pendingRequests = new Map();
     this.lastDailyDraw = null;
     this.lastWeeklyDraw = null;
+    this.currentGameId = 1; // Start with game ID 1
   }
 
   async initialize() {
@@ -29,7 +34,7 @@ class ScheduledWinnerSelection {
     this.provider = new ethers.JsonRpcProvider(process.env.BASE_RPC_URL);
     this.signer = new ethers.Wallet(process.env.PRIVATE_KEY, this.provider);
     
-    // VRF Contract ABI (minimal for our needs)
+    // VRF Contract ABI
     const vrfABI = [
       "function requestDailyRandomness(uint256 gameId, address[] calldata eligiblePlayers) external returns (uint256 requestId)",
       "function requestWeeklyRandomness(uint256 gameId, address[] calldata eligiblePlayers) external returns (uint256 requestId)",
@@ -40,9 +45,37 @@ class ScheduledWinnerSelection {
       "event RandomnessRequested(uint256 indexed requestId, uint256 indexed gameId, string gameType)"
     ];
     
+    // Pizza Party Contract ABI (simplified for actual deployed contract)
+    const pizzaPartyABI = [
+      "function getDailyPlayers(uint256 gameId) external view returns (address[] memory)",
+      "function getWeeklyPlayers(uint256 gameId) external view returns (address[] memory)",
+      "function getDailyJackpot() external view returns (uint256)",
+      "function getWeeklyJackpot() external view returns (uint256)",
+      "function getPlayerToppings(address player) external view returns (uint256)",
+      "function getTotalToppingsClaimed() external view returns (uint256)",
+      "function getPlayerVMFBalance(address player) external view returns (uint256)",
+      "function getMinimumVMFRequired() external view returns (uint256)",
+      "function getCurrentGameId() external view returns (uint256)",
+      "function isDailyDrawReady() external view returns (bool)",
+      "function isWeeklyDrawReady() external view returns (bool)",
+      "function getEligibleDailyPlayers(uint256 gameId) external view returns (address[] memory)",
+      "function getEligibleWeeklyPlayers(uint256 gameId) external view returns (address[] memory)"
+    ];
+    
+    // VMF Token Contract ABI
+    const vmfTokenABI = [
+      "function balanceOf(address account) external view returns (uint256)",
+      "function transfer(address to, uint256 amount) external returns (bool)",
+      "function decimals() external view returns (uint8)"
+    ];
+    
     this.vrfContract = new ethers.Contract(this.VRF_ADDRESS, vrfABI, this.signer);
+    this.pizzaPartyContract = new ethers.Contract(this.PIZZA_PARTY_ADDRESS, pizzaPartyABI, this.signer);
+    this.vmfTokenContract = new ethers.Contract(this.VMF_TOKEN_ADDRESS, vmfTokenABI, this.signer);
 
     console.log("✅ VRF Contract connected:", this.VRF_ADDRESS);
+    console.log("✅ Pizza Party Contract connected:", this.PIZZA_PARTY_ADDRESS);
+    console.log("✅ VMF Token Contract connected:", this.VMF_TOKEN_ADDRESS);
     console.log("✅ Provider connected to Base network");
     console.log("✅ Signer address:", this.signer.address);
     
@@ -80,18 +113,6 @@ class ScheduledWinnerSelection {
     const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
     const pstTime = new Date(utcTime + (pstOffset * 3600000));
     return pstTime;
-  }
-
-  // Check if it's 12pm PST
-  is12pmPST() {
-    const pstTime = this.getPSTTime();
-    return pstTime.getHours() === 12 && pstTime.getMinutes() === 0;
-  }
-
-  // Check if it's Monday 12pm PST
-  isMonday12pmPST() {
-    const pstTime = this.getPSTTime();
-    return pstTime.getDay() === 1 && pstTime.getHours() === 12 && pstTime.getMinutes() === 0;
   }
 
   // Check if daily draw is ready (12pm PST every day)
@@ -239,10 +260,10 @@ class ScheduledWinnerSelection {
     console.log(`💰 Processing jackpot payments for ${gameType} winners...`);
     
     try {
-      // Calculate jackpot amounts
+      // Calculate jackpot amounts from real contract data
       const jackpotPerWinner = await this.calculateJackpotAmount(gameId, gameType, winners.length);
       
-      console.log(`💸 Jackpot per winner: ${ethers.formatEther(jackpotPerWinner)} ETH`);
+      console.log(`💸 Jackpot per winner: ${ethers.formatEther(jackpotPerWinner)} VMF`);
       
       // Process each winner
       for (let i = 0; i < winners.length; i++) {
@@ -266,28 +287,37 @@ class ScheduledWinnerSelection {
   }
 
   async calculateJackpotAmount(gameId, gameType, winnerCount) {
-    // This would integrate with your actual jackpot system
-    // For now, using example jackpot amounts
-    
-    if (gameType === 'daily') {
-      const dailyJackpot = ethers.parseEther("1.0"); // 1 ETH daily jackpot
-      return dailyJackpot / BigInt(winnerCount);
-    } else {
-      const weeklyJackpot = ethers.parseEther("5.0"); // 5 ETH weekly jackpot
-      return weeklyJackpot / BigInt(winnerCount);
+    try {
+      if (gameType === 'daily') {
+        // Get daily jackpot from contract
+        const dailyJackpot = await this.pizzaPartyContract.getDailyJackpot();
+        console.log(`💰 Daily jackpot from contract: ${ethers.formatEther(dailyJackpot)} VMF`);
+        return dailyJackpot / BigInt(winnerCount);
+      } else {
+        // Get weekly jackpot from contract (total toppings claimed)
+        const weeklyJackpot = await this.pizzaPartyContract.getWeeklyJackpot();
+        console.log(`💰 Weekly jackpot from contract: ${ethers.formatEther(weeklyJackpot)} VMF`);
+        return weeklyJackpot / BigInt(winnerCount);
+      }
+    } catch (error) {
+      console.error("❌ Error getting jackpot from contract:", error.message);
+      // Fallback to default amounts
+      if (gameType === 'daily') {
+        const dailyJackpot = ethers.parseEther("1000"); // 1000 VMF daily jackpot
+        return dailyJackpot / BigInt(winnerCount);
+      } else {
+        const weeklyJackpot = ethers.parseEther("5000"); // 5000 VMF weekly jackpot
+        return weeklyJackpot / BigInt(winnerCount);
+      }
     }
   }
 
   async sendJackpotPayment(winner, amount, gameType, gameId) {
     try {
-      console.log(`💸 Sending ${ethers.formatEther(amount)} ETH jackpot to ${winner}`);
+      console.log(`💸 Sending ${ethers.formatEther(amount)} VMF jackpot to ${winner}`);
       
-      // Send ETH payment to winner's wallet
-      const tx = await this.signer.sendTransaction({
-        to: winner,
-        value: amount,
-        gasLimit: 21000
-      });
+      // Send VMF payment to winner's wallet
+      const tx = await this.vmfTokenContract.transfer(winner, amount);
       
       console.log(`✅ Jackpot payment sent! Transaction: ${tx.hash}`);
       
@@ -312,7 +342,8 @@ class ScheduledWinnerSelection {
       gameType: gameType,
       gameId: gameId.toString(),
       transactionHash: txHash,
-      status: 'completed'
+      status: 'completed',
+      token: 'VMF'
     };
     
     // Save to file
@@ -340,7 +371,8 @@ class ScheduledWinnerSelection {
       jackpotPerWinner: ethers.formatEther(jackpotPerWinner),
       totalWinners: winners.length,
       drawTime: "12pm PST",
-      drawDay: gameType === 'weekly' ? 'Monday' : 'Daily'
+      drawDay: gameType === 'weekly' ? 'Monday' : 'Daily',
+      token: 'VMF'
     };
     
     // Save to file
@@ -359,20 +391,49 @@ class ScheduledWinnerSelection {
   }
 
   async getEligiblePlayers(gameId, gameType) {
-    // This would integrate with your game logic to get actual eligible players
-    console.log(`🔍 Getting eligible players for ${gameType} game ${gameId}...`);
+    console.log(`🔍 Getting eligible players for ${gameType} game ${gameId} from contract...`);
     
-    // Replace this with your actual logic to get eligible players
-    const examplePlayers = [
-      "0x1234567890123456789012345678901234567890",
-      "0x2345678901234567890123456789012345678901",
-      "0x3456789012345678901234567890123456789012",
-      "0x4567890123456789012345678901234567890123",
-      "0x5678901234567890123456789012345678901234"
-    ];
-    
-    console.log(`📋 Found ${examplePlayers.length} eligible players`);
-    return examplePlayers;
+    try {
+      if (gameType === 'daily') {
+        // Get daily players from contract
+        const dailyPlayers = await this.pizzaPartyContract.getEligibleDailyPlayers(gameId);
+        console.log(`📋 Found ${dailyPlayers.length} eligible daily players from contract`);
+        return dailyPlayers;
+      } else {
+        // Get weekly players from contract
+        const weeklyPlayers = await this.pizzaPartyContract.getEligibleWeeklyPlayers(gameId);
+        console.log(`📋 Found ${weeklyPlayers.length} eligible weekly players from contract`);
+        return weeklyPlayers;
+      }
+    } catch (error) {
+      console.error("❌ Error getting players from contract:", error.message);
+      return [];
+    }
+  }
+
+  async getGameStats() {
+    try {
+      const currentGameId = await this.pizzaPartyContract.getCurrentGameId();
+      const dailyJackpot = await this.pizzaPartyContract.getDailyJackpot();
+      const weeklyJackpot = await this.pizzaPartyContract.getWeeklyJackpot();
+      const totalToppingsClaimed = await this.pizzaPartyContract.getTotalToppingsClaimed();
+      
+      console.log("\n📊 Current Game Stats:");
+      console.log(`🎮 Current Game ID: ${currentGameId}`);
+      console.log(`💰 Daily Jackpot: ${ethers.formatEther(dailyJackpot)} VMF`);
+      console.log(`💰 Weekly Jackpot: ${ethers.formatEther(weeklyJackpot)} VMF`);
+      console.log(`🍕 Total Toppings Claimed: ${ethers.formatEther(totalToppingsClaimed)} VMF`);
+      
+      return {
+        currentGameId,
+        dailyJackpot,
+        weeklyJackpot,
+        totalToppingsClaimed
+      };
+    } catch (error) {
+      console.error("❌ Error getting game stats:", error.message);
+      return null;
+    }
   }
 
   async startScheduledSelection() {
@@ -385,6 +446,9 @@ class ScheduledWinnerSelection {
     console.log("🕛 Starting scheduled winner selection system...");
     console.log("📅 Daily winners: 12pm PST every day");
     console.log("📅 Weekly winners: 12pm PST every Monday");
+    
+    // Get initial game stats
+    await this.getGameStats();
     
     // Run the scheduled process
     this.runScheduledProcess();
@@ -399,11 +463,10 @@ class ScheduledWinnerSelection {
         // Check if daily draw is ready (12pm PST every day)
         if (await this.isDailyDrawReady()) {
           console.log("📅 Daily draw time reached! Selecting winners...");
-          const gameId = await this.getCurrentGameId();
-          const eligiblePlayers = await this.getEligiblePlayers(gameId, 'daily');
+          const eligiblePlayers = await this.getEligiblePlayers(this.currentGameId, 'daily');
           
           if (eligiblePlayers.length > 0) {
-            await this.requestDailyWinners(gameId, eligiblePlayers);
+            await this.requestDailyWinners(this.currentGameId, eligiblePlayers);
           } else {
             console.log("⚠️ No eligible players for daily draw");
           }
@@ -412,11 +475,10 @@ class ScheduledWinnerSelection {
         // Check if weekly draw is ready (12pm PST every Monday)
         if (await this.isWeeklyDrawReady()) {
           console.log("📅 Weekly draw time reached! Selecting winners...");
-          const gameId = await this.getCurrentGameId();
-          const eligiblePlayers = await this.getEligiblePlayers(gameId, 'weekly');
+          const eligiblePlayers = await this.getEligiblePlayers(this.currentGameId, 'weekly');
           
           if (eligiblePlayers.length > 0) {
-            await this.requestWeeklyWinners(gameId, eligiblePlayers);
+            await this.requestWeeklyWinners(this.currentGameId, eligiblePlayers);
           } else {
             console.log("⚠️ No eligible players for weekly draw");
           }
@@ -434,11 +496,6 @@ class ScheduledWinnerSelection {
     }
   }
 
-  async getCurrentGameId() {
-    // This would integrate with your game logic
-    return 1;
-  }
-
   stop() {
     console.log("🛑 Stopping scheduled winner selection system...");
     this.isRunning = false;
@@ -453,6 +510,9 @@ class ScheduledWinnerSelection {
       lastWeeklyDraw: this.lastWeeklyDraw,
       pendingRequests: this.pendingRequests.size,
       vrfContract: this.VRF_ADDRESS,
+      pizzaPartyContract: this.PIZZA_PARTY_ADDRESS,
+      vmfTokenContract: this.VMF_TOKEN_ADDRESS,
+      currentGameId: this.currentGameId,
       nextDailyDraw: "12pm PST tomorrow",
       nextWeeklyDraw: "12pm PST next Monday"
     };
