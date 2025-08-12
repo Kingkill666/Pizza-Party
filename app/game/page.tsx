@@ -24,7 +24,7 @@ import Image from 'next/image'
 
 export default function GamePage() {
   const customFontStyle = {
-    fontFamily: '"Comic Sans MS", "Comic Sans", "Marker Felt", "Arial", sans-serif',
+    fontFamily: '"Comic Sans MS", "Comic Sans", "Marker Felt", "Arial", sans-serif', // NO CURSIVE FONTS
     fontWeight: "bold" as const,
   }
 
