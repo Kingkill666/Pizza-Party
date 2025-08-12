@@ -445,12 +445,12 @@ export class PizzaPartyContract {
     const maxAttempts = 50 // Wait up to 5 minutes (50 * 6 seconds)
     
     while (attempts < maxAttempts) {
-      try {
-        const receipt = await this.provider.request({
-          method: 'eth_getTransactionReceipt',
-          params: [txHash]
-        })
-        
+        try {
+          const receipt = await this.provider.request({
+            method: 'eth_getTransactionReceipt',
+            params: [txHash]
+          })
+          
         if (receipt && receipt.status === '0x1') {
           console.log(`Transaction ${txHash} confirmed`)
           return
@@ -758,8 +758,8 @@ export class PizzaPartyContract {
     available: boolean;
     reason?: string;
   }> {
-    return {
-      available: false,
+      return {
+        available: false,
       reason: 'Gasless transactions temporarily disabled due to provider compatibility issues',
     };
   }
