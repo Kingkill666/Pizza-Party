@@ -1,0 +1,24 @@
+{
+  "deploymentTime": "2025-08-12T23:45:07.191Z",
+  "network": "Base Mainnet",
+  "vmfTokenAddress": "0x2213414893259b0C48066Acd1763e7fbA97859E5",
+  "contracts": {
+    "freeRandomness": "0xF64dF5C5c399c051210f02309A6cB12cB7797e88",
+    "freePriceOracle": "0xAA43fE819C0103fE820c04259929b3f344AfBfa3",
+    "uniswapPriceOracle": "0xA5deaebA77225546dE3C363F695319356E33B7D6",
+    "secureReferralSystem": "0xDfFa13C23786ecf2Fc681e74e351b05c9C33f367",
+    "chainlinkVRF": "0xefAe49039ADB963b1183869D1632D4CbC8F0603b",
+    "pizzaPartyCore": "0xCD8a3a397CdE223c47602d2C37a3b8a5B99a6460",
+    "pizzaParty": "FAILED - Contract too large",
+    "mockVMF": "0x8349a17aa324628C5018fDF8aE24399Bb5EA7D8C"
+  },
+  "vrfConfig": {
+    "coordinator": "0xd5d517abe5cf79b7e95ec98db0f0277788aff634",
+    "subscriptionId": 1,
+    "keyHash": "0x00b81b5a830cb0a4009fbd8904de511e28631e62ce5ad231373d3cdad373ccab",
+    "callbackGasLimit": 500000,
+    "requestConfirmations": 3,
+    "numWords": 1,
+    "note": "Using subscription ID 1 for testing. Create real subscription for production."
+  }
+}

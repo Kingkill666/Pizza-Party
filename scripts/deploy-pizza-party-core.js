@@ -9,7 +9,7 @@ async function main() {
   console.log("👤 Deploying from address:", deployer.address);
   
   // Check deployer balance
-  const balance = await deployer.provider.getBalance(deployer.address);
+  const balance = await deployer.getBalance();
   console.log("💰 Deployer balance:", ethers.formatEther(balance), "ETH");
   
   if (balance.lt(ethers.parseEther("0.01"))) {

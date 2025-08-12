@@ -8,8 +8,8 @@ class ScheduledWinnerSelection {
     this.vmfTokenContract = null;
     this.provider = null;
     this.signer = null;
-    this.VRF_ADDRESS = "0xCCa74Fb01e4aec664b8F57Db1Ce6b702AF8f5a59";
-    this.PIZZA_PARTY_ADDRESS = "0x8ef20E4C2c2Be6d2E1B800B6dd1F12636A096D63"; // Your deployed Pizza Party contract
+    this.VRF_ADDRESS = "0xefAe49039ADB963b1183869D1632D4CbC8F0603b"; // New ChainlinkVRF contract
+    this.PIZZA_PARTY_ADDRESS = "0xCD8a3a397CdE223c47602d2C37a3b8a5B99a6460"; // New PizzaPartyCore contract
     this.VMF_TOKEN_ADDRESS = "0x2213414893259b0C48066Acd1763e7fbA97859E5";
     this.isRunning = false;
     this.pendingRequests = new Map();
