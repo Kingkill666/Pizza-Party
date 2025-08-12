@@ -91,6 +91,36 @@ export class PizzaPartyContract {
     }
   }
 
+  // Get player's current toppings
+  async getPlayerToppings(playerAddress: string): Promise<number> {
+    try {
+      const playerData = await this.getPlayerData(playerAddress)
+      if (!playerData) return 0
+      
+      return playerData.totalToppings || 0
+    } catch (error) {
+      console.error('Error getting player toppings:', error)
+      return 0
+    }
+  }
+
+  // Get current jackpot amount
+  async getCurrentJackpot(): Promise<number> {
+    try {
+      const data = await this.provider.request({
+        method: 'eth_call',
+        params: [{
+          to: this.pizzaPartyAddress,
+          data: this.encodeFunctionCall('currentDailyJackpot', [])
+        }, 'latest']
+      })
+      return this.decodeUint256(data)
+    } catch (error) {
+      console.error('Error getting current jackpot:', error)
+      return 0
+    }
+  }
+
   // Get current VMF price
   async getCurrentVMFPrice() {
     try {
@@ -582,6 +612,7 @@ export class PizzaPartyContract {
       lastEntryTime: 0,
       totalEntries: 0,
       toppings: 0,
+      totalToppings: 0, // Add this field
       referralCode: '',
       referredBy: ''
     }
@@ -671,6 +702,25 @@ export class PizzaPartyContract {
       available: false,
       reason: 'Gasless transactions temporarily disabled due to provider compatibility issues',
     };
+  }
+
+  // Check if user has already entered today from contract
+  async hasEnteredToday(playerAddress: string): Promise<boolean> {
+    try {
+      const playerData = await this.getPlayerData(playerAddress)
+      if (!playerData) return false
+      
+      // Check if the player has entered today based on lastEntryTime
+      const now = Math.floor(Date.now() / 1000) // Current timestamp in seconds
+      const lastEntryTime = playerData.lastEntryTime || 0
+      const oneDayInSeconds = 24 * 60 * 60 // 24 hours in seconds
+      
+      // If last entry was within the last 24 hours, they've already entered
+      return (now - lastEntryTime) < oneDayInSeconds
+    } catch (error) {
+      console.error('Error checking if user has entered today:', error)
+      return false
+    }
   }
 }
 

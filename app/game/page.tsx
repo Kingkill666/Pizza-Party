@@ -155,13 +155,49 @@ export default function GamePage() {
     return hasEnteredToday
   }
 
+  // Check if user has already entered today from contract
+  const checkContractDailyEntry = async (): Promise<boolean> => {
+    if (!isConnected || !connection || !window.ethereum) return false
+    
+    try {
+      const contract = createPizzaPartyContract(window.ethereum)
+      return await contract.hasEnteredToday(connection.address)
+    } catch (error) {
+      console.error('Error checking contract daily entry:', error)
+      return false
+    }
+  }
+
   // Update hasEnteredToday state when connection changes
   useEffect(() => {
-    if (isConnected && connection) {
-      setHasEnteredToday(checkDailyEntry())
-    } else {
-      setHasEnteredToday(false)
+    const updateEntryStatus = async () => {
+      if (isConnected && connection) {
+        // Check both localStorage and contract state
+        const localStorageEntry = checkDailyEntry()
+        const contractEntry = await checkContractDailyEntry()
+        
+        setHasEnteredToday(localStorageEntry || contractEntry)
+      } else {
+        setHasEnteredToday(false)
+      }
     }
+    
+    updateEntryStatus()
+  }, [isConnected, connection])
+
+  // Periodically update real-time data
+  useEffect(() => {
+    if (!isConnected || !connection) return
+
+    // Update data immediately when connected
+    updateAllRealTimeData()
+
+    // Set up periodic updates every 30 seconds
+    const interval = setInterval(() => {
+      updateAllRealTimeData()
+    }, 30000) // 30 seconds
+
+    return () => clearInterval(interval)
   }, [isConnected, connection])
 
   // Get next game reset time
@@ -214,7 +250,11 @@ export default function GamePage() {
       return
     }
 
-    if (hasEnteredToday) {
+    // Check both localStorage and contract state
+    const localStorageEntry = checkDailyEntry()
+    const contractEntry = await checkContractDailyEntry()
+    
+    if (localStorageEntry || contractEntry) {
       const timeUntilReset = formatTimeUntilReset()
       setGameError(`You have already entered the game today. Come back tomorrow to play again. (Next game starts in ${timeUntilReset})`)
       return
@@ -281,10 +321,8 @@ export default function GamePage() {
       localStorage.setItem(dailyEntryKey, Date.now().toString())
       setHasEnteredToday(true)
       
-      // Update player count, VMF balance, and real-time data
-      updatePlayerCount()
-      await checkVMFBalance(connection.address)
-      updateRealTimeData()
+      // Update all real-time data
+      await updateAllRealTimeData()
       
     } catch (error: any) {
       console.error('❌ Error entering game:', error)
@@ -299,10 +337,6 @@ export default function GamePage() {
     try {
       console.log('🔄 Updating player count...')
       
-      // Always try to get contract data first
-      let contractDailyCount = 0
-      let contractWeeklyCount = 0
-      
       if (isConnected && connection && window.ethereum) {
         try {
           console.log('🔍 Attempting contract calls...')
@@ -314,59 +348,113 @@ export default function GamePage() {
             contract.getWeeklyPlayerCount()
           ])
           
-          contractDailyCount = dailyCount
-          contractWeeklyCount = weeklyCount
+          console.log('📊 Contract daily players:', dailyCount)
+          console.log('📊 Contract weekly players:', weeklyCount)
           
-          console.log('📊 Contract daily players:', contractDailyCount)
-          console.log('📊 Contract weekly players:', contractWeeklyCount)
+          // Use contract data if available
+          if (dailyCount > 0) {
+            setPlayerCount(dailyCount)
+          }
+          
         } catch (contractError) {
           console.error('❌ Error reading players from contract:', contractError)
+          // Fallback to localStorage
+          updatePlayerCountFromLocalStorage()
         }
       } else {
         console.log('🔍 Wallet not connected for contract calls')
+        updatePlayerCountFromLocalStorage()
       }
-
-      // Fallback to localStorage only if contract data is not available
-      const now = new Date()
-      const pstOffset = -8
-      const pstTime = new Date(now.getTime() + (pstOffset * 60 * 60 * 1000))
-      const isBeforeNoonPST = pstTime.getHours() < 12
-      const today = pstTime.toDateString()
-      const yesterday = new Date(pstTime.getTime() - (24 * 60 * 60 * 1000)).toDateString()
-      const gameDate = isBeforeNoonPST ? today : yesterday
-      const dailyKey = `daily_players_${gameDate}`
-      const dailyPlayers = JSON.parse(localStorage.getItem(dailyKey) || '[]')
-      const localStorageDailyCount = dailyPlayers.length
-
-      const dayOfWeek = pstTime.getDay()
-      const daysSinceMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
-      const weekStart = new Date(pstTime.getTime() - (daysSinceMonday * 24 * 60 * 60 * 1000))
-      weekStart.setHours(12, 0, 0, 0)
-      const weeklyKey = `weekly_players_${weekStart.getTime()}`
-      const weeklyPlayers = JSON.parse(localStorage.getItem(weeklyKey) || '[]')
-      const localStorageWeeklyCount = weeklyPlayers.length
-
-      console.log('📊 Player Stats:', {
-        contractDailyPlayers: contractDailyCount,
-        contractWeeklyPlayers: contractWeeklyCount,
-        localStorageDailyPlayers: localStorageDailyCount,
-        localStorageWeeklyPlayers: localStorageWeeklyCount,
-        gameDate: gameDate
-      })
-
-      // Use contract data if available, otherwise fallback to localStorage
-      const displayDailyCount = (contractDailyCount && !isNaN(contractDailyCount) && contractDailyCount > 0)
-        ? contractDailyCount
-        : localStorageDailyCount
-        
-      const displayWeeklyCount = (contractWeeklyCount && !isNaN(contractWeeklyCount) && contractWeeklyCount > 0)
-        ? contractWeeklyCount
-        : localStorageWeeklyCount
-
-      console.log('📊 Final display counts - Daily:', displayDailyCount, 'Weekly:', displayWeeklyCount)
-      setPlayerCount(displayDailyCount)
     } catch (error) {
       console.error('❌ Error updating player count:', error)
+      updatePlayerCountFromLocalStorage()
+    }
+  }
+
+  // Update player count from localStorage (fallback)
+  const updatePlayerCountFromLocalStorage = () => {
+    const now = new Date()
+    const pstOffset = -8
+    const pstTime = new Date(now.getTime() + (pstOffset * 60 * 60 * 1000))
+    const isBeforeNoonPST = pstTime.getHours() < 12
+    const today = pstTime.toDateString()
+    const yesterday = new Date(pstTime.getTime() - (24 * 60 * 60 * 1000)).toDateString()
+    const gameDate = isBeforeNoonPST ? today : yesterday
+    const dailyKey = `daily_players_${gameDate}`
+    const dailyPlayers = JSON.parse(localStorage.getItem(dailyKey) || '[]')
+    const localStorageDailyCount = dailyPlayers.length
+
+    console.log('📊 Using localStorage daily players:', localStorageDailyCount)
+    setPlayerCount(localStorageDailyCount)
+  }
+
+  // Update all real-time data
+  const updateAllRealTimeData = async () => {
+    console.log('🔄 Updating all real-time data...')
+    
+    // Update player count
+    await updatePlayerCount()
+    
+    // Update jackpot amount
+    await updateJackpotAmount()
+    
+    // Update player toppings
+    await updatePlayerToppings()
+    
+    // Update VMF balance
+    if (connection?.address) {
+      await checkVMFBalance(connection.address)
+    }
+    
+    console.log('✅ All real-time data updated!')
+  }
+
+  // Update player's toppings
+  const updatePlayerToppings = async () => {
+    try {
+      console.log('🔄 Updating player toppings...')
+      
+      if (isConnected && connection && window.ethereum) {
+        try {
+          const contract = createPizzaPartyContract(window.ethereum)
+          const toppings = await contract.getPlayerToppings(connection.address)
+          
+          console.log('🍕 Player toppings:', toppings)
+          
+          // Update localStorage with current toppings
+          localStorage.setItem(`toppings_${connection.address}`, toppings.toString())
+          
+        } catch (contractError) {
+          console.error('❌ Error reading player toppings from contract:', contractError)
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error updating player toppings:', error)
+    }
+  }
+
+  // Update jackpot amount
+  const updateJackpotAmount = async () => {
+    try {
+      console.log('🔄 Updating jackpot amount...')
+      
+      if (isConnected && connection && window.ethereum) {
+        try {
+          const contract = createPizzaPartyContract(window.ethereum)
+          const jackpotAmount = await contract.getCurrentJackpot()
+          
+          console.log('💰 Contract jackpot amount:', jackpotAmount)
+          
+          // Convert from wei to VMF (assuming 18 decimals)
+          const jackpotInVMF = jackpotAmount / 1e18
+          setJackpot(jackpotInVMF)
+          
+        } catch (contractError) {
+          console.error('❌ Error reading jackpot from contract:', contractError)
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error updating jackpot amount:', error)
     }
   }
 
