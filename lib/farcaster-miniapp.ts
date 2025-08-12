@@ -1,27 +1,14 @@
 // Farcaster Mini App SDK initialization and utilities
 // Based on official documentation: https://miniapps.farcaster.xyz/llms-full.txt
 
-let sdk: any = null
+import { sdk } from '@farcaster/miniapp-sdk'
 
-// Try to import the SDK dynamically, but handle cases where it might not be available
-const loadSDK = async () => {
-  if (sdk) return sdk
-  
-  // Only try to load SDK in browser environment
-  if (typeof window === 'undefined') {
-    console.warn('⚠️ Farcaster SDK not available in server environment')
-    return null
-  }
-  
-  try {
-    const sdkModule = await import('@farcaster/miniapp-sdk')
-    sdk = sdkModule.sdk
-    console.log('✅ Farcaster SDK loaded successfully')
-    return sdk
-  } catch (error) {
-    console.warn('⚠️ Farcaster Mini App SDK not available:', error)
-    return null
-  }
+// Preconnect to Quick Auth Server for optimal performance
+if (typeof window !== 'undefined') {
+  const link = document.createElement('link')
+  link.rel = 'preconnect'
+  link.href = 'https://auth.farcaster.xyz'
+  document.head.appendChild(link)
 }
 
 export class FarcasterMiniApp {
@@ -42,14 +29,7 @@ export class FarcasterMiniApp {
     if (this.isInitialized) return
 
     try {
-      // Load SDK dynamically
-      const sdkInstance = await loadSDK()
-      if (!sdkInstance) {
-        console.warn('⚠️ Farcaster SDK not available, skipping initialization')
-        return
-      }
-
-      // Store SDK instance for later use
+      // SDK is now imported directly
       this.isInitialized = true
       console.log('✅ Farcaster Mini App SDK loaded')
     } catch (error) {
@@ -63,14 +43,8 @@ export class FarcasterMiniApp {
     if (this.isReadyCalled) return
 
     try {
-      const sdkInstance = await loadSDK()
-      if (!sdkInstance) {
-        console.warn('⚠️ Farcaster SDK not available, skipping ready call')
-        return
-      }
-
       // This hides the splash screen and displays content
-      await sdkInstance.actions.ready()
+      await sdk.actions.ready()
       this.isReadyCalled = true
       console.log('✅ Farcaster Mini App ready - splash screen hidden')
     } catch (error) {
@@ -80,13 +54,7 @@ export class FarcasterMiniApp {
 
   async getAuthToken(): Promise<string | null> {
     try {
-      const sdkInstance = await loadSDK()
-      if (!sdkInstance) {
-        console.warn('⚠️ Farcaster SDK not available')
-        return null
-      }
-
-      const { token } = await sdkInstance.quickAuth.getToken()
+      const { token } = await sdk.quickAuth.getToken()
       return token
     } catch (error) {
       console.error('❌ Failed to get auth token:', error)
@@ -105,8 +73,7 @@ export class FarcasterMiniApp {
   // Check if SDK is available
   async isSDKAvailable(): Promise<boolean> {
     try {
-      const sdkInstance = await loadSDK()
-      return sdkInstance !== null
+      return true // SDK is imported directly
     } catch {
       return false
     }
@@ -115,12 +82,7 @@ export class FarcasterMiniApp {
   // Make authenticated requests using Quick Auth
   async makeAuthenticatedRequest(url: string, options?: RequestInit): Promise<Response> {
     try {
-      const sdkInstance = await loadSDK()
-      if (!sdkInstance) {
-        throw new Error('Farcaster SDK not available')
-      }
-
-      return await sdkInstance.quickAuth.fetch(url, options)
+      return await sdk.quickAuth.fetch(url, options)
     } catch (error) {
       console.error('❌ Failed to make authenticated request:', error)
       throw error

@@ -1,6 +1,6 @@
 {
   "name": "Pizza Party",
-  "description": "Play to win a slice of the pie! Join the daily game and compete for Base Sepolia ETH prizes.",
+  "description": "Play to win a slice of the pie! Join the daily game and compete for VMF token prizes on Base Mainnet.",
   "icon": "https://pizza-party.vmfcoin.com/images/pizza-transparent.png",
   "splash": "https://pizza-party.vmfcoin.com/images/pizza-transparent.png",
   "url": "https://pizza-party.vmfcoin.com",
@@ -29,14 +29,14 @@
     "website": "https://pizza-party.vmfcoin.com"
   },
   "chain": {
-    "id": 84532,
-    "name": "Base Sepolia",
-    "currency": "BASE"
+    "id": 8453,
+    "name": "Base Mainnet",
+    "currency": "VMF"
   },
   "game": {
     "type": "daily",
-    "entry_fee": "0.001 BASE",
+    "entry_fee": "1 VMF",
     "prize_pool": "dynamic",
-    "winners": "8 daily"
+    "winners": "8 daily, 10 weekly"
   }
 } 
