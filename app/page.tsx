@@ -45,7 +45,9 @@ export default function HomePage() {
       isFarcaster: isFarcaster(),
     })
 
-    window.scrollTo(0, 0)
+    if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0)
+    }
   }, [])
 
   // Handle page refresh and wallet disconnection
@@ -69,32 +71,37 @@ export default function HomePage() {
       ]
       
       // Remove all toppings-related data
-      Object.keys(localStorage).forEach(key => {
-        keysToRemove.forEach(prefix => {
-          if (key.startsWith(prefix)) {
-            localStorage.removeItem(key)
-            console.log(`🗑️ Removed ${key} from localStorage on page load/reload`)
-          }
+      if (typeof window !== 'undefined' && window.localStorage) {
+        Object.keys(localStorage).forEach(key => {
+          keysToRemove.forEach(prefix => {
+            if (key.startsWith(prefix)) {
+              localStorage.removeItem(key)
+              console.log(`🗑️ Removed ${key} from localStorage on page load/reload`)
+            }
+          })
         })
-      })
+      }
     }
   }, [isConnected])
 
   // Handle page reloads specifically - runs on every page load
   useEffect(() => {
     // Check if this is an actual page reload (not navigation)
-    const isPageReload = !sessionStorage.getItem("page_loaded")
-    
-    if (isPageReload) {
-      // This is a page reload - set the flag and clear data
-      sessionStorage.setItem("page_loaded", "true")
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      const isPageReload = !sessionStorage.getItem("page_loaded")
+      
+      if (isPageReload) {
+        // This is a page reload - set the flag and clear data
+        sessionStorage.setItem("page_loaded", "true")
       
       // Force disconnect on page reload
       const forceDisconnectOnReload = () => {
         console.log("🔄 Page reload detected - clearing wallet data")
         
         // Clear session flag to force fresh load
-        sessionStorage.removeItem("wallet_fresh_load")
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          sessionStorage.removeItem("wallet_fresh_load")
+        }
         
         // Clear all wallet data from localStorage
         const walletKeysToRemove = [
@@ -109,22 +116,26 @@ export default function HomePage() {
         ]
         
         // Remove all wallet-related data
-        Object.keys(localStorage).forEach(key => {
-          walletKeysToRemove.forEach(prefix => {
-            if (key.startsWith(prefix) || key.includes('wallet') || key.includes('ethereum') || key.includes('web3')) {
-              localStorage.removeItem(key)
-              console.log(`🗑️ Removed wallet data: ${key}`)
-            }
+        if (typeof window !== 'undefined' && window.localStorage) {
+          Object.keys(localStorage).forEach(key => {
+            walletKeysToRemove.forEach(prefix => {
+              if (key.startsWith(prefix) || key.includes('wallet') || key.includes('ethereum') || key.includes('web3')) {
+                localStorage.removeItem(key)
+                console.log(`🗑️ Removed wallet data: ${key}`)
+              }
+            })
           })
-        })
+        }
         
         // Clear sessionStorage wallet data
-        Object.keys(sessionStorage).forEach(key => {
-          if (key.includes('wallet') || key.includes('ethereum') || key.includes('web3')) {
-            sessionStorage.removeItem(key)
-            console.log(`🗑️ Removed session wallet data: ${key}`)
-          }
-        })
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          Object.keys(sessionStorage).forEach(key => {
+            if (key.includes('wallet') || key.includes('ethereum') || key.includes('web3')) {
+              sessionStorage.removeItem(key)
+              console.log(`🗑️ Removed session wallet data: ${key}`)
+            }
+          })
+        }
         
         // Clear toppings data immediately on page reload
         console.log("🔄 Page reload detected - clearing toppings data")
@@ -143,19 +154,22 @@ export default function HomePage() {
           'pizza_referrer_stats_'
         ]
         
-        Object.keys(localStorage).forEach(key => {
-          keysToRemove.forEach(prefix => {
-            if (key.startsWith(prefix)) {
-              localStorage.removeItem(key)
-              console.log(`🗑️ Removed ${key} from localStorage on page reload`)
-            }
+        if (typeof window !== 'undefined' && window.localStorage) {
+          Object.keys(localStorage).forEach(key => {
+            keysToRemove.forEach(prefix => {
+              if (key.startsWith(prefix)) {
+                localStorage.removeItem(key)
+                console.log(`🗑️ Removed ${key} from localStorage on page reload`)
+              }
+            })
           })
-        })
+        }
       }
       
       // Run immediately on component mount
       forceDisconnectOnReload()
     }
+  }
   }, []) // Empty dependency array - runs only on mount
 
   const handleWalletConnect = async (walletId: string) => {
@@ -187,14 +201,16 @@ export default function HomePage() {
     ]
     
     // Remove all toppings-related data
-    Object.keys(localStorage).forEach(key => {
-      keysToRemove.forEach(prefix => {
-        if (key.startsWith(prefix)) {
-          localStorage.removeItem(key)
-          console.log(`🗑️ Removed ${key} from localStorage`)
-        }
+    if (typeof window !== 'undefined' && window.localStorage) {
+      Object.keys(localStorage).forEach(key => {
+        keysToRemove.forEach(prefix => {
+          if (key.startsWith(prefix)) {
+            localStorage.removeItem(key)
+            console.log(`🗑️ Removed ${key} from localStorage`)
+          }
+        })
       })
-    })
+    }
     
     // Clear wallet data
     const walletKeysToRemove = [
@@ -209,29 +225,35 @@ export default function HomePage() {
     ]
     
     // Remove all wallet-related data
-    Object.keys(localStorage).forEach(key => {
-      walletKeysToRemove.forEach(prefix => {
-        if (key.startsWith(prefix) || key.includes('wallet') || key.includes('ethereum') || key.includes('web3')) {
-          localStorage.removeItem(key)
-          console.log(`🗑️ Removed wallet data: ${key}`)
-        }
+    if (typeof window !== 'undefined' && window.localStorage) {
+      Object.keys(localStorage).forEach(key => {
+        walletKeysToRemove.forEach(prefix => {
+          if (key.startsWith(prefix) || key.includes('wallet') || key.includes('ethereum') || key.includes('web3')) {
+            localStorage.removeItem(key)
+            console.log(`🗑️ Removed wallet data: ${key}`)
+          }
+        })
       })
-    })
+    }
     
     // Clear sessionStorage wallet data
-    Object.keys(sessionStorage).forEach(key => {
-      if (key.includes('wallet') || key.includes('ethereum') || key.includes('web3')) {
-        sessionStorage.removeItem(key)
-        console.log(`🗑️ Removed session wallet data: ${key}`)
-      }
-    })
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.includes('wallet') || key.includes('ethereum') || key.includes('web3')) {
+          sessionStorage.removeItem(key)
+          console.log(`🗑️ Removed session wallet data: ${key}`)
+        }
+      })
+    }
     
     console.log("🔌 Wallet data cleared successfully")
     
     // Force page refresh to homepage after a short delay to ensure disconnect completes
     setTimeout(() => {
       console.log("🔄 Refreshing page for true disconnect - returning to homepage")
-      window.location.href = "/"
+      if (typeof window !== 'undefined') {
+        window.location.href = "/"
+      }
     }, 100)
   }
 
