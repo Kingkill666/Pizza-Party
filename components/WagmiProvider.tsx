@@ -8,11 +8,16 @@ import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import '@rainbow-me/rainbowkit/styles.css'
 import { pizzaPartyChain } from '@/lib/chains'
 
-// Create a client
-const queryClient = new QueryClient()
-
 export function WagmiProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false)
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 60 * 1000,
+        retry: 1,
+      },
+    },
+  }))
 
   useEffect(() => {
     setMounted(true)
