@@ -30,6 +30,8 @@ export declare namespace PizzaPartyCore {
     weeklyEntries: BigNumberish;
     lastEntryTime: BigNumberish;
     vmfBalance: BigNumberish;
+    lastVmfBalanceCheck: BigNumberish;
+    referrals: BigNumberish;
     isBlacklisted: boolean;
   };
 
@@ -39,6 +41,8 @@ export declare namespace PizzaPartyCore {
     weeklyEntries: bigint,
     lastEntryTime: bigint,
     vmfBalance: bigint,
+    lastVmfBalanceCheck: bigint,
+    referrals: bigint,
     isBlacklisted: boolean
   ] & {
     totalToppings: bigint;
@@ -46,6 +50,8 @@ export declare namespace PizzaPartyCore {
     weeklyEntries: bigint;
     lastEntryTime: bigint;
     vmfBalance: bigint;
+    lastVmfBalanceCheck: bigint;
+    referrals: bigint;
     isBlacklisted: boolean;
   };
 }
@@ -58,12 +64,14 @@ export interface PizzaPartyCoreInterface extends Interface {
       | "ENTRY_COOLDOWN"
       | "MAX_DAILY_ENTRIES"
       | "MIN_VMF_REQUIRED"
+      | "REFERRAL_REWARD"
+      | "VMF_HOLDING_REWARD"
+      | "VMF_HOLDING_THRESHOLD"
+      | "VMF_PER_TOPPING"
       | "WEEKLY_WINNERS_COUNT"
       | "addToDailyJackpot"
-      | "addToWeeklyJackpot"
       | "blacklistedAddresses"
       | "currentDailyJackpot"
-      | "currentWeeklyJackpot"
       | "dailyPlayerCount"
       | "dailyPlayers"
       | "emergencyPause"
@@ -75,10 +83,12 @@ export interface PizzaPartyCoreInterface extends Interface {
       | "getEligibleWeeklyPlayers"
       | "getMinimumVMFRequired"
       | "getPlayerInfo"
+      | "getPlayerReferralInfo"
       | "getPlayerToppings"
       | "getPlayerVMFBalance"
       | "getTotalToppingsClaimed"
       | "getWeeklyJackpot"
+      | "getWeeklyToppingsPool"
       | "isDailyDrawReady"
       | "isWeeklyDrawReady"
       | "lastDailyDraw"
@@ -88,12 +98,16 @@ export interface PizzaPartyCoreInterface extends Interface {
       | "players"
       | "processDailyWinners"
       | "processWeeklyWinners"
+      | "referralCount"
+      | "referrers"
       | "renounceOwnership"
       | "setPlayerBlacklist"
+      | "totalToppingsClaimed"
       | "transferOwnership"
       | "vmfToken"
       | "weeklyPlayerCount"
       | "weeklyPlayers"
+      | "weeklyToppingsPool"
   ): FunctionFragment;
 
   getEvent(
@@ -104,6 +118,7 @@ export interface PizzaPartyCoreInterface extends Interface {
       | "Paused"
       | "PlayerBlacklisted"
       | "PlayerEntered"
+      | "ReferralRegistered"
       | "ToppingsAwarded"
       | "Unpaused"
       | "WeeklyWinnersSelected"
@@ -130,6 +145,22 @@ export interface PizzaPartyCoreInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "REFERRAL_REWARD",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "VMF_HOLDING_REWARD",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "VMF_HOLDING_THRESHOLD",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "VMF_PER_TOPPING",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "WEEKLY_WINNERS_COUNT",
     values?: undefined
   ): string;
@@ -138,19 +169,11 @@ export interface PizzaPartyCoreInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "addToWeeklyJackpot",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "blacklistedAddresses",
     values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "currentDailyJackpot",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "currentWeeklyJackpot",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -171,7 +194,7 @@ export interface PizzaPartyCoreInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "enterDailyGame",
-    values?: undefined
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getCurrentGameId",
@@ -198,6 +221,10 @@ export interface PizzaPartyCoreInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "getPlayerReferralInfo",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getPlayerToppings",
     values: [AddressLike]
   ): string;
@@ -211,6 +238,10 @@ export interface PizzaPartyCoreInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getWeeklyJackpot",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getWeeklyToppingsPool",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -244,12 +275,24 @@ export interface PizzaPartyCoreInterface extends Interface {
     values: [BigNumberish, AddressLike[]]
   ): string;
   encodeFunctionData(
+    functionFragment: "referralCount",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "referrers",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "setPlayerBlacklist",
     values: [AddressLike, boolean]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalToppingsClaimed",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
@@ -263,6 +306,10 @@ export interface PizzaPartyCoreInterface extends Interface {
   encodeFunctionData(
     functionFragment: "weeklyPlayers",
     values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "weeklyToppingsPool",
+    values?: undefined
   ): string;
 
   decodeFunctionResult(
@@ -286,6 +333,22 @@ export interface PizzaPartyCoreInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "REFERRAL_REWARD",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "VMF_HOLDING_REWARD",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "VMF_HOLDING_THRESHOLD",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "VMF_PER_TOPPING",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "WEEKLY_WINNERS_COUNT",
     data: BytesLike
   ): Result;
@@ -294,19 +357,11 @@ export interface PizzaPartyCoreInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "addToWeeklyJackpot",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "blacklistedAddresses",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "currentDailyJackpot",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "currentWeeklyJackpot",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -354,6 +409,10 @@ export interface PizzaPartyCoreInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getPlayerReferralInfo",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getPlayerToppings",
     data: BytesLike
   ): Result;
@@ -367,6 +426,10 @@ export interface PizzaPartyCoreInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getWeeklyJackpot",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getWeeklyToppingsPool",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -397,11 +460,20 @@ export interface PizzaPartyCoreInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "referralCount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "referrers", data: BytesLike): Result;
+  decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "setPlayerBlacklist",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalToppingsClaimed",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -415,6 +487,10 @@ export interface PizzaPartyCoreInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "weeklyPlayers",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "weeklyToppingsPool",
     data: BytesLike
   ): Result;
 }
@@ -506,6 +582,19 @@ export namespace PlayerEnteredEvent {
     player: string;
     gameId: bigint;
     amount: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace ReferralRegisteredEvent {
+  export type InputTuple = [referrer: AddressLike, referred: AddressLike];
+  export type OutputTuple = [referrer: string, referred: string];
+  export interface OutputObject {
+    referrer: string;
+    referred: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -618,15 +707,17 @@ export interface PizzaPartyCore extends BaseContract {
 
   MIN_VMF_REQUIRED: TypedContractMethod<[], [bigint], "view">;
 
+  REFERRAL_REWARD: TypedContractMethod<[], [bigint], "view">;
+
+  VMF_HOLDING_REWARD: TypedContractMethod<[], [bigint], "view">;
+
+  VMF_HOLDING_THRESHOLD: TypedContractMethod<[], [bigint], "view">;
+
+  VMF_PER_TOPPING: TypedContractMethod<[], [bigint], "view">;
+
   WEEKLY_WINNERS_COUNT: TypedContractMethod<[], [bigint], "view">;
 
   addToDailyJackpot: TypedContractMethod<
-    [amount: BigNumberish],
-    [void],
-    "nonpayable"
-  >;
-
-  addToWeeklyJackpot: TypedContractMethod<
     [amount: BigNumberish],
     [void],
     "nonpayable"
@@ -640,8 +731,6 @@ export interface PizzaPartyCore extends BaseContract {
 
   currentDailyJackpot: TypedContractMethod<[], [bigint], "view">;
 
-  currentWeeklyJackpot: TypedContractMethod<[], [bigint], "view">;
-
   dailyPlayerCount: TypedContractMethod<[arg0: BigNumberish], [bigint], "view">;
 
   dailyPlayers: TypedContractMethod<
@@ -654,7 +743,11 @@ export interface PizzaPartyCore extends BaseContract {
 
   emergencyWithdraw: TypedContractMethod<[], [void], "nonpayable">;
 
-  enterDailyGame: TypedContractMethod<[], [void], "nonpayable">;
+  enterDailyGame: TypedContractMethod<
+    [referrer: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
   getCurrentGameId: TypedContractMethod<[], [bigint], "view">;
 
@@ -680,6 +773,12 @@ export interface PizzaPartyCore extends BaseContract {
     "view"
   >;
 
+  getPlayerReferralInfo: TypedContractMethod<
+    [player: AddressLike],
+    [[bigint, string] & { referrals: bigint; referrer: string }],
+    "view"
+  >;
+
   getPlayerToppings: TypedContractMethod<
     [player: AddressLike],
     [bigint],
@@ -696,6 +795,8 @@ export interface PizzaPartyCore extends BaseContract {
 
   getWeeklyJackpot: TypedContractMethod<[], [bigint], "view">;
 
+  getWeeklyToppingsPool: TypedContractMethod<[], [bigint], "view">;
+
   isDailyDrawReady: TypedContractMethod<[], [boolean], "view">;
 
   isWeeklyDrawReady: TypedContractMethod<[], [boolean], "view">;
@@ -711,12 +812,14 @@ export interface PizzaPartyCore extends BaseContract {
   players: TypedContractMethod<
     [arg0: AddressLike],
     [
-      [bigint, bigint, bigint, bigint, bigint, boolean] & {
+      [bigint, bigint, bigint, bigint, bigint, bigint, bigint, boolean] & {
         totalToppings: bigint;
         dailyEntries: bigint;
         weeklyEntries: bigint;
         lastEntryTime: bigint;
         vmfBalance: bigint;
+        lastVmfBalanceCheck: bigint;
+        referrals: bigint;
         isBlacklisted: boolean;
       }
     ],
@@ -735,6 +838,10 @@ export interface PizzaPartyCore extends BaseContract {
     "nonpayable"
   >;
 
+  referralCount: TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
+
+  referrers: TypedContractMethod<[arg0: AddressLike], [string], "view">;
+
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
   setPlayerBlacklist: TypedContractMethod<
@@ -742,6 +849,8 @@ export interface PizzaPartyCore extends BaseContract {
     [void],
     "nonpayable"
   >;
+
+  totalToppingsClaimed: TypedContractMethod<[], [bigint], "view">;
 
   transferOwnership: TypedContractMethod<
     [newOwner: AddressLike],
@@ -763,6 +872,8 @@ export interface PizzaPartyCore extends BaseContract {
     "view"
   >;
 
+  weeklyToppingsPool: TypedContractMethod<[], [bigint], "view">;
+
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
@@ -783,22 +894,28 @@ export interface PizzaPartyCore extends BaseContract {
     nameOrSignature: "MIN_VMF_REQUIRED"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
+    nameOrSignature: "REFERRAL_REWARD"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "VMF_HOLDING_REWARD"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "VMF_HOLDING_THRESHOLD"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "VMF_PER_TOPPING"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
     nameOrSignature: "WEEKLY_WINNERS_COUNT"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "addToDailyJackpot"
   ): TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "addToWeeklyJackpot"
-  ): TypedContractMethod<[amount: BigNumberish], [void], "nonpayable">;
-  getFunction(
     nameOrSignature: "blacklistedAddresses"
   ): TypedContractMethod<[arg0: AddressLike], [boolean], "view">;
   getFunction(
     nameOrSignature: "currentDailyJackpot"
-  ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "currentWeeklyJackpot"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "dailyPlayerCount"
@@ -818,7 +935,7 @@ export interface PizzaPartyCore extends BaseContract {
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "enterDailyGame"
-  ): TypedContractMethod<[], [void], "nonpayable">;
+  ): TypedContractMethod<[referrer: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "getCurrentGameId"
   ): TypedContractMethod<[], [bigint], "view">;
@@ -842,6 +959,13 @@ export interface PizzaPartyCore extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "getPlayerReferralInfo"
+  ): TypedContractMethod<
+    [player: AddressLike],
+    [[bigint, string] & { referrals: bigint; referrer: string }],
+    "view"
+  >;
+  getFunction(
     nameOrSignature: "getPlayerToppings"
   ): TypedContractMethod<[player: AddressLike], [bigint], "view">;
   getFunction(
@@ -852,6 +976,9 @@ export interface PizzaPartyCore extends BaseContract {
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "getWeeklyJackpot"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getWeeklyToppingsPool"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "isDailyDrawReady"
@@ -876,12 +1003,14 @@ export interface PizzaPartyCore extends BaseContract {
   ): TypedContractMethod<
     [arg0: AddressLike],
     [
-      [bigint, bigint, bigint, bigint, bigint, boolean] & {
+      [bigint, bigint, bigint, bigint, bigint, bigint, bigint, boolean] & {
         totalToppings: bigint;
         dailyEntries: bigint;
         weeklyEntries: bigint;
         lastEntryTime: bigint;
         vmfBalance: bigint;
+        lastVmfBalanceCheck: bigint;
+        referrals: bigint;
         isBlacklisted: boolean;
       }
     ],
@@ -902,6 +1031,12 @@ export interface PizzaPartyCore extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "referralCount"
+  ): TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "referrers"
+  ): TypedContractMethod<[arg0: AddressLike], [string], "view">;
+  getFunction(
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
@@ -911,6 +1046,9 @@ export interface PizzaPartyCore extends BaseContract {
     [void],
     "nonpayable"
   >;
+  getFunction(
+    nameOrSignature: "totalToppingsClaimed"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
@@ -927,6 +1065,9 @@ export interface PizzaPartyCore extends BaseContract {
     [string],
     "view"
   >;
+  getFunction(
+    nameOrSignature: "weeklyToppingsPool"
+  ): TypedContractMethod<[], [bigint], "view">;
 
   getEvent(
     key: "DailyWinnersSelected"
@@ -969,6 +1110,13 @@ export interface PizzaPartyCore extends BaseContract {
     PlayerEnteredEvent.InputTuple,
     PlayerEnteredEvent.OutputTuple,
     PlayerEnteredEvent.OutputObject
+  >;
+  getEvent(
+    key: "ReferralRegistered"
+  ): TypedContractEvent<
+    ReferralRegisteredEvent.InputTuple,
+    ReferralRegisteredEvent.OutputTuple,
+    ReferralRegisteredEvent.OutputObject
   >;
   getEvent(
     key: "ToppingsAwarded"
@@ -1057,6 +1205,17 @@ export interface PizzaPartyCore extends BaseContract {
       PlayerEnteredEvent.InputTuple,
       PlayerEnteredEvent.OutputTuple,
       PlayerEnteredEvent.OutputObject
+    >;
+
+    "ReferralRegistered(address,address)": TypedContractEvent<
+      ReferralRegisteredEvent.InputTuple,
+      ReferralRegisteredEvent.OutputTuple,
+      ReferralRegisteredEvent.OutputObject
+    >;
+    ReferralRegistered: TypedContractEvent<
+      ReferralRegisteredEvent.InputTuple,
+      ReferralRegisteredEvent.OutputTuple,
+      ReferralRegisteredEvent.OutputObject
     >;
 
     "ToppingsAwarded(address,uint256,string)": TypedContractEvent<

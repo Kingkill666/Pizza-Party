@@ -9,7 +9,6 @@ export type { ChainlinkVRF } from "./ChainlinkVRF";
 export type { FreePriceOracle } from "./FreePriceOracle";
 export type { FreeRandomness } from "./FreeRandomness";
 export type { IPizzaParty } from "./IPizzaParty";
-export type { MockVMF } from "./MockVMF";
 export type { PizzaParty } from "./PizzaParty";
 export type { PizzaPartyAdvancedRandomness } from "./PizzaPartyAdvancedRandomness";
 export type { PizzaPartyAnalytics } from "./PizzaPartyAnalytics";

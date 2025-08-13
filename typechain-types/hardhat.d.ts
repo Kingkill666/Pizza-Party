@@ -86,10 +86,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IPizzaParty__factory>;
     getContractFactory(
-      name: "MockVMF",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.MockVMF__factory>;
-    getContractFactory(
       name: "PizzaParty",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.PizzaParty__factory>;
@@ -233,11 +229,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IPizzaParty>;
     getContractAt(
-      name: "MockVMF",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.MockVMF>;
-    getContractAt(
       name: "PizzaParty",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -375,10 +366,6 @@ declare module "hardhat/types/runtime" {
       name: "IPizzaParty",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IPizzaParty>;
-    deployContract(
-      name: "MockVMF",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.MockVMF>;
     deployContract(
       name: "PizzaParty",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -522,11 +509,6 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IPizzaParty>;
-    deployContract(
-      name: "MockVMF",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.MockVMF>;
     deployContract(
       name: "PizzaParty",
       args: any[],

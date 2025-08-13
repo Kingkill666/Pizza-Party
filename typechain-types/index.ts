@@ -44,7 +44,6 @@ export type { FreeRandomness } from "./contracts/FreeRandomness";
 export { FreeRandomness__factory } from "./factories/contracts/FreeRandomness__factory";
 export type { IPizzaParty } from "./contracts/IPizzaParty";
 export { IPizzaParty__factory } from "./factories/contracts/IPizzaParty__factory";
-
 export type { PizzaParty } from "./contracts/PizzaParty";
 export { PizzaParty__factory } from "./factories/contracts/PizzaParty__factory";
 export type { PizzaPartyAdvancedRandomness } from "./contracts/PizzaPartyAdvancedRandomness";

@@ -9,7 +9,7 @@ import "./IPizzaParty.sol";
 
 /**
  * @title PizzaPartyCore
- * @dev Core Pizza Party game contract with essential functionality only
+ * @dev Core Pizza Party game contract with proper topping system and weekly jackpot calculation
  * This is a simplified version to stay under the 24,576 byte limit
  */
 contract PizzaPartyCore is ReentrancyGuard, Ownable, Pausable, IPizzaParty {
@@ -20,17 +20,22 @@ contract PizzaPartyCore is ReentrancyGuard, Ownable, Pausable, IPizzaParty {
     // Game constants
     uint256 public constant DAILY_WINNERS_COUNT = 8;
     uint256 public constant WEEKLY_WINNERS_COUNT = 10;
-    uint256 public constant DAILY_PLAY_REWARD = 1; // 1 topping per day
+    uint256 public constant DAILY_PLAY_REWARD = 1; // 1 topping per day played
+    uint256 public constant REFERRAL_REWARD = 2; // 2 toppings per referral
+    uint256 public constant VMF_HOLDING_REWARD = 3; // 3 toppings per 10 VMF
+    uint256 public constant VMF_HOLDING_THRESHOLD = 10 * 10**18; // 10 VMF threshold
     uint256 public constant MAX_DAILY_ENTRIES = 10;
     uint256 public constant ENTRY_COOLDOWN = 1 hours;
     uint256 public constant MIN_VMF_REQUIRED = 100 * 10**18; // 100 VMF minimum
+    uint256 public constant VMF_PER_TOPPING = 100 * 10**18; // 100 VMF per topping for jackpot
     
     // Game state
     uint256 private _gameId;
     uint256 public currentDailyJackpot;
-    uint256 public currentWeeklyJackpot;
     uint256 public lastDailyDraw;
     uint256 public lastWeeklyDraw;
+    uint256 public totalToppingsClaimed; // Total toppings across all players
+    uint256 public weeklyToppingsPool; // Toppings for current week
     
     // Player tracking
     mapping(uint256 => address[]) public dailyPlayers;
@@ -45,12 +50,16 @@ contract PizzaPartyCore is ReentrancyGuard, Ownable, Pausable, IPizzaParty {
         uint256 weeklyEntries;
         uint256 lastEntryTime;
         uint256 vmfBalance;
+        uint256 lastVmfBalanceCheck; // Track when VMF balance was last checked for toppings
+        uint256 referrals; // Number of successful referrals
         bool isBlacklisted;
     }
     
     // Mappings
     mapping(address => Player) public players;
     mapping(address => bool) public blacklistedAddresses;
+    mapping(address => address) public referrers; // Who referred this player
+    mapping(address => uint256) public referralCount; // How many people this player referred
     
     // Events
     event PlayerEntered(address indexed player, uint256 indexed gameId, uint256 amount);
@@ -59,6 +68,7 @@ contract PizzaPartyCore is ReentrancyGuard, Ownable, Pausable, IPizzaParty {
     event DailyWinnersSelected(uint256 gameId, address[] winners, uint256 jackpot);
     event WeeklyWinnersSelected(uint256 gameId, address[] winners, uint256 jackpot);
     event PlayerBlacklisted(address indexed player, bool blacklisted);
+    event ReferralRegistered(address indexed referrer, address indexed referred);
     
     // Modifiers
     modifier notBlacklisted(address player) {
@@ -82,9 +92,9 @@ contract PizzaPartyCore is ReentrancyGuard, Ownable, Pausable, IPizzaParty {
     }
     
     /**
-     * @dev Enter daily game
+     * @dev Enter daily game with optional referral
      */
-    function enterDailyGame() external nonReentrant whenNotPaused notBlacklisted(msg.sender) rateLimited {
+    function enterDailyGame(address referrer) external nonReentrant whenNotPaused notBlacklisted(msg.sender) rateLimited {
         // Check VMF balance
         uint256 vmfBalance = vmfToken.balanceOf(msg.sender);
         require(vmfBalance >= MIN_VMF_REQUIRED, "Insufficient VMF balance");
@@ -92,22 +102,74 @@ contract PizzaPartyCore is ReentrancyGuard, Ownable, Pausable, IPizzaParty {
         // Check daily entry limit
         require(players[msg.sender].dailyEntries < MAX_DAILY_ENTRIES, "Max daily entries reached");
         
+        // Process referral if provided and valid
+        if (referrer != address(0) && referrer != msg.sender && referrers[msg.sender] == address(0)) {
+            _processReferral(msg.sender, referrer);
+        }
+        
         // Update player data
         players[msg.sender].dailyEntries = players[msg.sender].dailyEntries + 1;
         players[msg.sender].lastEntryTime = block.timestamp;
-        players[msg.sender].totalToppings = players[msg.sender].totalToppings + DAILY_PLAY_REWARD;
         players[msg.sender].vmfBalance = vmfBalance;
+        
+        // Award toppings for daily play
+        _awardToppings(msg.sender, DAILY_PLAY_REWARD, "Daily play reward");
+        
+        // Award toppings for VMF holdings
+        _awardVmfHoldingToppings(msg.sender, vmfBalance);
         
         // Add player to current game
         dailyPlayers[_gameId].push(msg.sender);
         dailyPlayerCount[_gameId] = dailyPlayerCount[_gameId] + 1;
         
-        // Award toppings
-        emit ToppingsAwarded(msg.sender, DAILY_PLAY_REWARD, "Daily play reward");
-        
         // Emit events
         emit PlayerEntered(msg.sender, _gameId, 0);
-        emit JackpotUpdated(currentDailyJackpot, currentWeeklyJackpot);
+        emit JackpotUpdated(currentDailyJackpot, getWeeklyJackpot());
+    }
+    
+    /**
+     * @dev Process referral and award toppings
+     */
+    function _processReferral(address referred, address referrer) internal {
+        // Check if referrer is valid (has played before)
+        require(players[referrer].dailyEntries > 0, "Invalid referrer");
+        
+        // Register referral
+        referrers[referred] = referrer;
+        referralCount[referrer] = referralCount[referrer] + 1;
+        players[referrer].referrals = players[referrer].referrals + 1;
+        
+        // Award toppings to referrer
+        _awardToppings(referrer, REFERRAL_REWARD, "Referral reward");
+        
+        emit ReferralRegistered(referrer, referred);
+    }
+    
+    /**
+     * @dev Award toppings to player
+     */
+    function _awardToppings(address player, uint256 amount, string memory reason) internal {
+        players[player].totalToppings = players[player].totalToppings + amount;
+        totalToppingsClaimed = totalToppingsClaimed + amount;
+        weeklyToppingsPool = weeklyToppingsPool + amount;
+        
+        emit ToppingsAwarded(player, amount, reason);
+    }
+    
+    /**
+     * @dev Award toppings based on VMF holdings
+     */
+    function _awardVmfHoldingToppings(address player, uint256 vmfBalance) internal {
+        // Only check once per day to avoid spam
+        if (block.timestamp >= players[player].lastVmfBalanceCheck + 1 days) {
+            uint256 vmfHoldingToppings = (vmfBalance / VMF_HOLDING_THRESHOLD) * VMF_HOLDING_REWARD;
+            
+            if (vmfHoldingToppings > 0) {
+                _awardToppings(player, vmfHoldingToppings, "VMF holding reward");
+            }
+            
+            players[player].lastVmfBalanceCheck = block.timestamp;
+        }
     }
     
     /**
@@ -126,8 +188,7 @@ contract PizzaPartyCore is ReentrancyGuard, Ownable, Pausable, IPizzaParty {
                 require(vmfToken.transfer(winners[i], prizePerWinner), "Transfer failed");
                 
                 // Award toppings to winner
-                players[winners[i]].totalToppings += 10; // Bonus toppings for winning
-                emit ToppingsAwarded(winners[i], 10, "Daily winner bonus");
+                _awardToppings(winners[i], 10, "Daily winner bonus");
             }
         }
         
@@ -144,8 +205,11 @@ contract PizzaPartyCore is ReentrancyGuard, Ownable, Pausable, IPizzaParty {
         require(msg.sender == owner(), "Only owner can call this");
         require(winners.length > 0, "No winners provided");
         
+        // Calculate weekly jackpot based on toppings
+        uint256 weeklyJackpot = getWeeklyJackpot();
+        
         // Distribute jackpot to winners
-        uint256 prizePerWinner = currentWeeklyJackpot / winners.length;
+        uint256 prizePerWinner = weeklyJackpot / winners.length;
         
         for (uint256 i = 0; i < winners.length; i++) {
             if (winners[i] != address(0)) {
@@ -154,9 +218,9 @@ contract PizzaPartyCore is ReentrancyGuard, Ownable, Pausable, IPizzaParty {
             }
         }
         
-        emit WeeklyWinnersSelected(gameId, winners, currentWeeklyJackpot);
+        emit WeeklyWinnersSelected(gameId, winners, weeklyJackpot);
         
-        // Reset weekly jackpot and toppings
+        // Reset weekly game
         _resetWeeklyGame();
     }
     
@@ -217,10 +281,10 @@ contract PizzaPartyCore is ReentrancyGuard, Ownable, Pausable, IPizzaParty {
     }
     
     /**
-     * @dev Get weekly jackpot amount
+     * @dev Get weekly jackpot amount - calculated from toppings
      */
-    function getWeeklyJackpot() external view returns (uint256) {
-        return currentWeeklyJackpot;
+    function getWeeklyJackpot() public view returns (uint256) {
+        return weeklyToppingsPool * VMF_PER_TOPPING;
     }
     
     /**
@@ -234,9 +298,14 @@ contract PizzaPartyCore is ReentrancyGuard, Ownable, Pausable, IPizzaParty {
      * @dev Get total toppings claimed
      */
     function getTotalToppingsClaimed() external view returns (uint256) {
-        // This would need to track total toppings across all players
-        // For now, return a placeholder
-        return 0;
+        return totalToppingsClaimed;
+    }
+    
+    /**
+     * @dev Get weekly toppings pool
+     */
+    function getWeeklyToppingsPool() external view returns (uint256) {
+        return weeklyToppingsPool;
     }
     
     /**
@@ -254,19 +323,18 @@ contract PizzaPartyCore is ReentrancyGuard, Ownable, Pausable, IPizzaParty {
     }
     
     /**
+     * @dev Get player referral info
+     */
+    function getPlayerReferralInfo(address player) external view returns (uint256 referrals, address referrer) {
+        return (players[player].referrals, referrers[player]);
+    }
+    
+    /**
      * @dev Add to daily jackpot (for testing)
      */
     function addToDailyJackpot(uint256 amount) external onlyOwner {
         currentDailyJackpot += amount;
-        emit JackpotUpdated(currentDailyJackpot, currentWeeklyJackpot);
-    }
-    
-    /**
-     * @dev Add to weekly jackpot (for testing)
-     */
-    function addToWeeklyJackpot(uint256 amount) external onlyOwner {
-        currentWeeklyJackpot += amount;
-        emit JackpotUpdated(currentDailyJackpot, currentWeeklyJackpot);
+        emit JackpotUpdated(currentDailyJackpot, getWeeklyJackpot());
     }
     
     /**
@@ -317,7 +385,7 @@ contract PizzaPartyCore is ReentrancyGuard, Ownable, Pausable, IPizzaParty {
      * @dev Internal function to reset weekly game
      */
     function _resetWeeklyGame() internal {
-        currentWeeklyJackpot = 0;
+        weeklyToppingsPool = 0;
         lastWeeklyDraw = block.timestamp;
     }
 }

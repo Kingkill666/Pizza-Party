@@ -1073,46 +1073,6 @@
         "SecureReferralSystem"
       ]
     },
-    "/Users/michaelgray/Documents/Pizza-Party/contracts/MockVMF.sol": {
-      "lastModificationDate": 1754934071830,
-      "contentHash": "af52ad2d35663ebdf78237d259184a02",
-      "sourceName": "contracts/MockVMF.sol",
-      "solcConfig": {
-        "version": "0.8.24",
-        "settings": {
-          "viaIR": true,
-          "optimizer": {
-            "enabled": true,
-            "runs": 1
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        "@openzeppelin/contracts/access/Ownable.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "MockVMF"
-      ]
-    },
     "/Users/michaelgray/Documents/Pizza-Party/contracts/ChainlinkVRF.sol": {
       "lastModificationDate": 1755036356836,
       "contentHash": "56545658e9e925a44b313602873326b6",
@@ -1416,8 +1376,8 @@
       "artifacts": []
     },
     "/Users/michaelgray/Documents/Pizza-Party/contracts/PizzaPartyCore.sol": {
-      "lastModificationDate": 1755041084135,
-      "contentHash": "b0b0a9b1938b6ca2088120734c1b9c0c",
+      "lastModificationDate": 1755073971252,
+      "contentHash": "55e9d500d68cafb3348f60151e8ed101",
       "sourceName": "contracts/PizzaPartyCore.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1543,7 +1503,7 @@
       ]
     },
     "/Users/michaelgray/Documents/Pizza-Party/contracts/PizzaPartyLoyalty.sol": {
-      "lastModificationDate": 1755044022887,
+      "lastModificationDate": 1755044308211,
       "contentHash": "b28efbdf3f0a2a2850918b8e66b58914",
       "sourceName": "contracts/PizzaPartyLoyalty.sol",
       "solcConfig": {
@@ -1585,7 +1545,7 @@
       ]
     },
     "/Users/michaelgray/Documents/Pizza-Party/contracts/PizzaPartyDynamicPricing.sol": {
-      "lastModificationDate": 1755043950969,
+      "lastModificationDate": 1755044308140,
       "contentHash": "f3f2cbb2dafcc9ca1033988132c9dca0",
       "sourceName": "contracts/PizzaPartyDynamicPricing.sol",
       "solcConfig": {
@@ -1670,7 +1630,7 @@
       ]
     },
     "/Users/michaelgray/Documents/Pizza-Party/contracts/PizzaPartyAdvancedRandomness.sol": {
-      "lastModificationDate": 1755044082552,
+      "lastModificationDate": 1755044308211,
       "contentHash": "47f65ec96f0a051c6449ed2432d3f33f",
       "sourceName": "contracts/PizzaPartyAdvancedRandomness.sol",
       "solcConfig": {

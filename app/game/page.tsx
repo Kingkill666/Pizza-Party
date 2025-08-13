@@ -323,7 +323,7 @@ export default function GamePage() {
       // console.log('💵 VMF Price:', vmfPriceFormatted, 'VMF')
       console.log('💰 VMF Price: 1.0 VMF (temporarily hardcoded)')
       
-      // Enter the daily game
+      // Enter the daily game (with optional referral)
       const txHash = await service.enterDailyGame()
       
       // Earn toppings for daily play (only when wallet is connected)
@@ -645,8 +645,13 @@ export default function GamePage() {
         if (service) {
           const weeklyJackpot = await service.getWeeklyJackpot()
           const weeklyJackpotFormatted = await service.getWeeklyJackpotFormatted()
+          const weeklyToppingsPool = await service.getWeeklyToppingsPool()
+          const totalToppingsClaimed = await service.getTotalToppingsClaimed()
+          
           setRealTimeJackpotValue(parseFloat(weeklyJackpotFormatted))
           console.log('💰 Real weekly jackpot from contract:', weeklyJackpotFormatted, 'VMF')
+          console.log('🍕 Weekly toppings pool:', weeklyToppingsPool.toString(), 'toppings')
+          console.log('🍕 Total toppings claimed:', totalToppingsClaimed.toString(), 'toppings')
         } else {
           // Fallback to mock data if contract service fails
           const jackpotValue = await getRealTimeJackpotValue()

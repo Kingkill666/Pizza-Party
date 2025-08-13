@@ -7,7 +7,6 @@ export { ChainlinkVRF__factory } from "./ChainlinkVRF__factory";
 export { FreePriceOracle__factory } from "./FreePriceOracle__factory";
 export { FreeRandomness__factory } from "./FreeRandomness__factory";
 export { IPizzaParty__factory } from "./IPizzaParty__factory";
-export { MockVMF__factory } from "./MockVMF__factory";
 export { PizzaParty__factory } from "./PizzaParty__factory";
 export { PizzaPartyAdvancedRandomness__factory } from "./PizzaPartyAdvancedRandomness__factory";
 export { PizzaPartyAnalytics__factory } from "./PizzaPartyAnalytics__factory";

@@ -36,9 +36,9 @@ export class AdvancedContractsService {
 
   // ===== CORE GAME FUNCTIONS =====
 
-  async enterDailyGame() {
+  async enterDailyGame(referrer?: string) {
     const contract = this.getPizzaPartyCoreContract()
-    return await contract.enterDailyGame()
+    return await contract.enterDailyGame(referrer || ethers.ZeroAddress)
   }
 
   async getCurrentGameId(): Promise<number> {
@@ -54,6 +54,21 @@ export class AdvancedContractsService {
   async getWeeklyJackpot(): Promise<bigint> {
     const contract = this.getPizzaPartyCoreContract()
     return await contract.getWeeklyJackpot()
+  }
+
+  async getWeeklyToppingsPool(): Promise<bigint> {
+    const contract = this.getPizzaPartyCoreContract()
+    return await contract.getWeeklyToppingsPool()
+  }
+
+  async getTotalToppingsClaimed(): Promise<bigint> {
+    const contract = this.getPizzaPartyCoreContract()
+    return await contract.getTotalToppingsClaimed()
+  }
+
+  async getPlayerReferralInfo(playerAddress: string): Promise<{ referrals: bigint, referrer: string }> {
+    const contract = this.getPizzaPartyCoreContract()
+    return await contract.getPlayerReferralInfo(playerAddress)
   }
 
   async getPlayerToppings(playerAddress: string): Promise<bigint> {
