@@ -19,14 +19,14 @@ Chainlink VRF is a provably fair and verifiable random number generator that ena
 
 ### Contracts
 
-1. **PizzaPartyCore.sol** - Main game contract with VRF integration
-2. **ChainlinkVRF.sol** - VRF coordinator and winner selection
-3. **IPizzaParty.sol** - Interface for contract integration
+1. **ChainlinkVRF.sol** - Main VRF contract that handles randomness requests
+2. **IPizzaParty.sol** - Interface for Pizza Party contract integration
+3. **PizzaParty.sol** - Updated main contract with VRF integration
 
 ### Flow Diagram
 
 ```
-PizzaPartyCore Contract
+Pizza Party Contract
         ↓
    Request VRF
         ↓
@@ -46,30 +46,31 @@ ChainlinkVRF Contract
 ### Winner Selection Process
 
 1. **Daily Winners (8 winners)**:
-   - System automatically detects daily game end (12pm PST)
+   - Operator calls `requestDailyVRF()`
    - VRF contract requests randomness from Chainlink
    - Random words are generated and verified
    - Winners are selected using random words
    - Prizes are automatically distributed
 
 2. **Weekly Winners (10 winners)**:
-   - System automatically detects weekly game end (Monday 12pm PST)
+   - Operator calls `requestWeeklyVRF()`
    - Same process as daily winners
-   - Larger jackpot distribution based on toppings
+   - Larger jackpot distribution
 
 ### Key Functions
 
-#### PizzaPartyCore Contract
-- `enterDailyGame(address referrer)` - Enter daily game with optional referral
-- `processDailyWinners(uint256[] memory randomWords)` - Process VRF-selected daily winners
-- `processWeeklyWinners(uint256[] memory randomWords)` - Process VRF-selected weekly winners
-- `getWeeklyJackpot()` - Get weekly jackpot amount (toppings × 1 VMF)
+#### Pizza Party Contract
+- `requestDailyVRF()` - Request daily winner selection
+- `requestWeeklyVRF()` - Request weekly winner selection
+- `processDailyWinners()` - Process VRF-selected daily winners
+- `processWeeklyWinners()` - Process VRF-selected weekly winners
+- `setUseVRF(bool)` - Toggle between VRF and legacy randomness
 
-#### ChainlinkVRF Contract
+#### VRF Contract
 - `requestDailyRandomness()` - Request randomness for daily draw
 - `requestWeeklyRandomness()` - Request randomness for weekly draw
 - `fulfillRandomWords()` - Callback function for VRF results
-- `_selectWinners()` - Select winners using random words
+- `getVRFConfig()` - Get VRF configuration
 
 ## 🚀 Deployment Guide
 
@@ -94,19 +95,19 @@ ChainlinkVRF Contract
 
 2. **Update Configuration**:
    ```typescript
-   // scripts/deploy.ts
-   const VRF_COORDINATOR = "0x41034678D6C633D8a95c75e1138A360a28bBc9dB"; // Base Mainnet
+   // scripts/deploy-chainlink-vrf.ts
+   const VRF_COORDINATOR = "0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed"; // Base Sepolia
    const SUBSCRIPTION_ID = YOUR_SUBSCRIPTION_ID;
-   const KEY_HASH = "0x08ba8f62ff6c40a58877a106147661db43bc58dab9e9e1daedc0b61041f4c803";
+   const KEY_HASH = "0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f";
    ```
 
 3. **Deploy Contracts**:
    ```bash
-   npx hardhat run scripts/deploy.ts --network base
+   npx hardhat run scripts/deploy-chainlink-vrf.ts --network base-sepolia
    ```
 
 4. **Link Contracts**:
-   - VRF contract automatically links to PizzaPartyCore
+   - VRF contract automatically links to Pizza Party
    - Verify the connection
 
 ### Configuration Values
@@ -131,7 +132,7 @@ ChainlinkVRF Contract
 - **Predictable Costs**: Fixed monthly subscription fee
 - **No Refunds**: No overpayment issues
 
-### Estimated Costs (Base Mainnet)
+### Estimated Costs (Base Sepolia)
 - **Subscription Fee**: ~$10-20/month
 - **Per Request**: ~0.1 LINK
 - **Daily Draws**: ~$3/month
@@ -140,67 +141,46 @@ ChainlinkVRF Contract
 
 ## 🔧 Usage Examples
 
-### Enter Daily Game
+### Request Daily Winners
 ```solidity
-// Players enter the daily game
-function enterDailyGame(address referrer) external payable whenNotPaused {
-    require(msg.value >= getCurrentEntryFee(), "Insufficient entry fee");
-    require(!hasEnteredToday(msg.sender), "Already entered today");
+// Only operator can call this
+function requestDailyVRF() external onlyRole(OPERATOR_ROLE) whenNotPaused {
+    require(useVRF, "VRF not enabled");
+    require(isDailyDrawReady(), "Daily draw not ready");
     
-    // Process referral if provided
-    if (referrer != address(0) && referrer != msg.sender) {
-        _processReferral(msg.sender, referrer);
-    }
+    address[] memory eligiblePlayers = this.getEligibleDailyPlayers(_gameId);
+    uint256 requestId = vrfContract.requestDailyRandomness(_gameId, eligiblePlayers);
     
-    // Award toppings for daily play
-    _awardToppings(msg.sender, 1, "Daily play");
-    
-    // Add to daily jackpot
-    currentDailyJackpot += msg.value;
-    
-    emit PlayerEntered(msg.sender, msg.value, referrer);
+    emit VRFRequestSubmitted(requestId, _gameId, "daily");
 }
 ```
 
 ### Process Winners (Automatic)
 ```solidity
 // Called by VRF contract after randomness is generated
-function processDailyWinners(uint256[] memory randomWords) external {
+function processDailyWinners(uint256 gameId, address[] calldata winners) external override {
     require(msg.sender == address(vrfContract), "Only VRF contract can call this");
     
-    address[] memory winners = _selectWinners(DAILY_WINNERS_COUNT, randomWords);
-    uint256 prizePerWinner = currentDailyJackpot / DAILY_WINNERS_COUNT;
+    uint256 prizePerWinner = currentDailyJackpot / winners.length;
     
     for (uint256 i = 0; i < winners.length; i++) {
         if (winners[i] != address(0)) {
             vmfToken.transfer(winners[i], prizePerWinner);
-            // Award bonus toppings to winners
-            _awardToppings(winners[i], 5, "Daily winner bonus");
+            players[winners[i]].totalToppings += 10;
         }
     }
     
-    emit DailyWinnersSelected(winners, currentDailyJackpot);
+    emit DailyWinnersSelected(gameId, winners, currentDailyJackpot);
     _startNewDailyGame();
-}
-```
-
-### Weekly Jackpot Calculation
-```solidity
-/**
- * @dev Get weekly jackpot amount - calculated from toppings
- * Weekly Jackpot = Total Toppings × 1 VMF per topping
- */
-function getWeeklyJackpot() public view returns (uint256) {
-    return weeklyToppingsPool * VMF_PER_TOPPING;
 }
 ```
 
 ## 🛡️ Security Features
 
 ### Access Control
+- **Operator Role**: Only authorized operators can request VRF
 - **VRF Contract**: Only VRF contract can process winners
-- **Owner Controls**: Owner can update VRF configuration
-- **Pausable**: Emergency pause functionality
+- **Owner Controls**: Owner can toggle VRF usage and update contracts
 
 ### Verification
 - **On-Chain Proof**: Randomness is verified on-chain
@@ -208,38 +188,37 @@ function getWeeklyJackpot() public view returns (uint256) {
 - **Transparent**: All randomness requests are public
 
 ### Fallback
+- **Legacy Mode**: Can fall back to existing randomness if needed
 - **Emergency Pause**: Can pause VRF requests if issues arise
 - **Manual Override**: Owner can manually process winners if needed
 
 ## 📊 Monitoring & Analytics
 
 ### Events to Track
-- `PlayerEntered` - When players enter the game
+- `VRFRequestSubmitted` - When randomness is requested
+- `WinnersSelected` - When winners are selected
 - `DailyWinnersSelected` - Daily winner distribution
 - `WeeklyWinnersSelected` - Weekly winner distribution
-- `JackpotUpdated` - When jackpot amounts change
-- `ToppingsAwarded` - When players earn toppings
-- `ReferralRegistered` - When referrals are processed
 
 ### Key Metrics
 - **Request Success Rate**: Percentage of successful VRF requests
 - **Response Time**: Time from request to fulfillment
 - **Gas Costs**: Average gas cost per request
 - **Winner Distribution**: Fairness verification
-- **Toppings Earned**: Total toppings claimed by players
 
-## 🔄 Topping System Integration
+## 🔄 Migration from Legacy Randomness
 
-### Topping Earning Mechanisms
-1. **Daily Play**: 1 topping per game entry
-2. **Referrals**: 2 toppings per successful referral (max 3 referrals)
-3. **VMF Holdings**: 3 toppings per 10 VMF held (checked daily)
-4. **Winner Bonuses**: 5 bonus toppings for daily winners
+### Backward Compatibility
+- **Legacy Functions**: Still available for emergency use
+- **Toggle Switch**: Can switch between VRF and legacy
+- **Gradual Migration**: Can migrate gradually
 
-### Weekly Jackpot Calculation
-- **Formula**: Total toppings claimed × 1 VMF per topping
-- **Distribution**: 10 random weekly winners
-- **Automation**: Fully automated selection and payout
+### Migration Steps
+1. Deploy VRF contracts
+2. Link to Pizza Party contract
+3. Test with small amounts
+4. Enable VRF for production
+5. Monitor and verify results
 
 ## 🚨 Troubleshooting
 
@@ -263,17 +242,24 @@ function getWeeklyJackpot() public view returns (uint256) {
 
 ### Emergency Procedures
 
-1. **Pause Game**:
+1. **Pause VRF**:
    ```solidity
-   function pause() external onlyOwner {
-       _pause();
+   function setUseVRF(bool _useVRF) external onlyOwner {
+       useVRF = _useVRF;
    }
    ```
 
-2. **Emergency Withdraw**:
+2. **Manual Winner Selection**:
+   ```solidity
+   function selectDailyWinners() external onlyRole(OPERATOR_ROLE) {
+       // Legacy winner selection
+   }
+   ```
+
+3. **Emergency Withdraw**:
    ```solidity
    function emergencyWithdraw(address token, uint256 amount) external onlyOwner {
-       IERC20(token).transfer(owner(), amount);
+       // Withdraw funds if needed
    }
    ```
 

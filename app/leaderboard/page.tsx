@@ -9,7 +9,6 @@ import Image from 'next/image'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useWallet } from '@/hooks/useWallet'
 import { WALLETS, initMobileOptimizations, isMobile, isIOS, isAndroid, isFarcaster } from '@/lib/wallet-config'
-import { ShareButton } from '@/components/ShareButton'
 
 interface Winner {
   rank: number
@@ -356,37 +355,6 @@ export default function LeaderboardPage() {
                     Invite Friends
                     <UsersIcon className="ml-2 h-5 w-5" />
                   </Button>
-                </div>
-
-                {/* Share Buttons */}
-                <div className="text-center mt-3 space-y-2">
-                  <p className="text-sm text-gray-600 font-bold" style={customFontStyle}>
-                    📤 Share the winners!
-                  </p>
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    <ShareButton
-                      type="daily-winners"
-                      options={{
-                        jackpotAmount: "20 VMF",
-                        winnerCount: 8,
-                        gameId: "Daily"
-                      }}
-                      className="text-sm"
-                    >
-                      🏆 Share Daily Winners
-                    </ShareButton>
-                    <ShareButton
-                      type="weekly-winners"
-                      options={{
-                        jackpotAmount: "150 VMF",
-                        winnerCount: 10,
-                        gameId: "Weekly"
-                      }}
-                      className="text-sm"
-                    >
-                      🏆 Share Weekly Winners
-                    </ShareButton>
-                  </div>
                 </div>
               </div>
 

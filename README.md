@@ -1,6 +1,6 @@
 # 🍕 Pizza Party dApp
 
-A decentralized gaming platform on Base network where players compete for daily and weekly jackpots using VMF tokens. Features Chainlink VRF for secure randomness, referral system, toppings rewards, Farcaster native sharing, and multi-platform wallet support.
+A decentralized gaming platform on Base network where players compete for daily and weekly jackpots using VMF tokens. Features a referral system, toppings rewards, and multi-platform wallet support.
 
 ## 🚀 Quick Start
 
@@ -18,38 +18,13 @@ npm run dev
 # Open http://localhost:3000
 ```
 
-## 🎯 New Features
+## 💰 Dynamic Pricing System
 
-### 📤 Farcaster Native Sharing
-**NEW!** Pizza Party now features **native Farcaster sharing** allowing users to easily share their game experiences, wins, and referral codes directly to Farcaster.
-
-📖 **[Read the Farcaster Integration Documentation](FARCASTER_INTEGRATION.md)** for detailed technical information.
-
-#### Key Features:
-- ✅ **Native Farcaster Integration** - Direct sharing to Farcaster platform
-- ✅ **Multiple Share Templates** - Game entry, wins, referrals, jackpots
-- ✅ **Dynamic Content** - Real-time game data in shares
-- ✅ **Fallback Support** - Clipboard copy for non-Farcaster users
-- ✅ **Social Growth** - Viral sharing for organic community building
-
-### 🔗 Chainlink VRF Integration
-**NEW!** Pizza Party now uses **Chainlink VRF v2.5** for provably fair and secure random winner selection.
-
-📖 **[Read the Chainlink VRF Documentation](CHAINLINK_VRF_INTEGRATION.md)** for detailed technical information.
-
-#### Key Features:
-- ✅ **Provably Fair Randomness** - Chainlink VRF v2.5 integration
-- ✅ **Automated Winner Selection** - Daily and weekly draws at 12pm PST
-- ✅ **Subscription Method** - Cost-effective VRF usage
-- ✅ **On-chain Verification** - All randomness verifiable on BaseScan
-- ✅ **No Manual Intervention** - Fully automated system
-
-### 💰 Dynamic Pricing System
-Pizza Party features **dynamic VMF pricing** ensuring a consistent $1 USD entry fee regardless of VMF token price fluctuations.
+**NEW!** Pizza Party now features **dynamic VMF pricing** ensuring a consistent $1 USD entry fee regardless of VMF token price fluctuations.
 
 📖 **[Read the Dynamic Pricing Documentation](DYNAMIC_PRICING_README.md)** for detailed technical information.
 
-#### Key Features:
+### Key Features:
 - ✅ **Always $1 USD** - Entry fee adjusts automatically with VMF price
 - ✅ **Real-time Pricing** - Uses price oracle for current market rates
 - ✅ **Fair Gameplay** - No advantage based on token price volatility
@@ -60,55 +35,45 @@ Pizza Party features **dynamic VMF pricing** ensuring a consistent $1 USD entry 
 ### Daily Game
 - **Entry Fee**: $1 worth of VMF tokens (dynamic pricing)
 - **Jackpot**: 100% of daily entry fees
-- **Winners**: 8 random daily winners (Chainlink VRF)
+- **Winners**: 8 random daily winners
 - **Frequency**: One entry per wallet per day
 - **Deadline**: Daily at 12pm PST
-- **Automation**: Fully automated winner selection and payout
 
 ### Weekly Jackpot
-- **Prize Pool**: Total toppings claimed × 1 VMF per topping
-- **Funding**: Automatically calculated from on-chain data
-- **Winners**: 10 random weekly winners (Chainlink VRF)
+- **Prize Pool**: Total toppings claimed by all users
+- **Funding**: Automatically from VMF token contract
+- **Winners**: 10 random weekly winners
 - **Deadline**: Monday 12pm PST
-- **Automation**: Fully automated winner selection and payout
-
-### Topping System
-- **Daily Play**: 1 topping per game entry
-- **Referrals**: 2 toppings per successful referral (max 3 referrals)
-- **VMF Holdings**: 3 toppings per 10 VMF held (checked daily)
-- **Weekly Jackpot**: Total toppings × 1 VMF per topping
 
 ## 🏆 Jackpot Winner Selection & Payout System
 
 ### Daily Jackpot Winners
-- **Selection**: 8 random winners selected using Chainlink VRF
-- **Randomness**: Provably fair randomness from Chainlink VRF v2.5
+- **Selection**: 8 random winners selected from all daily players
+- **Randomness**: Secure on-chain randomness using FreeRandomness contract
 - **Payout**: Automatic VMF token distribution to winners' wallets
 - **Timing**: Daily at 12pm PST when game ends
 - **Process**: Fully automated - no manual intervention required
 
 ### Weekly Jackpot Winners  
-- **Selection**: 10 random winners selected using Chainlink VRF
-- **Randomness**: Provably fair randomness from Chainlink VRF v2.5
+- **Selection**: 10 random winners selected from all weekly players
+- **Randomness**: Secure on-chain randomness using FreeRandomness contract
 - **Payout**: Automatic VMF token distribution to winners' wallets
 - **Timing**: Weekly on Monday at 12pm PST
 - **Process**: Fully automated - no manual intervention required
 
-### Chainlink VRF Integration
-1. **Secure Randomness**: Uses Chainlink VRF v2.5 for provably fair randomness
-2. **Subscription Method**: Cost-effective VRF usage with subscription model
-3. **Automated Triggers**: Daily and weekly draws automatically triggered
-4. **On-chain Verification**: All randomness verifiable on BaseScan
-5. **No Manipulation**: Impossible to predict or influence results
+### Random Selection Process
+1. **Secure Randomness**: Uses FreeRandomness contract with multi-party commit-reveal scheme
+2. **Fair Selection**: Winners selected using cryptographic hash functions
+3. **Transparent**: All randomness generation is verifiable on-chain
+4. **Tamper-Proof**: No single party can influence winner selection
 
 ### Automatic Payout System
 1. **Game End Detection**: System automatically detects when daily/weekly games end
-2. **VRF Request**: Chainlink VRF requested for random number generation
-3. **Winner Selection**: Winners selected using VRF randomness
-4. **Prize Calculation**: Total jackpot divided equally among winners
-5. **Automatic Transfer**: VMF tokens sent directly to winners' wallets
-6. **Transaction Verification**: All transfers verified on-chain
-7. **New Game Start**: New game automatically starts after payout
+2. **Winner Selection**: 8 daily winners or 10 weekly winners selected randomly
+3. **Prize Calculation**: Total jackpot divided equally among winners
+4. **Automatic Transfer**: VMF tokens sent directly to winners' wallets
+5. **Transaction Verification**: All transfers verified on-chain
+6. **New Game Start**: New game automatically starts after payout
 
 ### Payout Example
 - **Daily Jackpot**: 100 players × $1 VMF = 100 VMF total
@@ -116,19 +81,13 @@ Pizza Party features **dynamic VMF pricing** ensuring a consistent $1 USD entry 
 - **Automatic Transfer**: Each winner receives 12.5 VMF tokens directly to their wallet
 
 ### Security Features
-- ✅ **Chainlink VRF** - Provably fair randomness
-- ✅ **No Manual Intervention** - Fully automated system
-- ✅ **On-chain Verification** - All payouts verified on blockchain
-- ✅ **Equal Distribution** - Fair prize distribution among winners
-- ✅ **Immediate Payout** - Winners receive prizes instantly when game ends
+- ✅ **No Manual Intervention**: Fully automated system
+- ✅ **Secure Randomness**: Cryptographic random number generation
+- ✅ **On-chain Verification**: All payouts verified on blockchain
+- ✅ **Equal Distribution**: Fair prize distribution among winners
+- ✅ **Immediate Payout**: Winners receive prizes instantly when game ends
 
 ## 🔧 Technical Architecture
-
-### Smart Contract Architecture
-- **PizzaPartyCore.sol** - Main game contract with VRF integration
-- **ChainlinkVRF.sol** - VRF coordinator and winner selection
-- **PizzaPartyFeeAbstraction.sol** - Gasless transaction support
-- **Modular Design** - Separated concerns for maintainability
 
 ### Smart Contract Security
 - **ReentrancyGuard**: Prevents reentrancy attacks on all payable functions
@@ -137,13 +96,12 @@ Pizza Party features **dynamic VMF pricing** ensuring a consistent $1 USD entry 
 - **Input Validation**: Sanitized inputs with length and format checks
 - **Rate Limiting**: Cooldown periods to prevent abuse
 - **Gas Optimization**: Batch processing for efficient operations
-- **Chainlink VRF**: Provably fair randomness
 
 ### Prize Distribution Logic
 ```solidity
-// Daily jackpot distribution with VRF
-function processDailyWinners(uint256[] memory randomWords) external {
-    address[] memory winners = _selectWinners(DAILY_WINNERS_COUNT, randomWords);
+// Daily jackpot distribution
+function drawDailyWinners() external {
+    address[] memory winners = _selectWinners(DAILY_WINNERS_COUNT, totalEntries);
     uint256 prizePerWinner = currentDailyJackpot / DAILY_WINNERS_COUNT;
     
     // Automatic VMF token transfer to winners
@@ -160,29 +118,18 @@ The contract emits comprehensive events for monitoring:
 - `WeeklyWinnersSelected`: When weekly winners are chosen
 - `JackpotUpdated`: When jackpot amounts change
 - `ToppingsAwarded`: When players earn toppings
-- `RandomnessRequested`: When VRF is requested
-- `WinnersSelected`: When VRF completes winner selection
-
-### Farcaster Sharing Integration
-- **Native Farcaster API** - Direct integration with Farcaster platform
-- **Multiple Share Templates** - Game entry, wins, referrals, jackpots
-- **Dynamic Content** - Real-time game data in shares
-- **Fallback Support** - Clipboard copy for non-Farcaster users
-- **React Hooks** - Easy integration with React components
 
 ### Wallet Integration
 - **Multi-Wallet Support**: MetaMask, Coinbase, Trust, Rainbow, Phantom
 - **Mobile Optimization**: Automatic mobile browser detection and deep linking
 - **Security Disconnect**: Complete localStorage cleanup and session management
 - **Network Switching**: Automatic Base Mainnet network detection and switching
-- **Farcaster Integration**: Native Farcaster wallet support
 
 ### Gas Efficiency Features
 - **Batch Processing**: Gas-optimized operations for multiple players
 - **Storage Pointers**: Efficient data access patterns
 - **Event Optimization**: Minimal event emissions for cost reduction
 - **Memory Management**: Proper cleanup of temporary data structures
-- **Gasless Transactions**: Fee abstraction for improved UX
 
 ## 🚀 Live on Base Mainnet
 
@@ -191,13 +138,8 @@ The contract emits comprehensive events for monitoring:
 - **Chain ID**: 8453
 - **RPC URL**: https://mainnet.base.org
 - **Block Explorer**: https://basescan.org
-- **Entry Fee**: $1 VMF tokens (dynamic pricing)
+- **Entry Fee**: $1 VMF tokens
 - **VMF Token Address**: 0x2213414893259b0C48066Acd1763e7fbA97859E5
-
-### Contract Addresses
-- **PizzaPartyCore**: [View on BaseScan](https://basescan.org/address/0x...)
-- **ChainlinkVRF**: [View on BaseScan](https://basescan.org/address/0x...)
-- **PizzaPartyFeeAbstraction**: [View on BaseScan](https://basescan.org/address/0x...)
 
 ### Adding Base Mainnet to MetaMask
 1. Open MetaMask
@@ -217,14 +159,12 @@ The contract emits comprehensive events for monitoring:
 - ✅ **Input Validation** - All inputs validated and sanitized
 - ✅ **Emergency Controls** - Pause/stop functionality
 - ✅ **Blacklist System** - Block malicious addresses
-- ✅ **Chainlink VRF** - Provably fair randomness
 
 ### Frontend Security
 - ✅ **On-chain Data Only** - No off-chain calculations for critical data
 - ✅ **Input Sanitization** - All user inputs validated
 - ✅ **Secure Wallet Integration** - Multiple wallet support with security checks
 - ✅ **Rate Limiting** - Prevents spam attacks
-- ✅ **Farcaster Security** - Secure sharing integration
 
 ### Critical Security Fix
 - ✅ **Fixed Off-chain/On-chain Integration Vulnerability**
@@ -237,9 +177,7 @@ The contract emits comprehensive events for monitoring:
 ### Smart Contracts
 ```
 contracts/
-├── PizzaPartyCore.sol           # Main game contract with VRF
-├── ChainlinkVRF.sol             # VRF coordinator and winner selection
-├── PizzaPartyFeeAbstraction.sol # Gasless transaction support
+├── PizzaParty.sol          # Main game contract
 └── README-SMART-CONTRACTS.md
 ```
 
@@ -247,24 +185,18 @@ contracts/
 ```
 app/
 ├── page.tsx               # Main landing page
-├── game/page.tsx          # Game interface with sharing
+├── game/page.tsx          # Game interface
 ├── jackpot/page.tsx       # Jackpot display
-├── leaderboard/page.tsx   # Leaderboard display with sharing
+├── leaderboard/page.tsx   # Leaderboard display
 ├── admin/page.tsx         # Admin panel
 └── debug/page.tsx         # Debug tools
 
 components/
 ├── PlatformWallet.tsx     # Multi-platform wallet support
 ├── WalletStatus.tsx       # Wallet connection status
-├── ShareButton.tsx        # Farcaster sharing component
 └── ui/                    # UI components
 
-hooks/
-├── useFarcasterSharing.ts # Farcaster sharing hook
-└── useWallet.ts           # Wallet integration hook
-
 lib/
-├── farcaster-sharing.ts   # Farcaster sharing service
 ├── pizza-party-contract.ts # Contract integration
 ├── wallet-config.ts       # Wallet configuration
 ├── platform-config.ts     # Platform detection
@@ -277,7 +209,6 @@ lib/
 - **Solidity 0.8.24** - Smart contract language
 - **Hardhat** - Development framework
 - **OpenZeppelin** - Security libraries
-- **Chainlink VRF** - Provably fair randomness
 - **Base Network** - L2 blockchain
 
 ### Frontend
@@ -285,7 +216,6 @@ lib/
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Styling
 - **Ethers.js v6** - Blockchain interaction
-- **Farcaster Kit** - Farcaster integration
 
 ### Wallets Supported
 - **MetaMask** - Desktop extension
@@ -301,13 +231,13 @@ lib/
 - **Desktop** - Full web experience
 - **Mobile** - Responsive design
 - **Base App** - Native Base integration
-- **Farcaster** - Social platform integration with native sharing
+- **Farcaster** - Social platform integration
 
 ### Features by Platform
 - **Universal Wallet Support** - Works with any VMF holder
 - **Platform Detection** - Optimized experience per platform
 - **Deep Linking** - Mobile app integration
-- **Social Sharing** - Native Farcaster sharing integration
+- **Social Sharing** - Referral code sharing
 
 ## 🚀 Deployment
 
@@ -336,9 +266,6 @@ npx hardhat test test/security/
 # Integration tests
 npx hardhat test test/integration/
 
-# VRF tests
-npx hardhat test test/vrf/
-
 # Gas optimization
 REPORT_GAS=true npx hardhat test
 ```
@@ -349,8 +276,6 @@ REPORT_GAS=true npx hardhat test
 - ✅ Wallet Integration
 - ✅ Multi-platform Support
 - ✅ Error Handling
-- ✅ Chainlink VRF Integration
-- ✅ Farcaster Sharing
 
 ## 📊 Monitoring
 
@@ -359,15 +284,12 @@ REPORT_GAS=true npx hardhat test
 - Weekly Jackpot Monitoring
 - Referral Activity
 - Gas Usage Patterns
-- VRF Request Monitoring
-- Winner Selection Verification
 
 ### Security Monitoring
 - Suspicious Transactions
 - Blacklist Management
 - Emergency Response
 - Vulnerability Detection
-- VRF Randomness Verification
 
 ## 🔧 Development
 
@@ -393,16 +315,12 @@ npx hardhat run scripts/deploy.ts --network localhost
 BASE_RPC_URL=https://mainnet.base.org
 BASESCAN_API_KEY=your_api_key
 PRIVATE_KEY=your_private_key
-CHAINLINK_VRF_SUBSCRIPTION_ID=your_subscription_id
-CHAINLINK_VRF_KEYHASH=your_keyhash
 ```
 
 ## 📚 Documentation
 
 ### Comprehensive Documentation
 - **README-SMART-CONTRACTS.md** - Smart contract documentation
-- **CHAINLINK_VRF_INTEGRATION.md** - VRF integration guide
-- **FARCASTER_INTEGRATION.md** - Farcaster sharing guide
 - **SECURITY.md** - Security documentation
 - **DEPLOYMENT.md** - Deployment guide
 - **BETA_USER_GUIDE.md** - User guide
@@ -412,8 +330,6 @@ CHAINLINK_VRF_KEYHASH=your_keyhash
 - **Security Features** - All security measures
 - **Deployment Process** - Step-by-step deployment
 - **Troubleshooting** - Common issues and solutions
-- **VRF Integration** - Chainlink VRF setup and usage
-- **Farcaster Sharing** - Social sharing implementation
 
 ## 🤝 Contributing
 
@@ -447,7 +363,6 @@ CHAINLINK_VRF_KEYHASH=your_keyhash
 - **Smart Contract Audit** - Required before mainnet
 - **Frontend Security Review** - Regular reviews
 - **Penetration Testing** - Ongoing testing
-- **VRF Security Review** - Chainlink VRF implementation audit
 
 ## 📈 Roadmap
 
@@ -458,25 +373,17 @@ CHAINLINK_VRF_KEYHASH=your_keyhash
 - Toppings rewards
 - Multi-platform support
 
-### Phase 2: Security & Scale ✅
+### Phase 2: Security & Scale 🔄
 - Security audit
 - Gas optimization
 - Emergency controls
 - Monitoring systems
-- Chainlink VRF integration
 
-### Phase 3: Advanced Features ✅
-- Farcaster native sharing
-- Gasless transactions
+### Phase 3: Advanced Features 📋
+- Multi-signature admin
 - Advanced analytics
 - Mobile app
 - Governance system
-
-### Phase 4: Future Enhancements 📋
-- Multi-signature admin
-- Advanced VRF features
-- Cross-chain integration
-- DAO governance
 
 ## 📞 Support
 
@@ -484,13 +391,10 @@ CHAINLINK_VRF_KEYHASH=your_keyhash
 - **Discord**: Pizza Party community
 - **Twitter**: @PizzaPartyApp
 - **GitHub**: Issues and discussions
-- **Farcaster**: @pizzaparty
 
 ### Resources
 - **Base Network**: https://base.org
 - **VMF Token**: https://vmfcoin.com
-- **Chainlink VRF**: https://docs.chain.link/vrf
-- **Farcaster**: https://farcaster.xyz
 - **Documentation**: This repository
 
 ## 🍕 Built with ❤️ for the Base community. Happy Pizza Partying! 🍕

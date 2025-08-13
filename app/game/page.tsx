@@ -8,6 +8,7 @@ import { WALLETS, initMobileOptimizations, isMobile, isIOS, isAndroid, isFarcast
 import { AdvancedContractsService } from '@/lib/services/advanced-contracts-service'
 import { getVMFBalanceUltimate } from '@/lib/vmf-contract'
 import { ethers } from 'ethers'
+import { useFarcasterShare } from '@/hooks/useFarcasterShare'
 import { 
   earnDailyPlayToppings, 
   earnVMFHoldingsToppings,
@@ -22,7 +23,6 @@ import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Clock, Users, Coins, Copy, Share2, ExternalLink, UsersIcon, AlertCircle, X, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
-import { ShareButton, QuickShareButtons } from '@/components/ShareButton'
 
 export default function GamePage() {
   const customFontStyle = {
@@ -32,6 +32,18 @@ export default function GamePage() {
 
   // Wallet connection state
   const { isConnected, connection, connectWallet, isConnecting, error, setError } = useWallet()
+  
+  // Farcaster sharing functionality
+  const { 
+    shareGameEntry, 
+    shareWinner, 
+    shareJackpot, 
+    shareReferralCode, 
+    shareLeaderboard, 
+    shareJackpotMilestone,
+    isSharing: isFarcasterSharing,
+    isFarcasterEnvironment 
+  } = useFarcasterShare()
   const [isProcessing, setIsProcessing] = useState(false)
   const [gameError, setGameError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -344,6 +356,16 @@ export default function GamePage() {
       setSuccess('Transaction submitted!')
       console.log('✅ Game entry successful:', txHash)
       
+      // Auto-share on Farcaster if in Farcaster environment
+      if (isFarcasterEnvironment) {
+        try {
+          await shareGameEntry()
+          console.log('✅ Auto-shared game entry on Farcaster')
+        } catch (error) {
+          console.log('⚠️ Auto-share failed:', error)
+        }
+      }
+      
       // Record daily entry
       const now = new Date()
       const pstOffset = -8
@@ -507,8 +529,24 @@ export default function GamePage() {
           
           // Validate the jackpot amount
           if (jackpotAmount && jackpotAmount > BigInt(0)) {
-            setJackpot(parseFloat(jackpotFormatted))
+            const newJackpot = parseFloat(jackpotFormatted)
+            const oldJackpot = jackpot
+            
+            setJackpot(newJackpot)
             console.log('💰 Jackpot in VMF:', jackpotFormatted)
+            
+            // Share jackpot milestone on Farcaster if significant increase
+            if (isFarcasterEnvironment && newJackpot > oldJackpot && newJackpot >= 10) {
+              const increase = newJackpot - oldJackpot
+              if (increase >= 5) { // Share if jackpot increased by 5+ VMF
+                try {
+                  await shareJackpotMilestone(jackpotFormatted, 'daily')
+                  console.log('✅ Shared jackpot milestone on Farcaster')
+                } catch (error) {
+                  console.log('⚠️ Failed to share jackpot milestone:', error)
+                }
+              }
+            }
           } else {
             console.log('💰 Invalid jackpot amount, keeping current value')
           }
@@ -779,7 +817,24 @@ export default function GamePage() {
   const handleSocialShare = async (platform: any) => {
     const shareText = "Join me on Pizza Party! 🍕 Play to win a slice of the pie!"
 
-    if (platform.action === "copy") {
+    if (platform.name === "Farcaster" && isFarcasterEnvironment) {
+      // Use enhanced Farcaster sharing
+      try {
+        const success = await shareReferralCode(referralCode)
+        if (success) {
+          setSuccess("✅ Shared on Farcaster successfully!")
+          setTimeout(() => setSuccess(null), 3000)
+        } else {
+          setGameError("❌ Failed to share on Farcaster")
+          setTimeout(() => setGameError(null), 3000)
+        }
+      } catch (error) {
+        console.error('Farcaster sharing error:', error)
+        setGameError("❌ Error sharing on Farcaster")
+        setTimeout(() => setGameError(null), 3000)
+      }
+      setShowShareModal(false)
+    } else if (platform.action === "copy") {
       // For platforms like Discord and Instagram that don't have direct web sharing
       await copyToClipboard()
       setShowShareModal(false)
@@ -1024,20 +1079,6 @@ export default function GamePage() {
                 💡 Connect wallet to invite friends
               </p>
             )}
-
-            {/* Quick Share Buttons */}
-            <div className="mt-4 space-y-2">
-              <p className="text-center text-sm text-gray-600 font-bold" style={customFontStyle}>
-                📤 Share the fun!
-              </p>
-              <QuickShareButtons
-                gameId={playerCount.toString()}
-                jackpotAmount={`${realTimeJackpotValue} VMF`}
-                winnerCount={realTimeDailyPlayers}
-                referralCode={referralCode}
-                className="justify-center"
-              />
-            </div>
             </div>
 
             {/* Daily Game Window Countdown - Moved to BOTTOM */}
@@ -1280,7 +1321,8 @@ export default function GamePage() {
                     name: "Farcaster",
                     shareUrl: (link: string, text: string) => `https://warpcast.com/~/compose?text=${encodeURIComponent(`${text} ${link}`)}`
                   })}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between"
+                  disabled={isFarcasterSharing}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between disabled:opacity-50"
                   style={customFontStyle}
                 >
                   <div className="flex items-center">
@@ -1291,34 +1333,14 @@ export default function GamePage() {
                       height={20}
                       className="mr-3"
                     />
-                    <span>Farcaster</span>
+                    <span>{isFarcasterSharing ? 'Sharing...' : 'Farcaster'}</span>
                   </div>
-                  <ExternalLink className="h-4 w-4" />
+                  {isFarcasterSharing ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  ) : (
+                    <ExternalLink className="h-4 w-4" />
+                  )}
                 </Button>
-
-                {/* Farcaster Native Share */}
-                <ShareButton
-                  type="referral"
-                  options={{ 
-                    referralCode: referralCode,
-                    jackpotAmount: `${realTimeJackpotValue} VMF`,
-                    winnerCount: realTimeDailyPlayers
-                  }}
-                  className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between"
-                  onSuccess={() => {
-                    setSuccess('✅ Shared to Farcaster!');
-                    setShowShareModal(false);
-                  }}
-                  onError={(error) => {
-                    setGameError(`Failed to share: ${error}`);
-                  }}
-                >
-                  <div className="flex items-center">
-                    <span className="text-xl mr-3">📤</span>
-                    <span>Farcaster Native</span>
-                  </div>
-                  <Share2 className="h-4 w-4" />
-                </ShareButton>
 
                 {/* Copy Link */}
                 <Button

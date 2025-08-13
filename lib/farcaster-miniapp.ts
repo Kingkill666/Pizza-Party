@@ -103,6 +103,120 @@ export class FarcasterMiniApp {
       return null
     }
   }
+
+  // Share content on Farcaster
+  async shareOnFarcaster(content: string, options?: {
+    embeds?: string[]
+    channelId?: string
+  }): Promise<boolean> {
+    try {
+      if (!this.isFarcasterEnvironment()) {
+        console.log('⚠️ Not in Farcaster environment, using fallback sharing')
+        return this.fallbackShare(content)
+      }
+
+      // Use Farcaster SDK to share content
+      await sdk.actions.share({
+        text: content,
+        embeds: options?.embeds || [],
+        channelId: options?.channelId
+      })
+
+      console.log('✅ Content shared on Farcaster successfully')
+      return true
+    } catch (error) {
+      console.error('❌ Failed to share on Farcaster:', error)
+      return this.fallbackShare(content)
+    }
+  }
+
+  // Share game results on Farcaster
+  async shareGameResult(result: {
+    type: 'entry' | 'winner' | 'jackpot'
+    amount?: string
+    gameType?: 'daily' | 'weekly'
+    toppings?: number
+  }): Promise<boolean> {
+    const content = this.generateGameShareContent(result)
+    return this.shareOnFarcaster(content, {
+      embeds: ['https://pizza-party-game.vercel.app']
+    })
+  }
+
+  // Generate share content for different game events
+  private generateGameShareContent(result: {
+    type: 'entry' | 'winner' | 'jackpot'
+    amount?: string
+    gameType?: 'daily' | 'weekly'
+    toppings?: number
+  }): string {
+    switch (result.type) {
+      case 'entry':
+        return `🎮 Just entered Pizza Party! 🍕\n\nJoin me in the daily game and earn toppings for the weekly jackpot!\n\nPlay now: https://pizza-party-game.vercel.app`
+      
+      case 'winner':
+        const gameType = result.gameType === 'weekly' ? 'weekly' : 'daily'
+        const amount = result.amount || 'some VMF'
+        return `🏆 I just won ${amount} in the ${gameType} Pizza Party jackpot! 🍕\n\nThanks to my ${result.toppings || 0} toppings this week!\n\nJoin the fun: https://pizza-party-game.vercel.app`
+      
+      case 'jackpot':
+        return `💰 The ${result.gameType || 'weekly'} Pizza Party jackpot is now ${result.amount || 'growing'}! 🍕\n\n${result.toppings || 0} toppings claimed this week!\n\nDon't miss out: https://pizza-party-game.vercel.app`
+      
+      default:
+        return `🎮 Playing Pizza Party! 🍕\n\nDaily games, weekly jackpots, and topping rewards!\n\nJoin me: https://pizza-party-game.vercel.app`
+    }
+  }
+
+  // Fallback sharing for non-Farcaster environments
+  private fallbackShare(content: string): boolean {
+    try {
+      if (navigator.share) {
+        navigator.share({
+          title: 'Pizza Party Game',
+          text: content,
+          url: 'https://pizza-party-game.vercel.app'
+        })
+        return true
+      } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(content + '\n\nhttps://pizza-party-game.vercel.app')
+        console.log('✅ Content copied to clipboard')
+        return true
+      } else {
+        console.log('⚠️ No sharing method available')
+        return false
+      }
+    } catch (error) {
+      console.error('❌ Fallback sharing failed:', error)
+      return false
+    }
+  }
+
+  // Share referral code on Farcaster
+  async shareReferralCode(referralCode: string): Promise<boolean> {
+    const content = `🎯 Use my Pizza Party referral code: ${referralCode}\n\nJoin the game and we both get 2 toppings!\n\nPlay now: https://pizza-party-game.vercel.app`
+    
+    return this.shareOnFarcaster(content, {
+      embeds: ['https://pizza-party-game.vercel.app']
+    })
+  }
+
+  // Share leaderboard on Farcaster
+  async shareLeaderboard(leaderboardType: 'daily' | 'weekly'): Promise<boolean> {
+    const content = `🏆 ${leaderboardType.charAt(0).toUpperCase() + leaderboardType.slice(1)} Pizza Party Winners!\n\nCheck out who won the latest jackpot!\n\nView leaderboard: https://pizza-party-game.vercel.app/leaderboard`
+    
+    return this.shareOnFarcaster(content, {
+      embeds: ['https://pizza-party-game.vercel.app/leaderboard']
+    })
+  }
+
+  // Share jackpot milestone on Farcaster
+  async shareJackpotMilestone(amount: string, type: 'daily' | 'weekly'): Promise<boolean> {
+    const content = `💰 ${type.charAt(0).toUpperCase() + type.slice(1)} Jackpot Milestone: ${amount} VMF! 🍕\n\nThe Pizza Party jackpot keeps growing!\n\nJoin the game: https://pizza-party-game.vercel.app`
+    
+    return this.shareOnFarcaster(content, {
+      embeds: ['https://pizza-party-game.vercel.app']
+    })
+  }
 }
 
 // Export singleton instance
