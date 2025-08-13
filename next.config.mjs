@@ -18,18 +18,20 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://va.vercel-scripts.com",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
+              "default-src 'self' data: blob: https:",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https: data: blob:",
+              "style-src 'self' 'unsafe-inline' https: data: blob:",
+              "font-src 'self' https: data: blob:",
               "img-src 'self' data: https: blob:",
-              "connect-src 'self' https://mainnet.base.org https://basescan.org https://auth.farcaster.xyz https://api.farcaster.xyz",
-              "frame-src 'self' https://warpcast.com https://farcaster.xyz",
+              "connect-src 'self' https: wss: ws:",
+              "frame-src 'self' https: data: blob:",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
               "frame-ancestors 'self'",
-              "upgrade-insecure-requests"
+              "upgrade-insecure-requests",
+              "worker-src 'self' blob:",
+              "child-src 'self' blob:"
             ].join('; ')
           },
           {
