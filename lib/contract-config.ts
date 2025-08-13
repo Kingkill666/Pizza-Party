@@ -1,7 +1,7 @@
 // Contract addresses for Base Mainnet
 export const CONTRACT_ADDRESSES = {
   // Core contracts
-  PIZZA_PARTY_CORE: "0xCD8a3a397CdE223c47602d2C37a3b8a5B99a6460",
+  PIZZA_PARTY_CORE: "0xd57d4198b4E270FE533E8A537F5D310Fa955B1Ae",
   VMF_TOKEN: "0x2213414893259b0C48066Acd1763e7fbA97859E5",
   
   // Legacy contracts (keeping for backward compatibility)

@@ -1,0 +1,15 @@
+{
+  "deploymentTime": "2025-08-13T18:58:27.151Z",
+  "network": "Base Mainnet",
+  "contract": "PizzaPartyCore",
+  "address": "0xd57d4198b4E270FE533E8A537F5D310Fa955B1Ae",
+  "vmfTokenAddress": "0x2213414893259b0C48066Acd1763e7fbA97859E5",
+  "features": [
+    "Proper topping system implementation",
+    "Weekly jackpot calculation from toppings",
+    "Referral system with 2 toppings per referral",
+    "VMF holdings rewards (3 toppings per 10 VMF)",
+    "Daily play rewards (1 topping per day)",
+    "1 VMF per topping for jackpot calculation"
+  ]
+}
