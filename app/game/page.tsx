@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useWallet } from '@/hooks/useWallet'
 import { WALLETS, initMobileOptimizations, isMobile, isIOS, isAndroid, isFarcaster } from '@/lib/wallet-config'
-import { createPizzaPartyContract } from '@/lib/contract-interactions'
+import { AdvancedContractsService } from '@/lib/services/advanced-contracts-service'
 import { getVMFBalanceUltimate } from '@/lib/vmf-contract'
+import { ethers } from 'ethers'
 import { 
   earnDailyPlayToppings, 
   earnVMFHoldingsToppings,
@@ -155,13 +156,24 @@ export default function GamePage() {
     return hasEnteredToday
   }
 
+  // Initialize Advanced Contracts Service
+  const getAdvancedContractsService = () => {
+    if (!window.ethereum) return null
+    const provider = new ethers.BrowserProvider(window.ethereum)
+    return new AdvancedContractsService(provider)
+  }
+
   // Check if user has already entered today from contract
   const checkContractDailyEntry = async (): Promise<boolean> => {
     if (!isConnected || !connection || !window.ethereum) return false
     
     try {
-      const contract = createPizzaPartyContract(window.ethereum)
-      return await contract.hasEnteredToday(connection.address)
+      const service = getAdvancedContractsService()
+      if (!service) return false
+      
+      // For now, we'll use localStorage as the primary check
+      // The contract doesn't have a direct hasEnteredToday function
+      return checkDailyEntry()
     } catch (error) {
       console.error('Error checking contract daily entry:', error)
       return false
@@ -272,22 +284,19 @@ export default function GamePage() {
     setSuccess(null)
 
     try {
-      // Create contract instance using window.ethereum as provider
-      const contract = createPizzaPartyContract(window.ethereum)
+      // Create advanced contracts service
+      const service = getAdvancedContractsService()
+      if (!service) throw new Error('Failed to initialize contract service')
       
       // Debug: Get VMF price and required amount
       console.log('🔍 Getting VMF price and required amount...')
-      const vmfPrice = await contract.getCurrentVMFPrice()
-      const requiredVMF = await contract.getRequiredVMFForDollar()
-      console.log('💰 VMF Price:', vmfPrice, 'wei')
-      console.log('💵 Required VMF for $1:', requiredVMF, 'wei')
-      console.log('💵 Required VMF for $1:', (requiredVMF / 1e18).toFixed(6), 'VMF')
+      const vmfPrice = await service.getVMFPrice()
+      const vmfPriceFormatted = await service.getVMFPriceFormatted()
+      console.log('💰 VMF Price:', vmfPrice.toString(), 'wei')
+      console.log('💵 VMF Price:', vmfPriceFormatted, 'VMF')
       
-      // Use gasless transaction if available and enabled
-      const shouldUseGasless = useGasless && gaslessAvailable
-      
-      // Enter the daily game with $1 VMF
-      const txHash = await contract.enterDailyGame('', shouldUseGasless)
+      // Enter the daily game
+      const txHash = await service.enterDailyGame()
       
       // Earn toppings for daily play (only when wallet is connected)
       if (isConnected && connection?.address) {
@@ -340,24 +349,20 @@ export default function GamePage() {
       if (isConnected && connection && window.ethereum) {
         try {
           console.log('🔍 Attempting contract calls...')
-          const contract = createPizzaPartyContract(window.ethereum)
+          const service = getAdvancedContractsService()
+          if (!service) throw new Error('Failed to initialize contract service')
           
-          // Get both daily and weekly counts from contract
-          const [dailyCount, weeklyCount] = await Promise.all([
-            contract.getDailyPlayerCount(),
-            contract.getWeeklyPlayerCount()
-          ])
+          // Get current game ID and check if draw is ready
+          const gameId = await service.getCurrentGameId()
+          const isDailyReady = await service.isDailyDrawReady()
           
-          console.log('📊 Contract daily players:', dailyCount)
-          console.log('📊 Contract weekly players:', weeklyCount)
+          console.log('📊 Current game ID:', gameId)
+          console.log('📊 Daily draw ready:', isDailyReady)
           
-          // Use contract data if available and valid
-          if (dailyCount && !isNaN(dailyCount) && dailyCount > 0) {
-            setPlayerCount(dailyCount)
-          } else {
-            console.log('📊 Invalid daily count, using fallback')
-            updatePlayerCountFromLocalStorage()
-          }
+          // For now, use localStorage as the primary source
+          // The new contract structure doesn't have direct player count functions
+          console.log('📊 Using localStorage for player count')
+          updatePlayerCountFromLocalStorage()
           
         } catch (contractError) {
           console.error('❌ Error reading players from contract:', contractError)
@@ -419,10 +424,12 @@ export default function GamePage() {
       
       if (isConnected && connection && window.ethereum) {
         try {
-          const contract = createPizzaPartyContract(window.ethereum)
-          const toppings = await contract.getPlayerToppings(connection.address)
+          const service = getAdvancedContractsService()
+          if (!service) return
           
-          console.log('🍕 Player toppings:', toppings)
+          const toppings = await service.getPlayerToppings(connection.address)
+          
+          console.log('🍕 Player toppings:', toppings.toString())
           
           // Update localStorage with current toppings
           localStorage.setItem(`toppings_${connection.address}`, toppings.toString())
@@ -443,17 +450,18 @@ export default function GamePage() {
       
       if (isConnected && connection && window.ethereum) {
         try {
-          const contract = createPizzaPartyContract(window.ethereum)
-          const jackpotAmount = await contract.getCurrentJackpot()
+          const service = getAdvancedContractsService()
+          if (!service) return
           
-          console.log('💰 Contract jackpot amount:', jackpotAmount)
+          const jackpotAmount = await service.getDailyJackpot()
+          const jackpotFormatted = await service.getDailyJackpotFormatted()
+          
+          console.log('💰 Contract jackpot amount:', jackpotAmount.toString())
           
           // Validate the jackpot amount
-          if (jackpotAmount && !isNaN(jackpotAmount) && jackpotAmount >= 0) {
-            // Convert from wei to VMF (assuming 18 decimals)
-            const jackpotInVMF = jackpotAmount / 1e18
-            setJackpot(jackpotInVMF)
-            console.log('💰 Jackpot in VMF:', jackpotInVMF)
+          if (jackpotAmount && jackpotAmount > BigInt(0)) {
+            setJackpot(parseFloat(jackpotFormatted))
+            console.log('💰 Jackpot in VMF:', jackpotFormatted)
           } else {
             console.log('💰 Invalid jackpot amount, keeping current value')
           }
@@ -721,14 +729,12 @@ export default function GamePage() {
     if (!isConnected || !connection) return
 
     try {
-      const contract = createPizzaPartyContract(window.ethereum)
-      const availability = await contract.isGaslessAvailable()
-      setGaslessAvailable(availability.available)
-
-      if (availability.available) {
-        const estimates = await contract.getGasEstimates()
-        setGasEstimates(estimates)
-      }
+      const service = getAdvancedContractsService()
+      if (!service) return
+      
+      // For now, disable gasless as it's not implemented in the new contracts
+      setGaslessAvailable(false)
+      console.log('⚠️ Gasless transactions not available in new contract system')
     } catch (error) {
       console.error('Error checking gasless availability:', error)
       setGaslessAvailable(false)
