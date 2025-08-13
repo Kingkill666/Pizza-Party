@@ -27,7 +27,7 @@ contract PizzaPartyCore is ReentrancyGuard, Ownable, Pausable, IPizzaParty {
     uint256 public constant MAX_DAILY_ENTRIES = 10;
     uint256 public constant ENTRY_COOLDOWN = 1 hours;
     uint256 public constant MIN_VMF_REQUIRED = 100 * 10**18; // 100 VMF minimum
-    uint256 public constant VMF_PER_TOPPING = 100 * 10**18; // 100 VMF per topping for jackpot
+    uint256 public constant VMF_PER_TOPPING = 1 * 10**18; // 1 VMF per topping for jackpot
     
     // Game state
     uint256 private _gameId;
@@ -281,11 +281,12 @@ contract PizzaPartyCore is ReentrancyGuard, Ownable, Pausable, IPizzaParty {
     }
     
     /**
-     * @dev Get weekly jackpot amount - calculated from toppings
-     */
-    function getWeeklyJackpot() public view returns (uint256) {
-        return weeklyToppingsPool * VMF_PER_TOPPING;
-    }
+      * @dev Get weekly jackpot amount - calculated from toppings
+ * Weekly Jackpot = Total Toppings × 1 VMF per topping
+ */
+function getWeeklyJackpot() public view returns (uint256) {
+  return weeklyToppingsPool * VMF_PER_TOPPING;
+}
     
     /**
      * @dev Get player toppings

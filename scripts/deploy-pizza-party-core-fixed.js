@@ -46,7 +46,7 @@ async function main() {
         "Referral system with 2 toppings per referral",
         "VMF holdings rewards (3 toppings per 10 VMF)",
         "Daily play rewards (1 topping per day)",
-        "100 VMF per topping for jackpot calculation"
+        "1 VMF per topping for jackpot calculation"
       ]
     };
 
@@ -73,7 +73,7 @@ async function main() {
     console.log("   ✅ Referral system (2 toppings per referral)");
     console.log("   ✅ VMF holdings rewards (3 toppings per 10 VMF)");
     console.log("   ✅ Daily play rewards (1 topping per day)");
-    console.log("   ✅ 100 VMF per topping for jackpot calculation");
+    console.log("   ✅ 1 VMF per topping for jackpot calculation");
     console.log("");
     console.log("🍕 Ready for Pizza Partying on Base! 🎮");
 
