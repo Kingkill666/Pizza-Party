@@ -639,13 +639,29 @@ export default function GamePage() {
       const dailyPlayers = getRealTimeDailyPlayerCount()
       setRealTimeDailyPlayers(dailyPlayers)
       
-      // Get real-time jackpot value
-      const jackpotValue = await getRealTimeJackpotValue()
-      setRealTimeJackpotValue(jackpotValue)
+      // Get real-time jackpot value from contract
+      try {
+        const service = await getAdvancedContractsService()
+        if (service) {
+          const weeklyJackpot = await service.getWeeklyJackpot()
+          const weeklyJackpotFormatted = await service.getWeeklyJackpotFormatted()
+          setRealTimeJackpotValue(parseFloat(weeklyJackpotFormatted))
+          console.log('💰 Real weekly jackpot from contract:', weeklyJackpotFormatted, 'VMF')
+        } else {
+          // Fallback to mock data if contract service fails
+          const jackpotValue = await getRealTimeJackpotValue()
+          setRealTimeJackpotValue(jackpotValue)
+        }
+      } catch (error) {
+        console.error('❌ Error getting contract jackpot:', error)
+        // Fallback to mock data
+        const jackpotValue = await getRealTimeJackpotValue()
+        setRealTimeJackpotValue(jackpotValue)
+      }
       
       console.log('📊 Real-time data updated:', {
         dailyPlayers,
-        jackpotValue: `$${jackpotValue.toFixed(2)}`
+        jackpotValue: `$${realTimeJackpotValue.toFixed(2)}`
       })
     } catch (error) {
       console.error('❌ Error updating real-time data:', error)
