@@ -157,10 +157,11 @@ export default function GamePage() {
   }
 
   // Initialize Advanced Contracts Service
-  const getAdvancedContractsService = () => {
+  const getAdvancedContractsService = async () => {
     if (!window.ethereum) return null
     const provider = new ethers.BrowserProvider(window.ethereum)
-    return new AdvancedContractsService(provider)
+    const signer = await provider.getSigner()
+    return new AdvancedContractsService(provider, signer)
   }
 
   // Check if user has already entered today from contract
@@ -168,7 +169,7 @@ export default function GamePage() {
     if (!isConnected || !connection || !window.ethereum) return false
     
     try {
-      const service = getAdvancedContractsService()
+      const service = await getAdvancedContractsService()
       if (!service) return false
       
       // For now, we'll use localStorage as the primary check
@@ -285,7 +286,7 @@ export default function GamePage() {
 
     try {
       // Create advanced contracts service
-      const service = getAdvancedContractsService()
+      const service = await getAdvancedContractsService()
       if (!service) throw new Error('Failed to initialize contract service')
       
       // Debug: Get VMF price and required amount
@@ -351,7 +352,7 @@ export default function GamePage() {
       if (isConnected && connection && window.ethereum) {
         try {
           console.log('🔍 Attempting contract calls...')
-          const service = getAdvancedContractsService()
+          const service = await getAdvancedContractsService()
           if (!service) throw new Error('Failed to initialize contract service')
           
           // Get current game ID and check if draw is ready
@@ -426,7 +427,7 @@ export default function GamePage() {
       
       if (isConnected && connection && window.ethereum) {
         try {
-          const service = getAdvancedContractsService()
+          const service = await getAdvancedContractsService()
           if (!service) return
           
           const toppings = await service.getPlayerToppings(connection.address)
@@ -452,7 +453,7 @@ export default function GamePage() {
       
       if (isConnected && connection && window.ethereum) {
         try {
-          const service = getAdvancedContractsService()
+          const service = await getAdvancedContractsService()
           if (!service) return
           
           const jackpotAmount = await service.getDailyJackpot()
@@ -731,7 +732,7 @@ export default function GamePage() {
     if (!isConnected || !connection) return
 
     try {
-      const service = getAdvancedContractsService()
+      const service = await getAdvancedContractsService()
       if (!service) return
       
       // For now, disable gasless as it's not implemented in the new contracts
