@@ -131,14 +131,4 @@ export class AdvancedContractsService {
     const jackpot = await this.getWeeklyJackpot()
     return ethers.formatUnits(jackpot, 18)
   }
-
-  async getCurrentEntryFeeFormatted(): Promise<string> {
-    const fee = await this.getCurrentEntryFee()
-    return ethers.formatUnits(fee, 18)
-  }
-
-  async getVMFPriceFormatted(): Promise<string> {
-    const price = await this.getVMFPrice()
-    return ethers.formatUnits(price, 18)
-  }
 }
