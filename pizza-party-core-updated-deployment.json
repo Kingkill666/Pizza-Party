@@ -1,15 +1,28 @@
 {
-  "deploymentTime": "2025-08-13T18:58:27.151Z",
+  "deploymentTime": "2025-08-13T22:56:08.909Z",
   "network": "Base Mainnet",
   "contract": "PizzaPartyCore",
-  "address": "0xd57d4198b4E270FE533E8A537F5D310Fa955B1Ae",
+  "address": "0x705C974B290db3421ED749cd5838b982bB9B6c51",
   "vmfTokenAddress": "0x2213414893259b0C48066Acd1763e7fbA97859E5",
   "features": [
-    "Proper topping system implementation",
-    "Weekly jackpot calculation from toppings",
+    "Daily game entries with VMF requirement",
+    "Weekly jackpot based on toppings system",
     "Referral system with 2 toppings per referral",
     "VMF holdings rewards (3 toppings per 10 VMF)",
     "Daily play rewards (1 topping per day)",
-    "1 VMF per topping for jackpot calculation"
-  ]
+    "8 daily winners, 10 weekly winners",
+    "Chainlink VRF integration ready",
+    "Blacklist and rate limiting",
+    "Emergency controls"
+  ],
+  "constants": {
+    "dailyWinnersCount": "8",
+    "weeklyWinnersCount": "10",
+    "dailyPlayReward": "1 topping",
+    "referralReward": "2 toppings",
+    "vmfHoldingReward": "3 toppings per 10 VMF",
+    "vmfPerTopping": "1 VMF per topping",
+    "minVmfRequired": "100 VMF",
+    "maxDailyEntries": "10"
+  }
 }

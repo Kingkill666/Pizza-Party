@@ -1,7 +1,7 @@
 // Contract addresses for Base Mainnet
 export const CONTRACT_ADDRESSES = {
   // Core contracts
-  PIZZA_PARTY_CORE: "0xd57d4198b4E270FE533E8A537F5D310Fa955B1Ae",
+  PIZZA_PARTY_CORE: "0x705C974B290db3421ED749cd5838b982bB9B6c51",
   VMF_TOKEN: "0x2213414893259b0C48066Acd1763e7fbA97859E5",
   
   // Legacy contracts (keeping for backward compatibility)
@@ -111,132 +111,9 @@ export const VMF_TOKEN_ABI = [
   }
 ]
 
-// PizzaPartyCore contract ABI (new modular core)
-export const PIZZA_PARTY_CORE_ABI = [
-  {
-    "inputs": [{"internalType": "address", "name": "_vmfToken", "type": "address"}],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {"indexed": true, "internalType": "address", "name": "player", "type": "address"},
-      {"indexed": true, "internalType": "uint256", "name": "gameId", "type": "uint256"},
-      {"indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256"}
-    ],
-    "name": "PlayerEntered",
-    "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "enterDailyGame",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "currentDailyJackpot",
-    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "currentWeeklyJackpot",
-    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getCurrentGameId",
-    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "isDailyDrawReady",
-    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "isWeeklyDrawReady",
-    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{"internalType": "uint256", "name": "gameId", "type": "uint256"}],
-    "name": "getEligibleDailyPlayers",
-    "outputs": [{"internalType": "address[]", "name": "", "type": "address[]"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{"internalType": "uint256", "name": "gameId", "type": "uint256"}],
-    "name": "getEligibleWeeklyPlayers",
-    "outputs": [{"internalType": "address[]", "name": "", "type": "address[]"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{"internalType": "address", "name": "player", "type": "address"}],
-    "name": "getPlayerToppings",
-    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getMinimumVMFRequired",
-    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getWeeklyJackpot",
-    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getDailyJackpot",
-    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getWeeklyToppingsPool",
-    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getTotalToppingsClaimed",
-    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{"internalType": "address", "name": "player", "type": "address"}],
-    "name": "getPlayerReferralInfo",
-    "outputs": [
-      {"internalType": "uint256", "name": "referrals", "type": "uint256"},
-      {"internalType": "address", "name": "referrer", "type": "address"}
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  }
-]
+// PizzaPartyCore contract ABI - Import from artifacts
+import PizzaPartyCoreArtifact from '../artifacts/contracts/PizzaPartyCore.sol/PizzaPartyCore.json';
+export const PIZZA_PARTY_CORE_ABI = PizzaPartyCoreArtifact.abi;
 
 
 
