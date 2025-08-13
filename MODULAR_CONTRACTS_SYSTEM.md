@@ -1,247 +1,168 @@
-# 🍕 Pizza Party Modular Contracts System
+# 🍕 Pizza Party - Simplified Contract System
 
 ## Overview
 
-The Pizza Party game now uses a **modular contract architecture** to solve the contract size limit issue while providing all the advanced features you requested. Instead of one large contract, we now have **7 specialized contracts** that work together.
+The Pizza Party game now uses a **simplified, streamlined contract architecture** with only **3 essential contracts** that handle all game functionality efficiently.
 
-## 🏗️ Contract Architecture
+## 🎯 **Active Contracts (3 Total)**
 
-### Core Contract
-- **`PizzaPartyCore.sol`** - Essential game logic, VRF integration, winner selection
+### 1. **PizzaPartyCore** - Main Game Contract
+**Address:** `0xCD8a3a397CdE223c47602d2C37a3b8a5B99a6460`
 
-### Advanced Feature Contracts
-- **`PizzaPartyReferral.sol`** - Referral system with codes and rewards
-- **`PizzaPartyDynamicPricing.sol`** - Dynamic entry fees based on VMF price
-- **`PizzaPartyLoyalty.sol`** - Loyalty points and tier system
-- **`PizzaPartyAdvancedRandomness.sol`** - Multi-party commit-reveal randomness
-- **`PizzaPartyAnalytics.sol`** - Batch processing and gas optimization
-- **`PizzaPartyWeeklyChallenges.sol`** - Weekly challenges and rewards
-
-## 📋 Contract Details
-
-### 🔗 PizzaPartyReferral
-**Features:**
-- Create referral codes (6-50 characters, alphanumeric)
-- Process referral codes with rewards
-- Track referral analytics and claims
-- Anti-abuse measures (cooldowns, limits)
-- Referral reward distribution (2 toppings for referee, 5 for referrer)
+**Purpose:** Central game logic and state management
+- Daily and weekly game entry
+- Jackpot management
+- Player tracking and eligibility
+- Winner processing
+- VRF integration
 
 **Key Functions:**
-- `createReferralCode()` - Generate new referral code
-- `processReferralCode(code, user)` - Use referral code
-- `getReferralCodeInfo(code)` - Get code details
-- `getUserReferralData(user)` - Get user referral stats
+```solidity
+function enterDailyGame() external
+function processDailyWinners() external
+function processWeeklyWinners() external
+function getCurrentGameId() external view returns (uint256)
+function getDailyJackpot() external view returns (uint256)
+function getWeeklyJackpot() external view returns (uint256)
+function getEligibleDailyPlayers(uint256 gameId) external view returns (address[] memory)
+function getEligibleWeeklyPlayers(uint256 gameId) external view returns (address[] memory)
+```
 
-### 💰 PizzaPartyDynamicPricing
-**Features:**
-- Dynamic entry fees based on VMF price
-- Price oracle integration
-- Fee calculation algorithms
-- Price deviation protection
-- Fee history tracking
+### 2. **VMF_TOKEN** - Token Contract
+**Address:** `0x2213414893259b0C48066Acd1763e7fbA97859E5`
 
-**Key Functions:**
-- `calculateDynamicEntryFee()` - Get current entry fee
-- `collectEntryFee(user)` - Collect dynamic fee
-- `getVMFPrice()` - Get current VMF price
-- `updatePricingConfig()` - Update pricing parameters
+**Purpose:** VMF token for game payments and rewards
+- Token transfers for entry fees
+- Winner prize distribution
+- Balance checking
 
-### 🏆 PizzaPartyLoyalty
-**Features:**
-- Earn loyalty points for game participation
-- Tier-based loyalty system (Bronze, Silver, Gold, Platinum)
-- Point redemption for VMF rewards
-- Streak tracking and bonuses
-- Point expiration management
+### 3. **ChainlinkVRF** - Automated Randomness
+**Address:** `0xefAe49039ADB963b1183869D1632D4CbC8F0603b`
 
-**Key Functions:**
-- `awardLoyaltyPoints(user, points, reason)` - Award points
-- `redeemPoints(points)` - Redeem points for VMF
-- `awardEntryPoints(user)` - Award points for game entry
-- `getUserLoyaltyData(user)` - Get loyalty stats
-
-### 🎲 PizzaPartyAdvancedRandomness
-**Features:**
-- Multi-party commit-reveal randomness
-- Entropy contribution from multiple sources
-- Round-based randomness collection
-- Anti-manipulation measures
-- Reputation system for contributors
+**Purpose:** Automated winner selection using Chainlink VRF v2.5
+- Daily winner selection at 12pm PST
+- Weekly winner selection at 12pm PST on Mondays
+- Verifiable randomness for fair selection
+- Automatic prize distribution
 
 **Key Functions:**
-- `startNewRound()` - Start new randomness round
-- `commitEntropy(commitment)` - Commit entropy
-- `revealEntropy(entropy, salt)` - Reveal entropy
-- `generateRandomNumber(seed, maxValue)` - Generate random number
+```solidity
+function requestDailyRandomness() external
+function requestWeeklyRandomness() external
+function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) external
+```
 
-### 📊 PizzaPartyAnalytics
-**Features:**
-- Batch player processing
-- Gas optimization
-- Game statistics tracking
-- Performance analytics
-- Data aggregation
+## 🚀 **Deployment**
 
-**Key Functions:**
-- `recordPlayerActivity(player, entries, rewards)` - Record activity
-- `processPlayerBatch(players, entries, rewards)` - Process batch
-- `updateGameAnalytics()` - Update game stats
-- `calculateOptimalBatchSize()` - Optimize batch size
-
-### 🎯 PizzaPartyWeeklyChallenges
-**Features:**
-- Weekly challenge creation and management
-- Challenge completion tracking
-- Reward distribution with streak bonuses
-- Challenge leaderboards
-- Multiple categories and difficulty levels
-
-**Key Functions:**
-- `createChallenge(title, description, reward, difficulty, category)` - Create challenge
-- `joinChallenge(challengeId)` - Join challenge
-- `completeChallenge(challengeId, proof)` - Complete challenge
-- `getChallengeInfo(challengeId)` - Get challenge details
-
-## 🚀 Deployment
-
-### Deploy All Advanced Contracts
+### Quick Deploy (Recommended)
 ```bash
-npx hardhat run scripts/deploy-advanced-contracts.js --network base
+npx hardhat run scripts/deploy-all-contracts.js --network base
 ```
 
-### Contract Addresses
-After deployment, you'll get addresses for all contracts in `advanced-contracts-deployment.json`.
+This deploys all 3 essential contracts:
+1. FreeRandomness (utility)
+2. FreePriceOracle (utility)
+3. UniswapPriceOracle (utility)
+4. ChainlinkVRF (automated randomness)
+5. PizzaPartyCore (main game)
 
-## 🔧 Integration Guide
+### Manual Deploy
+```bash
+# Deploy PizzaPartyCore
+npx hardhat run scripts/deploy-pizza-party-core.js --network base
 
-### 1. Frontend Integration
-Update your frontend to interact with multiple contracts:
-
-```javascript
-// Example: Using referral system
-const referralContract = new ethers.Contract(REFERRAL_ADDRESS, REFERRAL_ABI, signer);
-await referralContract.createReferralCode();
-
-// Example: Using loyalty system
-const loyaltyContract = new ethers.Contract(LOYALTY_ADDRESS, LOYALTY_ABI, signer);
-await loyaltyContract.redeemPoints(100);
+# Deploy ChainlinkVRF
+npx hardhat run scripts/deploy-chainlink-vrf.js --network base
 ```
 
-### 2. Game Logic Integration
-Modify your game logic to use the appropriate contracts:
+## 🔗 **Contract Verification**
 
-```javascript
-// For entry fees
-const pricingContract = new ethers.Contract(PRICING_ADDRESS, PRICING_ABI, signer);
-const entryFee = await pricingContract.getCurrentEntryFee();
-
-// For loyalty points
-const loyaltyContract = new ethers.Contract(LOYALTY_ADDRESS, LOYALTY_ABI, signer);
-await loyaltyContract.awardEntryPoints(playerAddress);
+Verify all contracts on BaseScan:
+```bash
+npx hardhat run scripts/verify-all-contracts.js --network base
 ```
 
-### 3. Winner Selection Integration
-The core winner selection still uses `PizzaPartyCore` with VRF, but you can add advanced randomness:
+## 📊 **Benefits of Simplified System**
 
-```javascript
-// For advanced randomness
-const randomnessContract = new ethers.Contract(RANDOMNESS_ADDRESS, RANDOMNESS_ABI, signer);
-await randomnessContract.commitEntropy(commitment);
+### ✅ **Advantages:**
+- **Reduced Complexity:** Only 3 contracts to manage
+- **Lower Gas Costs:** Fewer contract interactions
+- **Easier Maintenance:** Simpler codebase
+- **Better Security:** Fewer attack vectors
+- **Faster Development:** Less integration work
+- **Cleaner Frontend:** Simpler contract interactions
+
+### 🎯 **Game Features:**
+- ✅ Daily game entry (8 winners)
+- ✅ Weekly game entry (10 winners)
+- ✅ Automated winner selection
+- ✅ Chainlink VRF randomness
+- ✅ Jackpot management
+- ✅ Player tracking
+- ✅ VMF token integration
+
+## 🔧 **Frontend Integration**
+
+### Using AdvancedContractsService
+```typescript
+import { AdvancedContractsService } from '@/lib/services/advanced-contracts-service'
+
+const service = new AdvancedContractsService(provider, signer)
+
+// Enter daily game
+await service.enterDailyGame()
+
+// Get current game stats
+const gameId = await service.getCurrentGameId()
+const dailyJackpot = await service.getDailyJackpot()
+const weeklyJackpot = await service.getWeeklyJackpot()
 ```
 
-## 📈 Benefits of Modular System
+### Using React Hook
+```typescript
+import { useAdvancedContracts } from '@/hooks/useAdvancedContracts'
 
-### ✅ Size Compliance
-- Each contract stays under 24,576 byte limit
-- No more deployment size errors
-- Easy to deploy and verify
+const { enterDailyGame, getCurrentGameId, isLoading, error } = useAdvancedContracts()
 
-### ✅ Feature Separation
-- Clear separation of concerns
-- Easy to maintain and upgrade
-- Independent feature development
+// Enter game
+await enterDailyGame()
+```
 
-### ✅ Gas Optimization
-- Only deploy features you need
-- Optimize gas usage per feature
-- Batch processing capabilities
+## 🎮 **Game Flow**
 
-### ✅ Scalability
-- Add new features without affecting core
-- Upgrade individual components
-- Better testing and debugging
+1. **Player Entry:** Users call `enterDailyGame()` on PizzaPartyCore
+2. **Automatic Selection:** ChainlinkVRF selects winners at scheduled times
+3. **Prize Distribution:** VMF tokens automatically sent to winners
+4. **State Updates:** Game state updated for next round
 
-## 🔄 Contract Interactions
+## 🔒 **Security Features**
 
-### Core Game Flow
-1. **Entry**: `PizzaPartyCore.enterDailyGame()` + `PizzaPartyDynamicPricing.collectEntryFee()`
-2. **Loyalty**: `PizzaPartyLoyalty.awardEntryPoints()` + `PizzaPartyLoyalty.awardSpendingPoints()`
-3. **Referral**: `PizzaPartyReferral.processReferralCode()` (if applicable)
-4. **Analytics**: `PizzaPartyAnalytics.recordPlayerActivity()`
-5. **Winner Selection**: `PizzaPartyCore.processDailyWinners()` (with VRF)
+- **ReentrancyGuard:** Prevents reentrancy attacks
+- **Ownable:** Admin functions protected
+- **Pausable:** Emergency pause functionality
+- **Input Validation:** All inputs validated
+- **Chainlink VRF:** Verifiable randomness
+- **Rate Limiting:** Prevents spam
 
-### Advanced Features Flow
-1. **Weekly Challenges**: `PizzaPartyWeeklyChallenges.joinChallenge()` + `PizzaPartyWeeklyChallenges.completeChallenge()`
-2. **Advanced Randomness**: `PizzaPartyAdvancedRandomness.commitEntropy()` + `PizzaPartyAdvancedRandomness.revealEntropy()`
-3. **Batch Processing**: `PizzaPartyAnalytics.processPlayerBatch()`
+## 📈 **Monitoring**
 
-## 🛡️ Security Features
+### Automated Systems
+- **Scheduled Winner Selection:** Runs automatically
+- **VRF Monitoring:** Tracks randomness requests
+- **Payment Logging:** Records all prize distributions
 
-### All Contracts Include:
-- **ReentrancyGuard** - Prevents reentrancy attacks
-- **Ownable** - Access control for admin functions
-- **Pausable** - Emergency pause functionality
-- **Input Validation** - Sanitized inputs
-- **Rate Limiting** - Cooldown periods
-- **Blacklisting** - User management
+### Manual Monitoring
+- **Contract Events:** Monitor game events
+- **BaseScan:** Track transactions and state
+- **Analytics:** Player activity and jackpot growth
 
-### Additional Security:
-- **Referral**: Code format validation, expiry management
-- **Dynamic Pricing**: Price deviation protection
-- **Loyalty**: Tier-based access control
-- **Randomness**: Multi-party verification
-- **Analytics**: Gas optimization thresholds
-- **Challenges**: Completion verification
+## 🚀 **Next Steps**
 
-## 📊 Monitoring and Analytics
-
-### Contract Metrics
-- **Gas Usage**: Track gas consumption per contract
-- **User Activity**: Monitor feature usage
-- **Performance**: Optimize based on analytics
-- **Rewards**: Track reward distribution
-
-### Key Events to Monitor
-- `ReferralCodeGenerated` - Referral system usage
-- `DynamicFeeCalculated` - Pricing changes
-- `PointsEarned` - Loyalty system activity
-- `RoundCompleted` - Randomness generation
-- `BatchProcessed` - Analytics performance
-- `ChallengeCompleted` - Challenge participation
-
-## 🚀 Next Steps
-
-### Immediate Actions
-1. **Deploy Contracts**: Run the deployment script
-2. **Update Frontend**: Integrate with new contract addresses
-3. **Test Features**: Verify all functionality works
-4. **Monitor Performance**: Track gas usage and optimization
-
-### Future Enhancements
-1. **Cross-Contract Integration**: Add more contract interactions
-2. **Advanced Analytics**: Implement more detailed tracking
-3. **Feature Expansion**: Add new specialized contracts
-4. **Optimization**: Further gas and performance improvements
-
-## 📞 Support
-
-If you need help with:
-- **Contract Integration**: Check the integration examples
-- **Feature Configuration**: Review the contract documentation
-- **Deployment Issues**: Check the deployment logs
-- **Performance Optimization**: Monitor the analytics contract
+1. **Test Game Flow:** Verify all functions work correctly
+2. **Monitor VRF:** Ensure automated winner selection works
+3. **Frontend Testing:** Test all user interactions
+4. **Production Launch:** Deploy to mainnet
 
 ---
 
-**🎉 Congratulations!** You now have a complete, modular Pizza Party game system with all the advanced features you requested, while staying within contract size limits!
+**🎉 The simplified system provides all the functionality you need with much less complexity!**
