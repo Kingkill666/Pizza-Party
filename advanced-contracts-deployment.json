@@ -1,0 +1,13 @@
+{
+  "deploymentTime": "2025-08-13T00:15:57.187Z",
+  "network": "base",
+  "deployer": "0xf521a4fE5910b4fb4A14C9546C2837D33bEc455d",
+  "contracts": {
+    "PizzaPartyReferral": "0xb976e0400e88f78AA85029D138fFD11A65de9CE8",
+    "PizzaPartyDynamicPricing": "0x0F5a91907039eecebEA78ad2d327C7521d4F7892",
+    "PizzaPartyLoyalty": "0xC8a44e0587f7BeDa623b75DF5415E85Bf1163ac7",
+    "PizzaPartyAdvancedRandomness": "0xCcF33C77A65849e19Df6e66A9daEBC112D5BDBCE",
+    "PizzaPartyAnalytics": "0xf32156203A70Bbf1e3db6C664F3F7eA8310a8841",
+    "PizzaPartyWeeklyChallenges": "0x87fee21FB855Ae44600B79b38709E4587f5b60CF"
+  }
+}

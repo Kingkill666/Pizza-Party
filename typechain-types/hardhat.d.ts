@@ -94,9 +94,37 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.PizzaParty__factory>;
     getContractFactory(
+      name: "PizzaPartyAdvancedRandomness",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.PizzaPartyAdvancedRandomness__factory>;
+    getContractFactory(
+      name: "PizzaPartyAnalytics",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.PizzaPartyAnalytics__factory>;
+    getContractFactory(
       name: "PizzaPartyCore",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.PizzaPartyCore__factory>;
+    getContractFactory(
+      name: "IPriceOracle",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPriceOracle__factory>;
+    getContractFactory(
+      name: "PizzaPartyDynamicPricing",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.PizzaPartyDynamicPricing__factory>;
+    getContractFactory(
+      name: "PizzaPartyLoyalty",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.PizzaPartyLoyalty__factory>;
+    getContractFactory(
+      name: "PizzaPartyReferral",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.PizzaPartyReferral__factory>;
+    getContractFactory(
+      name: "PizzaPartyWeeklyChallenges",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.PizzaPartyWeeklyChallenges__factory>;
     getContractFactory(
       name: "SecureReferralSystem",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -215,10 +243,45 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.PizzaParty>;
     getContractAt(
+      name: "PizzaPartyAdvancedRandomness",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.PizzaPartyAdvancedRandomness>;
+    getContractAt(
+      name: "PizzaPartyAnalytics",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.PizzaPartyAnalytics>;
+    getContractAt(
       name: "PizzaPartyCore",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.PizzaPartyCore>;
+    getContractAt(
+      name: "IPriceOracle",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPriceOracle>;
+    getContractAt(
+      name: "PizzaPartyDynamicPricing",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.PizzaPartyDynamicPricing>;
+    getContractAt(
+      name: "PizzaPartyLoyalty",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.PizzaPartyLoyalty>;
+    getContractAt(
+      name: "PizzaPartyReferral",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.PizzaPartyReferral>;
+    getContractAt(
+      name: "PizzaPartyWeeklyChallenges",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.PizzaPartyWeeklyChallenges>;
     getContractAt(
       name: "SecureReferralSystem",
       address: string | ethers.Addressable,
@@ -321,9 +384,37 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.PizzaParty>;
     deployContract(
+      name: "PizzaPartyAdvancedRandomness",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PizzaPartyAdvancedRandomness>;
+    deployContract(
+      name: "PizzaPartyAnalytics",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PizzaPartyAnalytics>;
+    deployContract(
       name: "PizzaPartyCore",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.PizzaPartyCore>;
+    deployContract(
+      name: "IPriceOracle",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPriceOracle>;
+    deployContract(
+      name: "PizzaPartyDynamicPricing",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PizzaPartyDynamicPricing>;
+    deployContract(
+      name: "PizzaPartyLoyalty",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PizzaPartyLoyalty>;
+    deployContract(
+      name: "PizzaPartyReferral",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PizzaPartyReferral>;
+    deployContract(
+      name: "PizzaPartyWeeklyChallenges",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PizzaPartyWeeklyChallenges>;
     deployContract(
       name: "SecureReferralSystem",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -442,10 +533,45 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.PizzaParty>;
     deployContract(
+      name: "PizzaPartyAdvancedRandomness",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PizzaPartyAdvancedRandomness>;
+    deployContract(
+      name: "PizzaPartyAnalytics",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PizzaPartyAnalytics>;
+    deployContract(
       name: "PizzaPartyCore",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.PizzaPartyCore>;
+    deployContract(
+      name: "IPriceOracle",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPriceOracle>;
+    deployContract(
+      name: "PizzaPartyDynamicPricing",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PizzaPartyDynamicPricing>;
+    deployContract(
+      name: "PizzaPartyLoyalty",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PizzaPartyLoyalty>;
+    deployContract(
+      name: "PizzaPartyReferral",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PizzaPartyReferral>;
+    deployContract(
+      name: "PizzaPartyWeeklyChallenges",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PizzaPartyWeeklyChallenges>;
     deployContract(
       name: "SecureReferralSystem",
       args: any[],
