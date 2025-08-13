@@ -134,14 +134,7 @@ async function main() {
     console.log("⏳ Waiting 3 seconds before next deployment...");
     await delay(3000);
 
-    // 8. Deploy MockVMF contract (for testing)
-    console.log("\n🧪 8. Deploying MockVMF contract...");
-    const MockVMF = await ethers.getContractFactory("MockVMF");
-    const mockVMF = await MockVMF.deploy();
-    await mockVMF.waitForDeployment();
-    const mockVMFAddress = await mockVMF.getAddress();
-    deploymentResults.mockVMF = mockVMFAddress;
-    console.log("✅ MockVMF deployed at:", mockVMFAddress);
+
 
     // Verify all contracts
     console.log("\n🔍 Verifying contracts on Basescan...");
@@ -183,11 +176,7 @@ async function main() {
         constructorArguments: [VMF_TOKEN_ADDRESS],
       }).catch(e => console.log("⚠️ PizzaPartyCore verification failed:", e.message)),
       
-      // MockVMF
-      hre.run("verify:verify", {
-        address: mockVMFAddress,
-        constructorArguments: [],
-      }).catch(e => console.log("⚠️ MockVMF verification failed:", e.message)),
+
     ];
 
     await Promise.all(verificationPromises);
@@ -227,7 +216,7 @@ async function main() {
     console.log("   🔗 SecureReferralSystem:", referralSystemAddress);
     console.log("   🎲 ChainlinkVRF:", vrfAddress);
     console.log("   🍕 PizzaPartyCore:", pizzaPartyCoreAddress);
-    console.log("   🧪 MockVMF:", mockVMFAddress);
+
     console.log("");
     console.log("❌ Failed Deployments:");
     if (deploymentResults.pizzaParty === "FAILED - Contract too large") {
@@ -241,7 +230,7 @@ async function main() {
     console.log("   🔗 SecureReferralSystem: https://basescan.org/address/" + referralSystemAddress);
     console.log("   🎲 ChainlinkVRF: https://basescan.org/address/" + vrfAddress);
     console.log("   🍕 PizzaPartyCore: https://basescan.org/address/" + pizzaPartyCoreAddress);
-    console.log("   🧪 MockVMF: https://basescan.org/address/" + mockVMFAddress);
+
     console.log("");
     console.log("🎯 RECOMMENDED NEXT STEPS:");
     console.log("   1. Use PizzaPartyCore for production (fits size limit)");
