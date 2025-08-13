@@ -22,6 +22,7 @@ import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Clock, Users, Coins, Copy, Share2, ExternalLink, UsersIcon, AlertCircle, X, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
+import { ShareButton, QuickShareButtons } from '@/components/ShareButton'
 
 export default function GamePage() {
   const customFontStyle = {
@@ -1023,6 +1024,20 @@ export default function GamePage() {
                 💡 Connect wallet to invite friends
               </p>
             )}
+
+            {/* Quick Share Buttons */}
+            <div className="mt-4 space-y-2">
+              <p className="text-center text-sm text-gray-600 font-bold" style={customFontStyle}>
+                📤 Share the fun!
+              </p>
+              <QuickShareButtons
+                gameId={playerCount.toString()}
+                jackpotAmount={`${realTimeJackpotValue} VMF`}
+                winnerCount={realTimeDailyPlayers}
+                referralCode={referralCode}
+                className="justify-center"
+              />
+            </div>
             </div>
 
             {/* Daily Game Window Countdown - Moved to BOTTOM */}
@@ -1280,6 +1295,30 @@ export default function GamePage() {
                   </div>
                   <ExternalLink className="h-4 w-4" />
                 </Button>
+
+                {/* Farcaster Native Share */}
+                <ShareButton
+                  type="referral"
+                  options={{ 
+                    referralCode: referralCode,
+                    jackpotAmount: `${realTimeJackpotValue} VMF`,
+                    winnerCount: realTimeDailyPlayers
+                  }}
+                  className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-between"
+                  onSuccess={() => {
+                    setSuccess('✅ Shared to Farcaster!');
+                    setShowShareModal(false);
+                  }}
+                  onError={(error) => {
+                    setGameError(`Failed to share: ${error}`);
+                  }}
+                >
+                  <div className="flex items-center">
+                    <span className="text-xl mr-3">📤</span>
+                    <span>Farcaster Native</span>
+                  </div>
+                  <Share2 className="h-4 w-4" />
+                </ShareButton>
 
                 {/* Copy Link */}
                 <Button
