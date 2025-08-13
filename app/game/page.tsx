@@ -159,9 +159,34 @@ export default function GamePage() {
   // Initialize Advanced Contracts Service
   const getAdvancedContractsService = async () => {
     if (!window.ethereum) return null
-    const provider = new ethers.BrowserProvider(window.ethereum)
-    const signer = await provider.getSigner()
-    return new AdvancedContractsService(provider, signer)
+    
+    try {
+      // Try wallet provider first
+      const provider = new ethers.BrowserProvider(window.ethereum)
+      
+      // Test the connection first
+      try {
+        await provider.getNetwork()
+        console.log('✅ Wallet RPC connection successful')
+      } catch (networkError) {
+        console.error('❌ Wallet RPC connection failed:', networkError)
+        
+        // Fallback to public RPC
+        console.log('🔄 Trying fallback RPC...')
+        const fallbackProvider = new ethers.JsonRpcProvider('https://base.blockpi.network/v1/rpc/public')
+        await fallbackProvider.getNetwork()
+        console.log('✅ Fallback RPC connection successful')
+        
+        // Use fallback provider for read operations, but we still need wallet for transactions
+        throw new Error('Wallet RPC connection failed. Please try switching networks or refreshing the page.')
+      }
+      
+      const signer = await provider.getSigner()
+      return new AdvancedContractsService(provider, signer)
+    } catch (error) {
+      console.error('❌ Failed to initialize contract service:', error)
+      throw error
+    }
   }
 
   // Check if user has already entered today from contract
@@ -338,7 +363,25 @@ export default function GamePage() {
       
     } catch (error: any) {
       console.error('❌ Error entering game:', error)
-      setGameError(error.message || 'Failed to enter game. Please try again.')
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to enter game. Please try again.'
+      
+      if (error.message.includes('Failed to fetch') || error.message.includes('Failed to connect')) {
+        errorMessage = 'Network connection failed. Please check your internet connection and try again.'
+      } else if (error.message.includes('insufficient funds')) {
+        errorMessage = 'Insufficient VMF balance. You need at least 100 VMF to enter the game.'
+      } else if (error.message.includes('user rejected')) {
+        errorMessage = 'Transaction was cancelled by user.'
+      } else if (error.message.includes('nonce too low')) {
+        errorMessage = 'Transaction error. Please try again in a few seconds.'
+      } else if (error.message.includes('rate limit')) {
+        errorMessage = 'Rate limit exceeded. Please wait before trying again.'
+      } else if (error.message.includes('blacklisted')) {
+        errorMessage = 'Account is not eligible to enter the game.'
+      }
+      
+      setGameError(errorMessage)
     } finally {
       setIsProcessing(false)
     }

@@ -30,7 +30,11 @@ export const NETWORK_CONFIG = {
     symbol: 'ETH',
     decimals: 18,
   },
-  rpcUrls: ['https://mainnet.base.org'],
+  rpcUrls: [
+    'https://mainnet.base.org',
+    'https://base.blockpi.network/v1/rpc/public',
+    'https://1rpc.io/base'
+  ],
   blockExplorerUrls: ['https://basescan.org'],
 }
 
