@@ -56,21 +56,10 @@ async function main() {
     console.log("⏳ Waiting 3 seconds before next deployment...");
     await delay(3000);
 
-    // 4. Deploy SecureReferralSystem contract
-    console.log("\n🔗 4. Deploying SecureReferralSystem contract...");
-    const SecureReferralSystem = await ethers.getContractFactory("SecureReferralSystem");
-    const referralSystem = await SecureReferralSystem.deploy(randomnessAddress);
-    await referralSystem.waitForDeployment();
-    const referralSystemAddress = await referralSystem.getAddress();
-    deploymentResults.secureReferralSystem = referralSystemAddress;
-    console.log("✅ SecureReferralSystem deployed at:", referralSystemAddress);
-    
-    // Wait 3 seconds before next deployment
-    console.log("⏳ Waiting 3 seconds before next deployment...");
-    await delay(3000);
 
-    // 5. Deploy ChainlinkVRF contract
-    console.log("\n🎲 5. Deploying ChainlinkVRF contract...");
+
+    // 4. Deploy ChainlinkVRF contract
+    console.log("\n🎲 4. Deploying ChainlinkVRF contract...");
     const ChainlinkVRF = await ethers.getContractFactory("ChainlinkVRF");
     
     // Chainlink VRF v2.5 configuration for Base mainnet
@@ -98,8 +87,8 @@ async function main() {
     console.log("⏳ Waiting 3 seconds before next deployment...");
     await delay(3000);
 
-    // 6. Deploy PizzaPartyCore contract (the smaller, deployable version)
-    console.log("\n🍕 6. Deploying PizzaPartyCore contract...");
+    // 5. Deploy PizzaPartyCore contract (the smaller, deployable version)
+    console.log("\n🍕 5. Deploying PizzaPartyCore contract...");
     const PizzaPartyCore = await ethers.getContractFactory("PizzaPartyCore");
     const pizzaPartyCore = await PizzaPartyCore.deploy(VMF_TOKEN_ADDRESS);
     await pizzaPartyCore.waitForDeployment();
@@ -111,8 +100,8 @@ async function main() {
     console.log("⏳ Waiting 3 seconds before next deployment...");
     await delay(3000);
 
-    // 7. Try to deploy the full PizzaParty contract (may fail due to size)
-    console.log("\n🍕 7. Attempting to deploy full PizzaParty contract...");
+    // 6. Try to deploy the full PizzaParty contract (may fail due to size)
+    console.log("\n🍕 6. Attempting to deploy full PizzaParty contract...");
     try {
       const PizzaParty = await ethers.getContractFactory("PizzaParty");
       const pizzaParty = await PizzaParty.deploy(
@@ -158,11 +147,7 @@ async function main() {
         constructorArguments: [],
       }).catch(e => console.log("⚠️ UniswapPriceOracle verification failed:", e.message)),
       
-      // SecureReferralSystem
-      hre.run("verify:verify", {
-        address: referralSystemAddress,
-        constructorArguments: [],
-      }).catch(e => console.log("⚠️ SecureReferralSystem verification failed:", e.message)),
+
       
       // ChainlinkVRF
       hre.run("verify:verify", {
@@ -213,7 +198,7 @@ async function main() {
     console.log("   🎲 FreeRandomness:", randomnessAddress);
     console.log("   📊 FreePriceOracle:", priceOracleAddress);
     console.log("   📈 UniswapPriceOracle:", uniswapPriceOracleAddress);
-    console.log("   🔗 SecureReferralSystem:", referralSystemAddress);
+
     console.log("   🎲 ChainlinkVRF:", vrfAddress);
     console.log("   🍕 PizzaPartyCore:", pizzaPartyCoreAddress);
 
@@ -227,7 +212,7 @@ async function main() {
     console.log("   🎲 FreeRandomness: https://basescan.org/address/" + randomnessAddress);
     console.log("   📊 FreePriceOracle: https://basescan.org/address/" + priceOracleAddress);
     console.log("   📈 UniswapPriceOracle: https://basescan.org/address/" + uniswapPriceOracleAddress);
-    console.log("   🔗 SecureReferralSystem: https://basescan.org/address/" + referralSystemAddress);
+
     console.log("   🎲 ChainlinkVRF: https://basescan.org/address/" + vrfAddress);
     console.log("   🍕 PizzaPartyCore: https://basescan.org/address/" + pizzaPartyCoreAddress);
 
