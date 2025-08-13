@@ -1,0 +1,20 @@
+{
+  "deploymentTime": "2025-08-13T20:30:07.770Z",
+  "network": "Base Mainnet",
+  "contract": "PizzaPartyFeeAbstraction",
+  "address": "0x90841F5204af9ebB28eF2788189d39ab2c46B7ad",
+  "paymasterAddress": "0x0000000000000000000000000000000000000000",
+  "dailyGasLimit": "100000000000000000",
+  "features": [
+    "Gas sponsorship for game entries",
+    "Daily limits (3 free entries per user per day)",
+    "Paymaster integration with Base fee abstraction",
+    "Emergency controls and monitoring",
+    "Real-time gas usage tracking"
+  ],
+  "configuration": {
+    "gasLimitPerEntry": "150000",
+    "maxDailyEntries": "1000",
+    "userDailyGasLimit": "450000"
+  }
+}

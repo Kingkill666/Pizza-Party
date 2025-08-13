@@ -994,6 +994,46 @@
       "imports": [],
       "versionPragmas": [],
       "artifacts": []
+    },
+    "/Users/michaelgray/Documents/Pizza-Party/contracts/PizzaPartyFeeAbstraction.sol": {
+      "lastModificationDate": 1755116953979,
+      "contentHash": "f0982c5a7229471266e1b9a25490ffc5",
+      "sourceName": "contracts/PizzaPartyFeeAbstraction.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "viaIR": true,
+          "optimizer": {
+            "enabled": true,
+            "runs": 1
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "PizzaPartyFeeAbstraction"
+      ]
     }
   }
 }

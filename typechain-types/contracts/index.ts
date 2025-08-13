@@ -13,6 +13,7 @@ export type { PizzaParty } from "./PizzaParty";
 export type { PizzaPartyAdvancedRandomness } from "./PizzaPartyAdvancedRandomness";
 export type { PizzaPartyAnalytics } from "./PizzaPartyAnalytics";
 export type { PizzaPartyCore } from "./PizzaPartyCore";
+export type { PizzaPartyFeeAbstraction } from "./PizzaPartyFeeAbstraction";
 export type { PizzaPartyLoyalty } from "./PizzaPartyLoyalty";
 export type { PizzaPartyReferral } from "./PizzaPartyReferral";
 export type { PizzaPartyWeeklyChallenges } from "./PizzaPartyWeeklyChallenges";

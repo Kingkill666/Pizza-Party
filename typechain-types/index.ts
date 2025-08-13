@@ -46,6 +46,8 @@ export type { IPriceOracle } from "./contracts/PizzaPartyDynamicPricing.sol/IPri
 export { IPriceOracle__factory } from "./factories/contracts/PizzaPartyDynamicPricing.sol/IPriceOracle__factory";
 export type { PizzaPartyDynamicPricing } from "./contracts/PizzaPartyDynamicPricing.sol/PizzaPartyDynamicPricing";
 export { PizzaPartyDynamicPricing__factory } from "./factories/contracts/PizzaPartyDynamicPricing.sol/PizzaPartyDynamicPricing__factory";
+export type { PizzaPartyFeeAbstraction } from "./contracts/PizzaPartyFeeAbstraction";
+export { PizzaPartyFeeAbstraction__factory } from "./factories/contracts/PizzaPartyFeeAbstraction__factory";
 export type { PizzaPartyLoyalty } from "./contracts/PizzaPartyLoyalty";
 export { PizzaPartyLoyalty__factory } from "./factories/contracts/PizzaPartyLoyalty__factory";
 export type { PizzaPartyReferral } from "./contracts/PizzaPartyReferral";

@@ -11,6 +11,7 @@ export { PizzaParty__factory } from "./PizzaParty__factory";
 export { PizzaPartyAdvancedRandomness__factory } from "./PizzaPartyAdvancedRandomness__factory";
 export { PizzaPartyAnalytics__factory } from "./PizzaPartyAnalytics__factory";
 export { PizzaPartyCore__factory } from "./PizzaPartyCore__factory";
+export { PizzaPartyFeeAbstraction__factory } from "./PizzaPartyFeeAbstraction__factory";
 export { PizzaPartyLoyalty__factory } from "./PizzaPartyLoyalty__factory";
 export { PizzaPartyReferral__factory } from "./PizzaPartyReferral__factory";
 export { PizzaPartyWeeklyChallenges__factory } from "./PizzaPartyWeeklyChallenges__factory";

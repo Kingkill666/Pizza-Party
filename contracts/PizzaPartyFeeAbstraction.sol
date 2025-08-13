@@ -2,14 +2,13 @@
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title PizzaPartyFeeAbstraction
  * @dev Enables gasless transactions for Pizza Party game using Base fee abstraction
  */
-contract PizzaPartyFeeAbstraction is Ownable, ReentrancyGuard, Pausable {
+contract PizzaPartyFeeAbstraction is Ownable, ReentrancyGuard {
     
     // Events
     event GasSponsored(address indexed user, uint256 gasCost, bytes32 indexed txHash);
@@ -30,7 +29,7 @@ contract PizzaPartyFeeAbstraction is Ownable, ReentrancyGuard, Pausable {
     uint256 public constant GAS_LIMIT_PER_ENTRY = 150000; // Estimated gas for game entry
     uint256 public constant MAX_DAILY_ENTRIES = 1000; // Max sponsored entries per day
     
-    constructor(address _paymaster, uint256 _dailyGasLimit) {
+    constructor(address _paymaster, uint256 _dailyGasLimit) Ownable(msg.sender) {
         paymaster = _paymaster;
         dailyGasLimit = _dailyGasLimit;
         userDailyGasLimit = 3 * GAS_LIMIT_PER_ENTRY; // 3 free entries per day per user
@@ -46,7 +45,7 @@ contract PizzaPartyFeeAbstraction is Ownable, ReentrancyGuard, Pausable {
         address user,
         address gameContract,
         address referrer
-    ) external onlyOwner whenNotPaused nonReentrant {
+    ) external onlyOwner nonReentrant {
         require(user != address(0), "Invalid user address");
         require(gameContract != address(0), "Invalid game contract");
         
@@ -122,17 +121,17 @@ contract PizzaPartyFeeAbstraction is Ownable, ReentrancyGuard, Pausable {
     }
     
     /**
-     * @dev Emergency pause
+     * @dev Emergency pause (placeholder for future implementation)
      */
     function emergencyPause() external onlyOwner {
-        _pause();
+        // TODO: Implement pause functionality
     }
     
     /**
-     * @dev Emergency unpause
+     * @dev Emergency unpause (placeholder for future implementation)
      */
     function emergencyUnpause() external onlyOwner {
-        _unpause();
+        // TODO: Implement unpause functionality
     }
     
     /**

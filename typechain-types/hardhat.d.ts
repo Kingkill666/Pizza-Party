@@ -90,6 +90,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.PizzaPartyDynamicPricing__factory>;
     getContractFactory(
+      name: "PizzaPartyFeeAbstraction",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.PizzaPartyFeeAbstraction__factory>;
+    getContractFactory(
       name: "PizzaPartyLoyalty",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.PizzaPartyLoyalty__factory>;
@@ -214,6 +218,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.PizzaPartyDynamicPricing>;
     getContractAt(
+      name: "PizzaPartyFeeAbstraction",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.PizzaPartyFeeAbstraction>;
+    getContractAt(
       name: "PizzaPartyLoyalty",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -326,6 +335,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.PizzaPartyDynamicPricing>;
     deployContract(
+      name: "PizzaPartyFeeAbstraction",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PizzaPartyFeeAbstraction>;
+    deployContract(
       name: "PizzaPartyLoyalty",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.PizzaPartyLoyalty>;
@@ -449,6 +462,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.PizzaPartyDynamicPricing>;
+    deployContract(
+      name: "PizzaPartyFeeAbstraction",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PizzaPartyFeeAbstraction>;
     deployContract(
       name: "PizzaPartyLoyalty",
       args: any[],
