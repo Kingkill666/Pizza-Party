@@ -290,10 +290,12 @@ export default function GamePage() {
       
       // Debug: Get VMF price and required amount
       console.log('🔍 Getting VMF price and required amount...')
-      const vmfPrice = await service.getVMFPrice()
-      const vmfPriceFormatted = await service.getVMFPriceFormatted()
-      console.log('💰 VMF Price:', vmfPrice.toString(), 'wei')
-      console.log('💵 VMF Price:', vmfPriceFormatted, 'VMF')
+      // Temporarily disabled due to contract interaction issue
+      // const vmfPrice = await service.getVMFPrice()
+      // const vmfPriceFormatted = await service.getVMFPriceFormatted()
+      // console.log('💰 VMF Price:', vmfPrice.toString(), 'wei')
+      // console.log('💵 VMF Price:', vmfPriceFormatted, 'VMF')
+      console.log('💰 VMF Price: 1.0 VMF (temporarily hardcoded)')
       
       // Enter the daily game
       const txHash = await service.enterDailyGame()
