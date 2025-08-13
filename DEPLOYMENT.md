@@ -2,7 +2,7 @@
 
 ## 🚀 Overview
 
-This guide covers the complete deployment process for the Pizza Party dApp on Base Mainnet, from local development to production deployment.
+This guide covers the complete deployment process for the Pizza Party dApp on Base Mainnet, including the main game contract (PizzaPartyCore), Chainlink VRF integration, and Farcaster sharing features.
 
 ## 📋 Prerequisites
 
@@ -16,6 +16,7 @@ This guide covers the complete deployment process for the Pizza Party dApp on Ba
 - **Base Network** account with ETH for gas
 - **Basescan** API key for contract verification
 - **Private Key** for deployment
+- **Chainlink VRF** subscription for randomness
 
 ## 🔧 Environment Setup
 
@@ -49,6 +50,11 @@ COINMARKETCAP_API_KEY=your_coinmarketcap_api_key
 
 # VMF Token Contract Address on Base
 VMF_TOKEN_ADDRESS=0x2213414893259b0C48066Acd1763e7fbA97859E5
+
+# Chainlink VRF Configuration
+CHAINLINK_VRF_SUBSCRIPTION_ID=your_subscription_id
+CHAINLINK_VRF_KEYHASH=0x08ba8f62ff6c40a58877a106147661db43bc58dab9e9e1daedc0b61041f4c803
+CHAINLINK_VRF_COORDINATOR=0x41034678D6C633D8a95c75e1138A360a28bBc9dB
 ```
 
 ### 4. Verify Configuration
@@ -77,7 +83,7 @@ npm run dev
 ### 4. Test Locally
 - Open http://localhost:3000
 - Connect wallet to local network
-- Test all functionality
+- Test all functionality including VRF and sharing
 
 ## 🚀 Mainnet Deployment (Base)
 
@@ -88,23 +94,34 @@ npm run dev
 - [ ] Team approval received
 - [ ] VMF token integration tested
 - [ ] Wallet connections verified
+- [ ] Chainlink VRF subscription configured
+- [ ] Farcaster sharing tested
 
 ### 2. Deploy to Mainnet
 ```bash
 npx hardhat run scripts/deploy.ts --network base
 ```
 
-### 3. Verify Contract
+### 3. Verify Contracts
 ```bash
-npx hardhat verify --network base 0xCONTRACT_ADDRESS "0x2213414893259b0C48066Acd1763e7fbA97859E5"
+# Verify PizzaPartyCore
+npx hardhat verify --network base 0xPIZZA_PARTY_CORE_ADDRESS "0x2213414893259b0C48066Acd1763e7fbA97859E5"
+
+# Verify ChainlinkVRF
+npx hardhat verify --network base 0xCHAINLINK_VRF_ADDRESS "0x41034678D6C633D8a95c75e1138A360a28bBc9dB" "YOUR_SUBSCRIPTION_ID" "0x08ba8f62ff6c40a58877a106147661db43bc58dab9e9e1daedc0b61041f4c803"
+
+# Verify PizzaPartyFeeAbstraction
+npx hardhat verify --network base 0xFEE_ABSTRACTION_ADDRESS
 ```
 
-### 4. Update Frontend
-Update the contract address in your frontend configuration:
+### 4. Update Frontend Configuration
+Update the contract addresses in your frontend configuration:
 
 ```typescript
 // lib/contract-config.ts
-export const PIZZA_PARTY_CONTRACT_ADDRESS = "0xDEPLOYED_CONTRACT_ADDRESS"
+export const PIZZA_PARTY_CORE_ADDRESS = "0xDEPLOYED_CORE_ADDRESS"
+export const CHAINLINK_VRF_ADDRESS = "0xDEPLOYED_VRF_ADDRESS"
+export const FEE_ABSTRACTION_ADDRESS = "0xDEPLOYED_FEE_ADDRESS"
 ```
 
 ### 5. Deploy Frontend
@@ -116,11 +133,14 @@ npm run start
 ## 🔍 Post-Deployment Verification
 
 ### 1. Contract Verification
-- [ ] Contract deployed successfully
-- [ ] Contract verified on Basescan
+- [ ] PizzaPartyCore deployed successfully
+- [ ] ChainlinkVRF deployed and linked
+- [ ] PizzaPartyFeeAbstraction deployed
+- [ ] All contracts verified on Basescan
 - [ ] All functions accessible
 - [ ] Events firing correctly
 - [ ] VMF token integration working
+- [ ] VRF randomness requests working
 
 ### 2. Frontend Verification
 - [ ] Frontend deployed successfully
@@ -128,11 +148,13 @@ npm run start
 - [ ] Game functionality operational
 - [ ] Admin panel accessible
 - [ ] VMF token approval working
+- [ ] Farcaster sharing functional
+- [ ] Gasless transactions working
 
 ### 3. Security Verification
 - [ ] Access controls working
 - [ ] Emergency functions tested
-- [ ] Blacklist system operational
+- [ ] VRF security verified
 - [ ] Pause functionality working
 
 ## 📊 Monitoring Setup
@@ -143,14 +165,20 @@ npm run start
 npx hardhat console --network base
 ```
 
-### 2. Frontend Monitoring
+### 2. VRF Monitoring
+- Monitor VRF request success rates
+- Track randomness generation times
+- Verify winner selection fairness
+
+### 3. Frontend Monitoring
 - Set up error tracking (Sentry, LogRocket)
 - Monitor user interactions
 - Track performance metrics
+- Monitor Farcaster sharing success rates
 
-### 3. Security Monitoring
+### 4. Security Monitoring
 - Set up alerts for suspicious transactions
-- Monitor blacklist changes
+- Monitor VRF randomness verification
 - Track emergency function calls
 
 ## 🔧 Configuration Management
@@ -184,38 +212,38 @@ networks: {
 ```bash
 # Pause contract in emergency
 npx hardhat console --network base
-> const contract = await ethers.getContractAt("PizzaParty", "0xCONTRACT_ADDRESS")
-> await contract.emergencyPause(true)
+> const contract = await ethers.getContractAt("PizzaPartyCore", "0xCONTRACT_ADDRESS")
+> await contract.pause()
 ```
 
 ### 2. Emergency Withdrawal
 ```bash
 # Withdraw funds in emergency
 npx hardhat console --network base
-> const contract = await ethers.getContractAt("PizzaParty", "0xCONTRACT_ADDRESS")
-> await contract.emergencyWithdraw()
+> const contract = await ethers.getContractAt("PizzaPartyCore", "0xCONTRACT_ADDRESS")
+> await contract.emergencyWithdraw("0xVMF_TOKEN_ADDRESS", amount)
 ```
 
-### 3. Blacklist Management
+### 3. VRF Emergency
 ```bash
-# Blacklist malicious address
+# Pause VRF requests if needed
 npx hardhat console --network base
-> const contract = await ethers.getContractAt("PizzaParty", "0xCONTRACT_ADDRESS")
-> await contract.setPlayerBlacklist("0xMALICIOUS_ADDRESS", true)
+> const vrfContract = await ethers.getContractAt("ChainlinkVRF", "0xVRF_ADDRESS")
+> await vrfContract.pause()
 ```
 
 ## 🔄 Update Procedures
 
 ### 1. Contract Updates
 ```bash
-# Deploy new contract
+# Deploy new contracts
 npx hardhat run scripts/deploy.ts --network base
 
-# Verify new contract
-npx hardhat verify --network base 0xNEW_CONTRACT_ADDRESS "0x2213414893259b0C48066Acd1763e7fbA97859E5"
+# Verify new contracts
+npx hardhat verify --network base 0xNEW_CORE_ADDRESS "0x2213414893259b0C48066Acd1763e7fbA97859E5"
+npx hardhat verify --network base 0xNEW_VRF_ADDRESS "0x41034678D6C633D8a95c75e1138A360a28bBc9dB" "YOUR_SUBSCRIPTION_ID" "0x08ba8f62ff6c40a58877a106147661db43bc58dab9e9e1daedc0b61041f4c803"
 
-# Update frontend
-# Update contract address in configuration
+# Update frontend configuration
 ```
 
 ### 2. Frontend Updates
@@ -232,6 +260,7 @@ npm run build
 # Update environment variables
 # Update contract addresses
 # Update RPC endpoints
+# Update VRF configuration
 ```
 
 ## 📋 Deployment Checklist
@@ -243,10 +272,14 @@ npm run build
 - [ ] Environment configured
 - [ ] Team approval received
 - [ ] VMF token integration verified
+- [ ] Chainlink VRF subscription active
+- [ ] Farcaster sharing tested
 
 ### Deployment
-- [ ] Contract deployed
-- [ ] Contract verified
+- [ ] PizzaPartyCore deployed
+- [ ] ChainlinkVRF deployed
+- [ ] PizzaPartyFeeAbstraction deployed
+- [ ] All contracts verified
 - [ ] Frontend deployed
 - [ ] Configuration updated
 - [ ] Monitoring active
@@ -254,6 +287,8 @@ npm run build
 ### Post-deployment
 - [ ] Functionality tested
 - [ ] Security verified
+- [ ] VRF randomness tested
+- [ ] Farcaster sharing verified
 - [ ] Performance monitored
 - [ ] Documentation updated
 - [ ] Team notified
@@ -271,6 +306,13 @@ npx hardhat run scripts/deploy.ts --network base --gas-price 1000000000
 npx hardhat console --network base
 ```
 
+#### VRF Issues
+```bash
+# Check VRF subscription balance
+# Verify subscription ID
+# Check key hash configuration
+```
+
 #### Contract Verification Fails
 ```bash
 # Verify manually on Basescan
@@ -281,15 +323,15 @@ npx hardhat console --network base
 #### Frontend Connection Issues
 ```bash
 # Check RPC endpoint
-# Verify contract address
+# Verify contract addresses
 # Check wallet connection
 ```
 
-#### VMF Token Issues
+#### Farcaster Sharing Issues
 ```bash
-# Verify VMF token address
-# Check token approval
-# Verify token balance
+# Check Farcaster API availability
+# Verify sharing permissions
+# Test fallback clipboard functionality
 ```
 
 ### Support Resources
