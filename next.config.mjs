@@ -18,14 +18,14 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: [
-              "default-src 'self' data: blob: https:",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https: data: blob:",
+              "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:",
               "style-src 'self' 'unsafe-inline' https: data: blob:",
               "font-src 'self' https: data: blob:",
               "img-src 'self' data: https: blob:",
               "connect-src 'self' https: wss: ws:",
               "frame-src 'self' https: data: blob:",
-              "object-src 'none'",
+              "object-src 'self' https: data: blob:",
               "base-uri 'self'",
               "form-action 'self'",
               "frame-ancestors 'self'",

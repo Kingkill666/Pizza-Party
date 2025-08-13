@@ -111,9 +111,352 @@ export const VMF_TOKEN_ABI = [
   }
 ]
 
-// PizzaPartyCore contract ABI - Import from artifacts
-import PizzaPartyCoreArtifact from '../artifacts/contracts/PizzaPartyCore.sol/PizzaPartyCore.json';
-export const PIZZA_PARTY_CORE_ABI = PizzaPartyCoreArtifact.abi;
+// PizzaPartyCore contract ABI (complete with topping system)
+export const PIZZA_PARTY_CORE_ABI = [
+  {
+    "inputs": [{"internalType": "address", "name": "_vmfToken", "type": "address"}],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "EnforcedPause",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ExpectedPause", 
+    "type": "error"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "owner", "type": "address"}],
+    "name": "OwnableInvalidOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "account", "type": "address"}],
+    "name": "OwnableUnauthorizedAccount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ReentrancyGuardReentrantCall",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": false, "internalType": "uint256", "name": "gameId", "type": "uint256"},
+      {"indexed": false, "internalType": "address[]", "name": "winners", "type": "address[]"},
+      {"indexed": false, "internalType": "uint256", "name": "jackpot", "type": "uint256"}
+    ],
+    "name": "DailyWinnersSelected",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": false, "internalType": "uint256", "name": "dailyJackpot", "type": "uint256"},
+      {"indexed": false, "internalType": "uint256", "name": "weeklyJackpot", "type": "uint256"}
+    ],
+    "name": "JackpotUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "internalType": "address", "name": "player", "type": "address"},
+      {"indexed": false, "internalType": "bool", "name": "blacklisted", "type": "bool"}
+    ],
+    "name": "PlayerBlacklisted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "internalType": "address", "name": "player", "type": "address"},
+      {"indexed": true, "internalType": "uint256", "name": "gameId", "type": "uint256"},
+      {"indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256"}
+    ],
+    "name": "PlayerEntered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "internalType": "address", "name": "previousOwner", "type": "address"},
+      {"indexed": true, "internalType": "address", "name": "newOwner", "type": "address"}
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": false, "internalType": "address", "name": "account", "type": "address"}
+    ],
+    "name": "Paused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": true, "internalType": "address", "name": "referrer", "type": "address"},
+      {"indexed": true, "internalType": "address", "name": "referred", "type": "address"}
+    ],
+    "name": "ReferralRegistered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": false, "internalType": "uint256", "name": "account", "type": "address"}
+    ],
+    "name": "Unpaused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {"indexed": false, "internalType": "uint256", "name": "gameId", "type": "uint256"},
+      {"indexed": false, "internalType": "address[]", "name": "winners", "type": "address[]"},
+      {"indexed": false, "internalType": "uint256", "name": "jackpot", "type": "uint256"}
+    ],
+    "name": "WeeklyWinnersSelected",
+    "type": "event"
+  },
+  {
+    "inputs": [{"internalType": "uint256", "name": "amount", "type": "uint256"}],
+    "name": "addToDailyJackpot",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "currentDailyJackpot",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "name": "dailyPlayerCount",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "name": "dailyPlayers",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "bool", "name": "pause", "type": "bool"}],
+    "name": "emergencyPause",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "emergencyWithdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "referrer", "type": "address"}],
+    "name": "enterDailyGame",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint256", "name": "gameId", "type": "uint256"}],
+    "name": "getEligibleDailyPlayers",
+    "outputs": [{"internalType": "address[]", "name": "", "type": "address[]"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint256", "name": "gameId", "type": "uint256"}],
+    "name": "getEligibleWeeklyPlayers",
+    "outputs": [{"internalType": "address[]", "name": "", "type": "address[]"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getMinimumVMFRequired",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "player", "type": "address"}],
+    "name": "getPlayerInfo",
+    "outputs": [{"components": [{"internalType": "uint256", "name": "totalToppings", "type": "uint256"}, {"internalType": "uint256", "name": "dailyEntries", "type": "uint256"}, {"internalType": "uint256", "name": "weeklyEntries", "type": "uint256"}, {"internalType": "uint256", "name": "lastEntryTime", "type": "uint256"}, {"internalType": "uint256", "name": "vmfBalance", "type": "uint256"}, {"internalType": "uint256", "name": "lastVmfBalanceCheck", "type": "uint256"}, {"internalType": "uint256", "name": "referrals", "type": "uint256"}, {"internalType": "bool", "name": "isBlacklisted", "type": "bool"}], "internalType": "struct PizzaPartyCore.Player", "name": "", "type": "tuple"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "player", "type": "address"}],
+    "name": "getPlayerReferralInfo",
+    "outputs": [{"internalType": "uint256", "name": "referrals", "type": "uint256"}, {"internalType": "address", "name": "referrer", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "player", "type": "address"}],
+    "name": "getPlayerToppings",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "player", "type": "address"}],
+    "name": "getPlayerVMFBalance",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getTotalToppingsClaimed",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getWeeklyJackpot",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getWeeklyToppingsPool",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getCurrentGameId",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "isDailyDrawReady",
+    "outputs": [{"internalType": "bool", "name": "ready", "type": "bool"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "isWeeklyDrawReady",
+    "outputs": [{"internalType": "bool", "name": "ready", "type": "bool"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "lastDailyDraw",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "lastWeeklyDraw",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "paused",
+    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "name": "players",
+    "outputs": [{"internalType": "uint256", "name": "totalToppings", "type": "uint256"}, {"internalType": "uint256", "name": "dailyEntries", "type": "uint256"}, {"internalType": "uint256", "name": "weeklyEntries", "type": "uint256"}, {"internalType": "uint256", "name": "lastEntryTime", "type": "uint256"}, {"internalType": "uint256", "name": "vmfBalance", "type": "uint256"}, {"internalType": "uint256", "name": "lastVmfBalanceCheck", "type": "uint256"}, {"internalType": "uint256", "name": "referrals", "type": "uint256"}, {"internalType": "bool", "name": "isBlacklisted", "type": "bool"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "name": "referralCount",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "name": "referrers",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "player", "type": "address"}, {"internalType": "bool", "name": "blacklisted", "type": "bool"}],
+    "name": "setPlayerBlacklist",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalToppingsClaimed",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "vmfToken",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "weeklyToppingsPool",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "name": "weeklyPlayerCount",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "name": "weeklyPlayers",
+    "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
 
 
 
