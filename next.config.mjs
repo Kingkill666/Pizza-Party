@@ -28,7 +28,7 @@ const nextConfig = {
               "object-src 'self' https: data: blob:",
               "base-uri 'self'",
               "form-action 'self'",
-              "frame-ancestors 'self'",
+              "frame-ancestors 'self' https://*.farcaster.xyz https://*.warpcast.com https://*.farcaster.com",
               "upgrade-insecure-requests",
               "worker-src 'self' blob:",
               "child-src 'self' blob:"
@@ -38,10 +38,7 @@ const nextConfig = {
             key: 'X-Content-Type-Options',
             value: 'nosniff'
           },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY'
-          },
+
           {
             key: 'X-XSS-Protection',
             value: '1; mode=block'
