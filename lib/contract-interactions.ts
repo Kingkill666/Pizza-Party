@@ -59,7 +59,7 @@ export class PizzaPartyContract {
           method: 'eth_call',
           params: [{
             to: this.pizzaPartyAddress,
-            data: this.encodeFunctionCall('currentWeeklyJackpot', [])
+            data: this.encodeFunctionCall('getWeeklyJackpot', [])
           }, 'latest']
         })
       ])
@@ -74,17 +74,11 @@ export class PizzaPartyContract {
     }
   }
 
-  // Get current entry fee
+  // Get current entry fee (not available in new contract)
   async getCurrentEntryFee() {
     try {
-      const data = await this.provider.request({
-        method: 'eth_call',
-        params: [{
-          to: this.pizzaPartyAddress,
-          data: this.encodeFunctionCall('getCurrentEntryFee', [])
-        }, 'latest']
-      })
-      return this.decodeUint256(data)
+      // The new contract doesn't have entry fees - return 0
+      return 0
     } catch (error) {
       console.error('Error getting entry fee:', error)
       return 0
