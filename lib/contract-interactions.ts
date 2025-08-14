@@ -1,4 +1,4 @@
-import { CONTRACT_ADDRESSES, PIZZA_PARTY_ABI, FREE_PRICE_ORACLE_ABI, FREE_RANDOMNESS_ABI, VMF_TOKEN_ABI } from './contract-config'
+import { CONTRACT_ADDRESSES, PIZZA_PARTY_CORE_ABI, FREE_PRICE_ORACLE_ABI, FREE_RANDOMNESS_ABI, VMF_TOKEN_ABI } from './contract-config'
 import { GaslessGameService } from './services/gasless-game-service';
 import { ethers } from 'ethers';
 
@@ -19,7 +19,7 @@ export class PizzaPartyContract {
 
   constructor(provider: any) {
     this.provider = provider
-    this.pizzaPartyAddress = CONTRACT_ADDRESSES.PIZZA_PARTY
+    this.pizzaPartyAddress = CONTRACT_ADDRESSES.PIZZA_PARTY_CORE
     this.priceOracleAddress = CONTRACT_ADDRESSES.FREE_PRICE_ORACLE
     this.randomnessAddress = CONTRACT_ADDRESSES.FREE_RANDOMNESS
     
@@ -657,7 +657,7 @@ export class PizzaPartyContract {
   private encodeFunctionCall(functionName: string, params: any[]): string {
     try {
       // Use ethers.js to properly encode the function call
-      const iface = new ethers.Interface(PIZZA_PARTY_ABI)
+      const iface = new ethers.Interface(PIZZA_PARTY_CORE_ABI)
       return iface.encodeFunctionData(functionName, params)
     } catch (error) {
       console.error(`Error encoding function call for ${functionName}:`, error)
