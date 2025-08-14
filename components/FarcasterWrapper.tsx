@@ -2,48 +2,35 @@
 
 import { useEffect, useState } from 'react'
 import { farcasterApp } from '@/lib/farcaster-miniapp'
-import { sdk } from '@farcaster/miniapp-sdk'
 
 interface FarcasterWrapperProps {
   children: React.ReactNode
 }
 
 export function FarcasterWrapper({ children }: FarcasterWrapperProps) {
-  const [isFarcaster, setIsFarcaster] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
-  const [sdkAvailable, setSdkAvailable] = useState(false)
-  const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
     const initializeFarcaster = async () => {
       try {
+        console.log('🍕 FarcasterWrapper: Starting initialization...')
+        
+        // Initialize the Farcaster Mini App
+        await farcasterApp.initialize()
+        
         // Check if we're in a Farcaster environment
         const isFarcasterEnv = farcasterApp.isFarcasterEnvironment()
-        setIsFarcaster(isFarcasterEnv)
-
-        // Check if SDK is available
-        const sdkAvailable = await farcasterApp.isSDKAvailable()
-        setSdkAvailable(sdkAvailable)
-
-        if (isFarcasterEnv && sdkAvailable) {
-          console.log('🍕 Detected Farcaster environment with SDK available')
-          
-          // Initialize the Farcaster Mini App SDK
-          await farcasterApp.initialize()
-          setIsInitialized(true)
-          
-          console.log('✅ Farcaster Mini App initialized successfully')
-        } else if (isFarcasterEnv && !sdkAvailable) {
-          console.log('⚠️ Farcaster environment detected but SDK not available')
-          // Still mark as initialized to show content
-          setIsInitialized(true)
-        } else {
-          // Not in Farcaster environment, mark as initialized
-          setIsInitialized(true)
-        }
+        console.log('🌍 FarcasterWrapper: Environment check:', isFarcasterEnv ? 'Farcaster' : 'Regular web')
+        
+        // Always call ready() to hide splash screen
+        console.log('🎯 FarcasterWrapper: Calling ready()...')
+        await farcasterApp.ready()
+        console.log('✅ FarcasterWrapper: ready() called successfully')
+        
+        setIsInitialized(true)
       } catch (error) {
-        console.error('❌ Failed to initialize Farcaster Mini App:', error)
-        // Mark as initialized to show content even if there's an error
+        console.error('❌ FarcasterWrapper: Initialization failed:', error)
+        // Still mark as initialized to show content
         setIsInitialized(true)
       }
     }
@@ -54,57 +41,17 @@ export function FarcasterWrapper({ children }: FarcasterWrapperProps) {
     } else {
       // In SSR, mark as initialized immediately
       setIsInitialized(true)
-      setIsFarcaster(false)
-      setSdkAvailable(false)
     }
-  }, [])
-
-  // Call ready() after the app is fully loaded
-  useEffect(() => {
-    if (typeof window !== 'undefined' && isInitialized && !isReady) {
-      const callReady = async () => {
-        try {
-          // Always call ready() regardless of environment to hide splash screen
-          await farcasterApp.ready()
-          setIsReady(true)
-          console.log('✅ Farcaster Mini App ready called successfully')
-        } catch (error) {
-          console.error('❌ Failed to call ready:', error)
-          setIsReady(true) // Still mark as ready to show content
-        }
-      }
-      
-      callReady()
-    }
-  }, [isInitialized, isReady])
-
-  // CRITICAL: Also call sdk.actions.ready() directly as backup
-  useEffect(() => {
-    const callReadyDirect = async () => {
-      try {
-        console.log('🎯 FarcasterWrapper: Calling sdk.actions.ready() directly...')
-        await sdk.actions.ready()
-        console.log('✅ FarcasterWrapper: sdk.actions.ready() called successfully')
-      } catch (error) {
-        console.error('❌ FarcasterWrapper: Failed to call sdk.actions.ready():', error)
-      }
-    }
-
-    // Call ready() after a short delay to ensure app is fully loaded
-    const timer = setTimeout(callReadyDirect, 200)
-    return () => clearTimeout(timer)
   }, [])
 
   // Show loading state while initializing in Farcaster
-  if (isFarcaster && !isInitialized) {
+  if (!isInitialized) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-500 via-orange-500 to-yellow-500 flex items-center justify-center">
         <div className="bg-white rounded-3xl shadow-2xl p-8 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
           <h2 className="text-xl font-bold text-red-800 mb-2">Loading Pizza Party</h2>
-          <p className="text-gray-600">
-            {sdkAvailable ? 'Initializing Farcaster Mini App...' : 'Loading Pizza Party...'}
-          </p>
+          <p className="text-gray-600">Initializing Farcaster Mini App...</p>
         </div>
       </div>
     )

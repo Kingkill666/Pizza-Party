@@ -58,119 +58,27 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              console.log('🔍 Layout: Starting comprehensive Farcaster Mini App initialization...');
+              console.log('🔍 Layout: Farcaster Mini App initialization starting...');
               
-              // Function to call ready() with multiple fallbacks
+              // Simple ready() call as backup
               function callReady() {
-                console.log('🎯 Attempting to call ready()...');
-                
-                // Method 1: Try window.farcaster.sdk
-                if (window.farcaster && window.farcaster.sdk && window.farcaster.sdk.actions && window.farcaster.sdk.actions.ready) {
-                  console.log('✅ Method 1: Found window.farcaster.sdk.actions.ready');
-                  try {
+                try {
+                  if (window.farcaster && window.farcaster.sdk && window.farcaster.sdk.actions && window.farcaster.sdk.actions.ready) {
                     window.farcaster.sdk.actions.ready();
-                    console.log('✅ Method 1: Successfully called ready()');
+                    console.log('✅ Layout: Called ready() via window.farcaster.sdk.actions.ready()');
                     return true;
-                  } catch (error) {
-                    console.error('❌ Method 1: Error calling ready():', error);
                   }
+                  return false;
+                } catch (error) {
+                  console.error('❌ Layout: Error calling ready():', error);
+                  return false;
                 }
-                
-                // Method 2: Try global sdk
-                if (typeof sdk !== 'undefined' && sdk && sdk.actions && sdk.actions.ready) {
-                  console.log('✅ Method 2: Found global sdk.actions.ready');
-                  try {
-                    sdk.actions.ready();
-                    console.log('✅ Method 2: Successfully called ready()');
-                    return true;
-                  } catch (error) {
-                    console.error('❌ Method 2: Error calling ready():', error);
-                  }
-                }
-                
-                // Method 3: Try window.sdk
-                if (window.sdk && window.sdk.actions && window.sdk.actions.ready) {
-                  console.log('✅ Method 3: Found window.sdk.actions.ready');
-                  try {
-                    window.sdk.actions.ready();
-                    console.log('✅ Method 3: Successfully called ready()');
-                    return true;
-                  } catch (error) {
-                    console.error('❌ Method 3: Error calling ready():', error);
-                  }
-                }
-                
-                console.log('❌ All methods failed to call ready()');
-                return false;
               }
               
-              // Wait for DOM content to load
-              document.addEventListener('DOMContentLoaded', async function() {
-                console.log('📄 DOM Content Loaded, checking environment...');
-                
-                // Log all available global objects
-                console.log('🔍 Available global objects:', {
-                  'window.farcaster': !!window.farcaster,
-                  'window.sdk': !!window.sdk,
-                  'global sdk': typeof sdk !== 'undefined',
-                  'window.location.href': window.location.href,
-                  'window.frameElement': !!window.frameElement
-                });
-                
-                // Check if we're in Farcaster environment (be more permissive)
-                const isFarcaster = window.location.href.includes('farcaster') || 
-                                   window.location.href.includes('warpcast') || 
-                                   window.location.href.includes('miniapp') ||
-                                   window.location.href.includes('ngrok') ||
-                                   window.frameElement ||
-                                   window.location.href.includes('preview');
-                
-                console.log('🌍 Environment check:', isFarcaster ? 'Farcaster' : 'Regular web');
-                console.log('📍 URL:', window.location.href);
-                console.log('🔍 Frame element:', window.frameElement ? 'Exists' : 'None');
-                
-                if (isFarcaster) {
-                  console.log('🎯 In Farcaster environment, attempting SDK initialization...');
-                  
-                  // Try immediate call
-                  if (callReady()) {
-                    console.log('✅ Immediate ready() call successful');
-                    return;
-                  }
-                  
-                  // Try with a small delay
-                  setTimeout(() => {
-                    console.log('⏰ Trying ready() call with delay...');
-                    if (callReady()) {
-                      console.log('✅ Delayed ready() call successful');
-                      return;
-                    }
-                    
-                    // Try with dynamic import as last resort
-                    console.log('🔄 Trying dynamic import as fallback...');
-                    import('@farcaster/miniapp-sdk').then(({ sdk }) => {
-                      console.log('✅ Successfully imported @farcaster/miniapp-sdk');
-                      if (sdk && sdk.actions && sdk.actions.ready) {
-                        console.log('✅ Found imported sdk.actions.ready');
-                        try {
-                          sdk.actions.ready();
-                          console.log('✅ Dynamic import ready() call successful');
-                        } catch (error) {
-                          console.error('❌ Dynamic import ready() call failed:', error);
-                        }
-                      }
-                    }).catch(error => {
-                      console.error('❌ Dynamic import failed:', error);
-                    });
-                  }, 100);
-                } else {
-                  console.log('ℹ️ Not in Farcaster environment, skipping SDK initialization');
-                }
-              });
-              
-              // Also try immediately if DOM is already loaded
-              if (document.readyState === 'complete' || document.readyState === 'interactive') {
-                console.log('🚀 DOM already loaded, trying immediate initialization...');
+              // Try to call ready() when DOM is loaded
+              if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', callReady);
+              } else {
                 callReady();
               }
             `,
