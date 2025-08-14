@@ -1,0 +1,41 @@
+{
+  "deploymentTime": "2025-08-14T00:20:26.945Z",
+  "network": "base",
+  "contract": "PizzaPartyCore",
+  "address": "0x8940540e99a1F1f024182a1aD107BF52D0218f44",
+  "vmfTokenAddress": "0x2213414893259b0C48066Acd1763e7fbA97859E5",
+  "deployer": "0xf521a4fE5910b4fb4A14C9546C2837D33bEc455d",
+  "features": [
+    "Complete topping system implementation",
+    "Weekly jackpot calculation (toppings × 1 VMF)",
+    "Daily play rewards (1 topping per day)",
+    "Referral system (2 toppings per referral)",
+    "VMF holdings rewards (3 toppings per 10 VMF)",
+    "Player statistics tracking",
+    "Blacklist functionality",
+    "Emergency controls",
+    "All required getter functions"
+  ],
+  "constants": {
+    "dailyWinnersCount": "8",
+    "weeklyWinnersCount": "10",
+    "dailyPlayReward": "1 topping",
+    "referralReward": "2 toppings",
+    "vmfHoldingReward": "3 toppings per 10 VMF",
+    "vmfPerTopping": "1 VMF per topping",
+    "minVmfRequired": "100 VMF",
+    "maxDailyEntries": "10"
+  },
+  "functions": [
+    "getCurrentGameId()",
+    "currentDailyJackpot()",
+    "getWeeklyJackpot()",
+    "getWeeklyToppingsPool()",
+    "getTotalToppingsClaimed()",
+    "getPlayerToppings(address)",
+    "getPlayerReferralInfo(address)",
+    "getPlayerVMFBalance(address)",
+    "getMinimumVMFRequired()",
+    "getPlayerInfo(address)"
+  ]
+}
