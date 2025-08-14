@@ -9,7 +9,7 @@ import { AdvancedContractsService } from '@/lib/services/advanced-contracts-serv
 import { getVMFBalanceUltimate } from '@/lib/vmf-contract'
 import { ethers } from 'ethers'
 import { useFarcasterShare } from '@/hooks/useFarcasterShare'
-import { sdk } from '@farcaster/miniapp-sdk'
+
 import { 
   earnDailyPlayToppings, 
   earnVMFHoldingsToppings,
@@ -590,11 +590,37 @@ export default function GamePage() {
   useEffect(() => {
     const callReady = async () => {
       try {
-        console.log('🎯 Calling sdk.actions.ready() to hide splash screen...')
-        await sdk.actions.ready()
-        console.log('✅ sdk.actions.ready() called successfully - splash screen hidden')
+        // Check if we're in a Farcaster environment
+        const isFarcaster = typeof window !== 'undefined' && (
+          window.location.href.includes('farcaster') ||
+          window.location.href.includes('warpcast') ||
+          window.location.href.includes('miniapp')
+        )
+        
+        console.log('🌍 Environment check:', isFarcaster ? 'Farcaster' : 'Regular web')
+        
+        // Only try to call ready() if we're in a Farcaster environment
+        if (isFarcaster) {
+          console.log('🎯 In Farcaster environment, calling sdk.actions.ready()...')
+          
+          try {
+            // Dynamic import to avoid SSR issues
+            const { sdk } = await import('@farcaster/miniapp-sdk')
+            
+            if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
+              await sdk.actions.ready()
+              console.log('✅ sdk.actions.ready() called successfully - splash screen hidden')
+            } else {
+              console.log('⚠️ SDK not properly initialized')
+            }
+          } catch (error) {
+            console.error('❌ Failed to call sdk.actions.ready():', error)
+          }
+        } else {
+          console.log('ℹ️ Not in Farcaster environment, skipping ready() call')
+        }
       } catch (error) {
-        console.error('❌ Failed to call sdk.actions.ready():', error)
+        console.error('❌ Error in ready() logic:', error)
       }
     }
 
