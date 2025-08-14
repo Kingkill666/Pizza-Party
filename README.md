@@ -406,3 +406,4 @@ PRIVATE_KEY=your_private_key
 MIT License - see LICENSE file for details.
 # Trigger redeploy
 # Vercel Authentication Disabled - Ready for Farcaster Testing
+# Force fresh deployment - Thu Aug 14 14:59:46 PDT 2025
