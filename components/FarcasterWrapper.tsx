@@ -60,9 +60,10 @@ export function FarcasterWrapper({ children }: FarcasterWrapperProps) {
 
   // Call ready() after the app is fully loaded
   useEffect(() => {
-    if (typeof window !== 'undefined' && isInitialized && isFarcaster && sdkAvailable && !isReady) {
+    if (typeof window !== 'undefined' && isInitialized && !isReady) {
       const callReady = async () => {
         try {
+          // Always call ready() regardless of environment to hide splash screen
           await farcasterApp.ready()
           setIsReady(true)
           console.log('✅ Farcaster Mini App ready called successfully')
@@ -73,11 +74,8 @@ export function FarcasterWrapper({ children }: FarcasterWrapperProps) {
       }
       
       callReady()
-    } else if (isInitialized && !isFarcaster) {
-      // Not in Farcaster environment, mark as ready
-      setIsReady(true)
     }
-  }, [isInitialized, isFarcaster, sdkAvailable, isReady])
+  }, [isInitialized, isReady])
 
   // Show loading state while initializing in Farcaster
   if (isFarcaster && !isInitialized) {

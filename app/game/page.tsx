@@ -1142,6 +1142,21 @@ export default function GamePage() {
               </div>
             </div>
 
+            {/* StarBUY VMFb Star Button */}
+            <Button
+              className="w-full bg-red-700 hover:bg-red-800 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-red-900 shadow-lg transform hover:scale-105 transition-all touch-manipulation mb-4"
+              style={{
+                ...customFontStyle,
+                letterSpacing: "1px",
+                fontSize: deviceInfo.isMobile ? "1.1rem" : "1.25rem",
+                minHeight: deviceInfo.isMobile ? "56px" : "auto",
+              }}
+            >
+              <img src="/images/star-favicon.png" alt="Star" className="w-6 h-6 rounded-full mx-1" />
+              StarBUY VMFb Star
+              <img src="/images/star-favicon.png" alt="Star" className="w-6 h-6 rounded-full mx-1" />
+            </Button>
+
 
           </CardContent>
         </Card>

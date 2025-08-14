@@ -9,6 +9,12 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   link.rel = 'preconnect'
   link.href = 'https://auth.farcaster.xyz'
   document.head.appendChild(link)
+  
+  // Also preconnect to the main Farcaster domain
+  const farcasterLink = document.createElement('link')
+  farcasterLink.rel = 'preconnect'
+  farcasterLink.href = 'https://farcaster.xyz'
+  document.head.appendChild(farcasterLink)
 }
 
 export class FarcasterMiniApp {
@@ -44,11 +50,14 @@ export class FarcasterMiniApp {
 
     try {
       // This hides the splash screen and displays content
+      // Always call ready() regardless of environment to ensure splash screen is hidden
       await sdk.actions.ready()
       this.isReadyCalled = true
       console.log('✅ Farcaster Mini App ready - splash screen hidden')
     } catch (error) {
       console.error('❌ Failed to call ready:', error)
+      // Even if ready() fails, mark as called to prevent infinite retries
+      this.isReadyCalled = true
     }
   }
 
