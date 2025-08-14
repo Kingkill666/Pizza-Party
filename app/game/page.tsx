@@ -9,6 +9,7 @@ import { AdvancedContractsService } from '@/lib/services/advanced-contracts-serv
 import { getVMFBalanceUltimate } from '@/lib/vmf-contract'
 import { ethers } from 'ethers'
 import { useFarcasterShare } from '@/hooks/useFarcasterShare'
+import { sdk } from '@farcaster/miniapp-sdk'
 import { 
   earnDailyPlayToppings, 
   earnVMFHoldingsToppings,
@@ -582,6 +583,24 @@ export default function GamePage() {
     })
 
     window.scrollTo(0, 0)
+  }, [])
+
+  // CRITICAL: Call sdk.actions.ready() to hide splash screen
+  // This is required by Farcaster Mini Apps documentation
+  useEffect(() => {
+    const callReady = async () => {
+      try {
+        console.log('🎯 Calling sdk.actions.ready() to hide splash screen...')
+        await sdk.actions.ready()
+        console.log('✅ sdk.actions.ready() called successfully - splash screen hidden')
+      } catch (error) {
+        console.error('❌ Failed to call sdk.actions.ready():', error)
+      }
+    }
+
+    // Call ready() after a short delay to ensure app is fully loaded
+    const timer = setTimeout(callReady, 100)
+    return () => clearTimeout(timer)
   }, [])
 
   // Handle page reloads specifically - runs on every page load

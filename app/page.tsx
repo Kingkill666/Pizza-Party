@@ -16,6 +16,7 @@ import {
   initMobileOptimizations,
 } from "@/lib/wallet-config"
 import { WalletStatus } from "@/components/WalletStatus"
+import { sdk } from '@farcaster/miniapp-sdk'
 
 export default function HomePage() {
   const customFontStyle = {
@@ -48,6 +49,24 @@ export default function HomePage() {
     if (typeof window !== 'undefined') {
       window.scrollTo(0, 0)
     }
+  }, [])
+
+  // CRITICAL: Call sdk.actions.ready() to hide splash screen
+  // This is required by Farcaster Mini Apps documentation
+  useEffect(() => {
+    const callReady = async () => {
+      try {
+        console.log('🎯 Calling sdk.actions.ready() to hide splash screen...')
+        await sdk.actions.ready()
+        console.log('✅ sdk.actions.ready() called successfully - splash screen hidden')
+      } catch (error) {
+        console.error('❌ Failed to call sdk.actions.ready():', error)
+      }
+    }
+
+    // Call ready() after a short delay to ensure app is fully loaded
+    const timer = setTimeout(callReady, 100)
+    return () => clearTimeout(timer)
   }, [])
 
   // Handle page refresh and wallet disconnection

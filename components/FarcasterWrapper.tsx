@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { farcasterApp } from '@/lib/farcaster-miniapp'
+import { sdk } from '@farcaster/miniapp-sdk'
 
 interface FarcasterWrapperProps {
   children: React.ReactNode
@@ -76,6 +77,23 @@ export function FarcasterWrapper({ children }: FarcasterWrapperProps) {
       callReady()
     }
   }, [isInitialized, isReady])
+
+  // CRITICAL: Also call sdk.actions.ready() directly as backup
+  useEffect(() => {
+    const callReadyDirect = async () => {
+      try {
+        console.log('🎯 FarcasterWrapper: Calling sdk.actions.ready() directly...')
+        await sdk.actions.ready()
+        console.log('✅ FarcasterWrapper: sdk.actions.ready() called successfully')
+      } catch (error) {
+        console.error('❌ FarcasterWrapper: Failed to call sdk.actions.ready():', error)
+      }
+    }
+
+    // Call ready() after a short delay to ensure app is fully loaded
+    const timer = setTimeout(callReadyDirect, 200)
+    return () => clearTimeout(timer)
+  }, [])
 
   // Show loading state while initializing in Farcaster
   if (isFarcaster && !isInitialized) {
