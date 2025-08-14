@@ -48,7 +48,7 @@ export class AdvancedContractsService {
 
   async getDailyJackpot(): Promise<bigint> {
     const contract = this.getPizzaPartyCoreContract()
-    return await contract.getDailyJackpot()
+    return await contract.currentDailyJackpot()
   }
 
   async getWeeklyJackpot(): Promise<bigint> {
