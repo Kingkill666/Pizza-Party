@@ -62,72 +62,126 @@ export default function HomePage() {
           return;
         }
 
-        // Proper environment detection
-        const isFarcaster = typeof window !== 'undefined' && (
-          window.location.search.includes('farcaster=true') ||
-          window.frameElement?.parentElement?.host?.includes('farcaster.xyz') ||
-          window.location.href.includes('farcaster') ||
-          window.location.href.includes('warpcast') ||
-          window.location.href.includes('miniapp')
-        )
+        console.log('🎯 React: Attempting to call ready()...');
         
-        console.log('🌍 Environment check:', isFarcaster ? 'Farcaster' : 'Regular web')
-        console.log('📍 URL:', window.location.href)
-        console.log('🔍 Frame element:', window.frameElement ? 'Exists' : 'None')
+        // Method 1: Try window.farcaster.sdk
+        if (window.farcaster && window.farcaster.sdk && window.farcaster.sdk.actions && window.farcaster.sdk.actions.ready) {
+          console.log('✅ React: Method 1: Found window.farcaster.sdk.actions.ready');
+          try {
+            window.farcaster.sdk.actions.ready();
+            console.log('✅ React: Method 1: Successfully called ready()');
+            return;
+          } catch (error) {
+            console.error('❌ React: Method 1: Error calling ready():', error);
+          }
+        }
+        
+        // Method 2: Try global sdk
+        if (typeof sdk !== 'undefined' && sdk && sdk.actions && sdk.actions.ready) {
+          console.log('✅ React: Method 2: Found global sdk.actions.ready');
+          try {
+            sdk.actions.ready();
+            console.log('✅ React: Method 2: Successfully called ready()');
+            return;
+          } catch (error) {
+            console.error('❌ React: Method 2: Error calling ready():', error);
+          }
+        }
+        
+        // Method 3: Try window.sdk
+        if (window.sdk && window.sdk.actions && window.sdk.actions.ready) {
+          console.log('✅ React: Method 3: Found window.sdk.actions.ready');
+          try {
+            window.sdk.actions.ready();
+            console.log('✅ React: Method 3: Successfully called ready()');
+            return;
+          } catch (error) {
+            console.error('❌ React: Method 3: Error calling ready():', error);
+          }
+        }
+
+        // Log all available global objects
+        console.log('🔍 React: Available global objects:', {
+          'window.farcaster': !!window.farcaster,
+          'window.sdk': !!window.sdk,
+          'global sdk': typeof sdk !== 'undefined',
+          'window.location.href': window.location.href,
+          'window.frameElement': !!window.frameElement
+        });
+
+        // Check if we're in Farcaster environment (be more permissive)
+        const isFarcaster = window.location.href.includes('farcaster') || 
+                           window.location.href.includes('warpcast') || 
+                           window.location.href.includes('miniapp') ||
+                           window.location.href.includes('ngrok') ||
+                           window.frameElement ||
+                           window.location.href.includes('preview');
+        
+        console.log('🌍 React: Environment check:', isFarcaster ? 'Farcaster' : 'Regular web')
+        console.log('📍 React: URL:', window.location.href)
+        console.log('🔍 React: Frame element:', window.frameElement ? 'Exists' : 'None')
         
         // Only try to call ready() if we're in a Farcaster environment
         if (isFarcaster) {
-          console.log('🎯 In Farcaster environment, initializing SDK...')
+          console.log('🎯 React: In Farcaster environment, attempting SDK initialization...')
           
-          try {
-            // Try to access the SDK directly first
-            if (window.farcaster && window.farcaster.sdk && window.farcaster.sdk.actions) {
-              console.log('✅ Found Farcaster SDK in window object')
-              
-              // Wait for UI to be ready, then call ready()
-              requestAnimationFrame(() => {
-                try {
-                  window.farcaster.sdk.actions.ready()
-                  console.log('✅ Called ready() via window.farcaster.sdk.actions.ready()')
-                } catch (error) {
-                  console.error('❌ Error calling ready() via window:', error)
-                }
-              })
-            } else {
-              console.log('⚠️ Farcaster SDK not found in window object, trying dynamic import...')
-              
-              // Try dynamic import as fallback
+          // Try with a small delay
+          setTimeout(() => {
+            console.log('⏰ React: Trying ready() call with delay...');
+            
+            // Try all methods again with delay
+            if (window.farcaster && window.farcaster.sdk && window.farcaster.sdk.actions && window.farcaster.sdk.actions.ready) {
               try {
-                const { sdk } = await import('@farcaster/miniapp-sdk')
-                console.log('✅ Successfully imported @farcaster/miniapp-sdk')
-                
-                if (sdk && sdk.actions && sdk.actions.ready) {
-                  console.log('✅ Found imported sdk.actions.ready')
-                  
-                  // Wait for UI to be ready, then call ready()
-                  requestAnimationFrame(() => {
-                    try {
-                      sdk.actions.ready()
-                      console.log('✅ Called ready() via imported sdk.actions.ready()')
-                    } catch (error) {
-                      console.error('❌ Error calling ready() via imported sdk:', error)
-                    }
-                  })
-                } else {
-                  console.log('❌ Imported sdk.actions.ready not found')
-                }
+                window.farcaster.sdk.actions.ready();
+                console.log('✅ React: Delayed Method 1: Successfully called ready()');
+                return;
               } catch (error) {
-                console.error('❌ Failed to import @farcaster/miniapp-sdk:', error)
+                console.error('❌ React: Delayed Method 1: Error calling ready():', error);
               }
             }
-          } catch (error) {
-            console.error('❌ Error in Farcaster initialization:', error)
-          }
+            
+            if (typeof sdk !== 'undefined' && sdk && sdk.actions && sdk.actions.ready) {
+              try {
+                sdk.actions.ready();
+                console.log('✅ React: Delayed Method 2: Successfully called ready()');
+                return;
+              } catch (error) {
+                console.error('❌ React: Delayed Method 2: Error calling ready():', error);
+              }
+            }
+            
+            if (window.sdk && window.sdk.actions && window.sdk.actions.ready) {
+              try {
+                window.sdk.actions.ready();
+                console.log('✅ React: Delayed Method 3: Successfully called ready()');
+                return;
+              } catch (error) {
+                console.error('❌ React: Delayed Method 3: Error calling ready():', error);
+              }
+            }
+            
+            // Try with dynamic import as last resort
+            console.log('🔄 React: Trying dynamic import as fallback...');
+            import('@farcaster/miniapp-sdk').then(({ sdk }) => {
+              console.log('✅ React: Successfully imported @farcaster/miniapp-sdk');
+              if (sdk && sdk.actions && sdk.actions.ready) {
+                console.log('✅ React: Found imported sdk.actions.ready');
+                try {
+                  sdk.actions.ready();
+                  console.log('✅ React: Dynamic import ready() call successful');
+                } catch (error) {
+                  console.error('❌ React: Dynamic import ready() call failed:', error);
+                }
+              }
+            }).catch(error => {
+              console.error('❌ React: Dynamic import failed:', error);
+            });
+          }, 100);
         } else {
-          console.log('ℹ️ Not in Farcaster environment, skipping SDK initialization')
+          console.log('ℹ️ React: Not in Farcaster environment, skipping SDK initialization')
         }
       } catch (error) {
-        console.error('❌ Error in ready() logic:', error)
+        console.error('❌ React: Error in ready() logic:', error)
       }
     }
 
