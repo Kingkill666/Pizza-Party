@@ -58,7 +58,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              console.log('🔍 Layout: Testing Farcaster SDK availability...');
+              console.log('🔍 Layout: Starting comprehensive Farcaster test...');
               
               // Check if we're in a Farcaster environment
               const isFarcaster = window.location.href.includes('farcaster') || 
