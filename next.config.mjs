@@ -16,52 +16,17 @@ const nextConfig = {
         source: '/(.*)',
         headers: [
           {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:",
-              "style-src 'self' 'unsafe-inline' https: data: blob:",
-              "font-src 'self' https: data: blob:",
-              "img-src 'self' data: https: blob:",
-              "connect-src 'self' https: wss: ws:",
-              "frame-src 'self' https: data: blob:",
-              "object-src 'self' https: data: blob:",
-              "base-uri 'self'",
-              "form-action 'self'",
-              "frame-ancestors 'self' https://*.farcaster.xyz https://*.warpcast.com https://*.farcaster.com",
-              "upgrade-insecure-requests",
-              "worker-src 'self' blob:",
-              "child-src 'self' blob:"
-            ].join('; ')
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff'
-          },
-          {
             key: 'X-Frame-Options',
             value: 'ALLOWALL'
           },
           {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block'
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin'
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors 'self' https://*.farcaster.xyz https://*.warpcast.com https://*.farcaster.com"
           }
         ]
       }
     ]
-  },
-  // Optimize for development
-  webpack: (config, { dev, isServer }) => {
-    if (dev && !isServer) {
-      // Disable webpack cache in development to avoid issues
-      config.cache = false
-    }
-    return config
-  },
+  }
 }
 
 export default nextConfig
