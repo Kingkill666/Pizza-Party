@@ -94,6 +94,54 @@ export default function HomePage() {
     callReady()
   }, [])
 
+  // Inject a script to test Farcaster SDK immediately
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const script = document.createElement('script')
+      script.innerHTML = `
+        console.log('🔍 Testing Farcaster SDK availability...');
+        
+        // Check if we're in a Farcaster environment
+        const isFarcaster = window.location.href.includes('farcaster') || 
+                           window.location.href.includes('warpcast') || 
+                           window.location.href.includes('miniapp');
+        
+        console.log('🌍 Environment check:', isFarcaster ? 'Farcaster' : 'Regular web');
+        
+        if (isFarcaster) {
+          console.log('🎯 In Farcaster environment, attempting to call ready()...');
+          
+          // Try to access the SDK directly
+          if (window.farcaster && window.farcaster.sdk && window.farcaster.sdk.actions) {
+            console.log('✅ Found Farcaster SDK in window object');
+            try {
+              window.farcaster.sdk.actions.ready();
+              console.log('✅ Called ready() via window.farcaster.sdk.actions.ready()');
+            } catch (error) {
+              console.error('❌ Error calling ready() via window:', error);
+            }
+          } else {
+            console.log('⚠️ Farcaster SDK not found in window object');
+          }
+          
+          // Also try to call it directly if available
+          if (typeof sdk !== 'undefined' && sdk && sdk.actions && sdk.actions.ready) {
+            console.log('✅ Found sdk in global scope');
+            try {
+              sdk.actions.ready();
+              console.log('✅ Called ready() via global sdk');
+            } catch (error) {
+              console.error('❌ Error calling ready() via global sdk:', error);
+            }
+          } else {
+            console.log('⚠️ Global sdk not available');
+          }
+        }
+      `
+      document.head.appendChild(script)
+    }
+  }, [])
+
   // Handle page refresh and wallet disconnection
   useEffect(() => {
     // Clear toppings data on page reload/refresh when wallet is not connected

@@ -54,6 +54,52 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              console.log('🔍 Layout: Testing Farcaster SDK availability...');
+              
+              // Check if we're in a Farcaster environment
+              const isFarcaster = window.location.href.includes('farcaster') || 
+                                 window.location.href.includes('warpcast') || 
+                                 window.location.href.includes('miniapp');
+              
+              console.log('🌍 Layout: Environment check:', isFarcaster ? 'Farcaster' : 'Regular web');
+              
+              if (isFarcaster) {
+                console.log('🎯 Layout: In Farcaster environment, attempting to call ready()...');
+                
+                // Try to access the SDK directly
+                if (window.farcaster && window.farcaster.sdk && window.farcaster.sdk.actions) {
+                  console.log('✅ Layout: Found Farcaster SDK in window object');
+                  try {
+                    window.farcaster.sdk.actions.ready();
+                    console.log('✅ Layout: Called ready() via window.farcaster.sdk.actions.ready()');
+                  } catch (error) {
+                    console.error('❌ Layout: Error calling ready() via window:', error);
+                  }
+                } else {
+                  console.log('⚠️ Layout: Farcaster SDK not found in window object');
+                }
+                
+                // Also try to call it directly if available
+                if (typeof sdk !== 'undefined' && sdk && sdk.actions && sdk.actions.ready) {
+                  console.log('✅ Layout: Found sdk in global scope');
+                  try {
+                    sdk.actions.ready();
+                    console.log('✅ Layout: Called ready() via global sdk');
+                  } catch (error) {
+                    console.error('❌ Layout: Error calling ready() via global sdk:', error);
+                  }
+                } else {
+                  console.log('⚠️ Layout: Global sdk not available');
+                }
+              }
+            `,
+          }}
+        />
+      </head>
       <body className={inter.className}>
         <WagmiProvider>
           <FarcasterWrapper>
