@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     'fc:frame:button:4': 'Share Pizza Party',
     'fc:frame:post_url': 'https://pizzaparty.app/api/frame',
     // Farcaster Mini App embed metadata
-    'fc:miniapp': '{"version":"1","imageUrl":"https://pizza-party.vmfcoin.com/images/pizza-transparent.png","button":{"title":"Pizza Party","action":{"type":"post_redirect","url":"https://pizza-party.vmfcoin.com"}}}',
+    'fc:miniapp': '{"version":"1","imageUrl":"https://pizza-party.vmfcoin.com/images/pizza-transparent.png","button":{"title":"Pizza Party","action":{"type":"launch_frame","name":"Pizza Party","url":"https://pizza-party.vmfcoin.com","splashImageUrl":"https://pizza-party.vmfcoin.com/images/pizza-transparent.png","splashBackgroundColor":"#FF6B35"}}}',
   },
 }
 

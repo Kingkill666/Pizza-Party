@@ -64,9 +64,8 @@ export default function HomePage() {
       }
     }
 
-    // Call ready() after a short delay to ensure app is fully loaded
-    const timer = setTimeout(callReady, 100)
-    return () => clearTimeout(timer)
+    // Call ready() immediately when component mounts
+    callReady()
   }, [])
 
   // Handle page refresh and wallet disconnection
