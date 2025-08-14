@@ -58,44 +58,75 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              console.log('🔍 Layout: Starting comprehensive Farcaster test...');
+              console.log('🔍 Layout: Starting proper Farcaster Mini App initialization...');
               
-              // Check if we're in a Farcaster environment
-              const isFarcaster = window.location.href.includes('farcaster') || 
-                                 window.location.href.includes('warpcast') || 
-                                 window.location.href.includes('miniapp');
-              
-              console.log('🌍 Layout: Environment check:', isFarcaster ? 'Farcaster' : 'Regular web');
-              
-              if (isFarcaster) {
-                console.log('🎯 Layout: In Farcaster environment, attempting to call ready()...');
+              // Wait for DOM content to load before initializing
+              document.addEventListener('DOMContentLoaded', async function() {
+                console.log('📄 DOM Content Loaded, checking environment...');
                 
-                // Try to access the SDK directly
-                if (window.farcaster && window.farcaster.sdk && window.farcaster.sdk.actions) {
-                  console.log('✅ Layout: Found Farcaster SDK in window object');
+                // Proper environment detection
+                const isFarcaster = window.location.search.includes('farcaster=true') ||
+                                   window.frameElement?.parentElement?.host?.includes('farcaster.xyz') ||
+                                   window.location.href.includes('farcaster') ||
+                                   window.location.href.includes('warpcast') ||
+                                   window.location.href.includes('miniapp');
+                
+                console.log('🌍 Environment check:', isFarcaster ? 'Farcaster' : 'Regular web');
+                console.log('📍 URL:', window.location.href);
+                console.log('🔍 Frame element:', window.frameElement ? 'Exists' : 'None');
+                console.log('🏠 Parent host:', window.frameElement?.parentElement?.host || 'N/A');
+                
+                if (isFarcaster) {
+                  console.log('🎯 In Farcaster environment, initializing SDK...');
+                  
                   try {
-                    window.farcaster.sdk.actions.ready();
-                    console.log('✅ Layout: Called ready() via window.farcaster.sdk.actions.ready()');
+                    // Try to access the SDK directly first
+                    if (window.farcaster && window.farcaster.sdk && window.farcaster.sdk.actions) {
+                      console.log('✅ Found Farcaster SDK in window object');
+                      
+                      // Wait for UI to be ready, then call ready()
+                      requestAnimationFrame(() => {
+                        try {
+                          window.farcaster.sdk.actions.ready();
+                          console.log('✅ Called ready() via window.farcaster.sdk.actions.ready()');
+                        } catch (error) {
+                          console.error('❌ Error calling ready() via window:', error);
+                        }
+                      });
+                    } else {
+                      console.log('⚠️ Farcaster SDK not found in window object, trying dynamic import...');
+                      
+                      // Try dynamic import as fallback
+                      try {
+                        const { sdk } = await import('@farcaster/miniapp-sdk');
+                        console.log('✅ Successfully imported @farcaster/miniapp-sdk');
+                        
+                        if (sdk && sdk.actions && sdk.actions.ready) {
+                          console.log('✅ Found imported sdk.actions.ready');
+                          
+                          // Wait for UI to be ready, then call ready()
+                          requestAnimationFrame(() => {
+                            try {
+                              sdk.actions.ready();
+                              console.log('✅ Called ready() via imported sdk.actions.ready()');
+                            } catch (error) {
+                              console.error('❌ Error calling ready() via imported sdk:', error);
+                            }
+                          });
+                        } else {
+                          console.log('❌ Imported sdk.actions.ready not found');
+                        }
+                      } catch (error) {
+                        console.error('❌ Failed to import @farcaster/miniapp-sdk:', error);
+                      }
+                    }
                   } catch (error) {
-                    console.error('❌ Layout: Error calling ready() via window:', error);
+                    console.error('❌ Error in Farcaster initialization:', error);
                   }
                 } else {
-                  console.log('⚠️ Layout: Farcaster SDK not found in window object');
+                  console.log('ℹ️ Not in Farcaster environment, skipping SDK initialization');
                 }
-                
-                // Also try to call it directly if available
-                if (typeof sdk !== 'undefined' && sdk && sdk.actions && sdk.actions.ready) {
-                  console.log('✅ Layout: Found sdk in global scope');
-                  try {
-                    sdk.actions.ready();
-                    console.log('✅ Layout: Called ready() via global sdk');
-                  } catch (error) {
-                    console.error('❌ Layout: Error calling ready() via global sdk:', error);
-                  }
-                } else {
-                  console.log('⚠️ Layout: Global sdk not available');
-                }
-              }
+              });
             `,
           }}
         />

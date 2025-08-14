@@ -56,90 +56,83 @@ export default function HomePage() {
   useEffect(() => {
     const callReady = async () => {
       try {
-        // Check if we're in a Farcaster environment
+        // Wait for DOM content to be loaded
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', callReady);
+          return;
+        }
+
+        // Proper environment detection
         const isFarcaster = typeof window !== 'undefined' && (
+          window.location.search.includes('farcaster=true') ||
+          window.frameElement?.parentElement?.host?.includes('farcaster.xyz') ||
           window.location.href.includes('farcaster') ||
           window.location.href.includes('warpcast') ||
           window.location.href.includes('miniapp')
         )
         
         console.log('🌍 Environment check:', isFarcaster ? 'Farcaster' : 'Regular web')
+        console.log('📍 URL:', window.location.href)
+        console.log('🔍 Frame element:', window.frameElement ? 'Exists' : 'None')
         
         // Only try to call ready() if we're in a Farcaster environment
         if (isFarcaster) {
-          console.log('🎯 In Farcaster environment, calling sdk.actions.ready()...')
+          console.log('🎯 In Farcaster environment, initializing SDK...')
           
           try {
-            // Dynamic import to avoid SSR issues
-            const { sdk } = await import('@farcaster/miniapp-sdk')
-            
-            if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
-              await sdk.actions.ready()
-              console.log('✅ sdk.actions.ready() called successfully - splash screen hidden')
+            // Try to access the SDK directly first
+            if (window.farcaster && window.farcaster.sdk && window.farcaster.sdk.actions) {
+              console.log('✅ Found Farcaster SDK in window object')
+              
+              // Wait for UI to be ready, then call ready()
+              requestAnimationFrame(() => {
+                try {
+                  window.farcaster.sdk.actions.ready()
+                  console.log('✅ Called ready() via window.farcaster.sdk.actions.ready()')
+                } catch (error) {
+                  console.error('❌ Error calling ready() via window:', error)
+                }
+              })
             } else {
-              console.log('⚠️ SDK not properly initialized')
+              console.log('⚠️ Farcaster SDK not found in window object, trying dynamic import...')
+              
+              // Try dynamic import as fallback
+              try {
+                const { sdk } = await import('@farcaster/miniapp-sdk')
+                console.log('✅ Successfully imported @farcaster/miniapp-sdk')
+                
+                if (sdk && sdk.actions && sdk.actions.ready) {
+                  console.log('✅ Found imported sdk.actions.ready')
+                  
+                  // Wait for UI to be ready, then call ready()
+                  requestAnimationFrame(() => {
+                    try {
+                      sdk.actions.ready()
+                      console.log('✅ Called ready() via imported sdk.actions.ready()')
+                    } catch (error) {
+                      console.error('❌ Error calling ready() via imported sdk:', error)
+                    }
+                  })
+                } else {
+                  console.log('❌ Imported sdk.actions.ready not found')
+                }
+              } catch (error) {
+                console.error('❌ Failed to import @farcaster/miniapp-sdk:', error)
+              }
             }
           } catch (error) {
-            console.error('❌ Failed to call sdk.actions.ready():', error)
+            console.error('❌ Error in Farcaster initialization:', error)
           }
         } else {
-          console.log('ℹ️ Not in Farcaster environment, skipping ready() call')
+          console.log('ℹ️ Not in Farcaster environment, skipping SDK initialization')
         }
       } catch (error) {
         console.error('❌ Error in ready() logic:', error)
       }
     }
 
-    // Call ready() immediately when component mounts
+    // Start the initialization process
     callReady()
-  }, [])
-
-  // Inject a script to test Farcaster SDK immediately
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const script = document.createElement('script')
-      script.innerHTML = `
-        console.log('🔍 Testing Farcaster SDK availability...');
-        
-        // Check if we're in a Farcaster environment
-        const isFarcaster = window.location.href.includes('farcaster') || 
-                           window.location.href.includes('warpcast') || 
-                           window.location.href.includes('miniapp');
-        
-        console.log('🌍 Environment check:', isFarcaster ? 'Farcaster' : 'Regular web');
-        
-        if (isFarcaster) {
-          console.log('🎯 In Farcaster environment, attempting to call ready()...');
-          
-          // Try to access the SDK directly
-          if (window.farcaster && window.farcaster.sdk && window.farcaster.sdk.actions) {
-            console.log('✅ Found Farcaster SDK in window object');
-            try {
-              window.farcaster.sdk.actions.ready();
-              console.log('✅ Called ready() via window.farcaster.sdk.actions.ready()');
-            } catch (error) {
-              console.error('❌ Error calling ready() via window:', error);
-            }
-          } else {
-            console.log('⚠️ Farcaster SDK not found in window object');
-          }
-          
-          // Also try to call it directly if available
-          if (typeof sdk !== 'undefined' && sdk && sdk.actions && sdk.actions.ready) {
-            console.log('✅ Found sdk in global scope');
-            try {
-              sdk.actions.ready();
-              console.log('✅ Called ready() via global sdk');
-            } catch (error) {
-              console.error('❌ Error calling ready() via global sdk:', error);
-            }
-          } else {
-            console.log('⚠️ Global sdk not available');
-          }
-        }
-      `
-      document.head.appendChild(script)
-    }
   }, [])
 
   // Handle page refresh and wallet disconnection
