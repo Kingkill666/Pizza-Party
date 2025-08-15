@@ -10,6 +10,7 @@ import { Suspense } from "react"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://136320a06ae8.ngrok-free.app'),
   title: "Pizza Party - Daily Games, Weekly Jackpots",
   description: "Play daily Pizza Party games to earn toppings and win weekly VMF jackpots!",
   manifest: "/manifest.json",
