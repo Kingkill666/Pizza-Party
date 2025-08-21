@@ -1,9 +1,32 @@
 // Placeholder for payout-utils
 // TODO: Implement real payout utility logic
 
-export function calculateCommunityJackpot() { return 0; }
-export function formatJackpotAmount() { return ''; }
-export function getWeeklyJackpotInfo() { return {}; }
+// Re-export functions from jackpot-data to avoid conflicts
+export { 
+  calculateCommunityJackpot,
+  formatJackpotAmount,
+  getWeeklyJackpotInfo,
+  getDailyPlayerCount,
+  getWeeklyPlayerCount,
+  getToppingsAvailableToClaim,
+  getTotalToppingsClaimed,
+  selectWeeklyJackpotWinners,
+  payWeeklyJackpotWinners,
+  getUserClaimableToppings,
+  canClaimToppings,
+  getTimeUntilClaimingWindow,
+  isWeeklyJackpotTime,
+  earnDailyPlayToppings,
+  earnVMFHoldingsToppings,
+  selectDailyJackpotWinners,
+  payDailyJackpotWinners,
+  isDailyJackpotTime,
+  getDailyJackpotAmount,
+  getRealTimeDailyPlayerCount,
+  getRealTimeJackpotValue
+} from './jackpot-data'
+
+// Placeholder functions for future implementation
 export function PayoutRecord() { return {}; }
 export function PayoutError() { return {}; }
 export function getCurrentGameData() { return {}; }
