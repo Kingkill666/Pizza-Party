@@ -18,6 +18,24 @@ function getNextMondayAt12PM(): Date {
   return nextMonday
 }
 
+// Get next Sunday at 12pm PST (for claiming window)
+function getNextSundayAt12PM(): Date {
+  const now = new Date()
+  const currentDay = now.getDay() // 0 = Sunday, 1 = Monday, etc.
+  const daysUntilSunday = currentDay === 0 ? 7 : 7 - currentDay // If today is Sunday, get next Sunday
+  
+  const nextSunday = new Date(now)
+  nextSunday.setDate(now.getDate() + daysUntilSunday)
+  nextSunday.setHours(12, 0, 0, 0) // 12pm PST
+  
+  // If it's already past 12pm on Sunday, get next Sunday
+  if (currentDay === 0 && now.getHours() >= 12) {
+    nextSunday.setDate(nextSunday.getDate() + 7)
+  }
+  
+  return nextSunday
+}
+
 // Calculate time until next draw
 function calculateTimeUntilDraw(): { days: number; hours: number; minutes: number; seconds: number } {
   const now = new Date()
@@ -56,7 +74,7 @@ function checkDailyJackpotTime(): boolean {
   return currentHour === 12 && currentMinute === 0
 }
 
-// Get time until claiming window (Monday 12pm PST to Tuesday 12pm PST)
+// Get time until claiming window (Sunday 12pm PST to Monday 12pm PST)
 function calculateTimeUntilClaimingWindow(): { days: number; hours: number; minutes: number; seconds: number } {
   const now = new Date()
   const currentDay = now.getDay()
@@ -64,17 +82,17 @@ function calculateTimeUntilClaimingWindow(): { days: number; hours: number; minu
   
   let nextClaimingStart: Date
   
-  if (currentDay === 1 && currentHour >= 12) {
-    // It's Monday after 12pm, next claiming is next Monday
+  if (currentDay === 0 && currentHour >= 12) {
+    // It's Sunday after 12pm, next claiming is next Sunday
     nextClaimingStart = new Date(now)
     nextClaimingStart.setDate(now.getDate() + 7)
     nextClaimingStart.setHours(12, 0, 0, 0)
-  } else if (currentDay === 2 && currentHour < 12) {
-    // It's Tuesday before 12pm, claiming is still open
+  } else if (currentDay === 1 && currentHour < 12) {
+    // It's Monday before 12pm, claiming is still open
     return { days: 0, hours: 0, minutes: 0, seconds: 0 }
   } else {
-    // Get next Monday at 12pm
-    nextClaimingStart = getNextMondayAt12PM()
+    // Get next Sunday at 12pm
+    nextClaimingStart = getNextSundayAt12PM()
   }
   
   const timeDiff = nextClaimingStart.getTime() - now.getTime()
@@ -91,14 +109,14 @@ function calculateTimeUntilClaimingWindow(): { days: number; hours: number; minu
   return { days, hours, minutes, seconds }
 }
 
-// Check if toppings can be claimed (Monday 12pm PST to Tuesday 12pm PST)
+// Check if toppings can be claimed (Sunday 12pm PST to Monday 12pm PST)
 function checkCanClaimToppings(): boolean {
   const now = new Date()
   const currentDay = now.getDay()
   const currentHour = now.getHours()
   
-  // Claiming window: Monday 12pm PST to Tuesday 12pm PST
-  return (currentDay === 1 && currentHour >= 12) || (currentDay === 2 && currentHour < 12)
+  // Claiming window: Sunday 12pm PST to Monday 12pm PST
+  return (currentDay === 0 && currentHour >= 12) || (currentDay === 1 && currentHour < 12)
 }
 
 // Simulated data functions
