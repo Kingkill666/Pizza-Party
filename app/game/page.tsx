@@ -64,11 +64,41 @@ export default function GamePage() {
   const [isDailyDrawComplete, setIsDailyDrawComplete] = useState(false)
   const [realTimeDailyPlayers, setRealTimeDailyPlayers] = useState(0)
   const [realTimeJackpotValue, setRealTimeJackpotValue] = useState(0)
-  const [timeLeftInWindow, setTimeLeftInWindow] = useState({
-    hours: 14,
-    minutes: 53,
-    seconds: 16,
-  })
+  // Calculate time until next 12pm PST
+  const calculateTimeUntilNext12PM = () => {
+    const now = new Date()
+    
+    // Convert to PST (UTC-8)
+    const pstOffset = -8 * 60 // PST is UTC-8
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000)
+    const pstTime = new Date(utc + (pstOffset * 60000))
+    
+    // Calculate next 12pm PST
+    const next12PM = new Date(pstTime)
+    next12PM.setHours(12, 0, 0, 0)
+    
+    // If it's already past 12pm today, get tomorrow's 12pm
+    if (pstTime.getHours() >= 12) {
+      next12PM.setDate(next12PM.getDate() + 1)
+    }
+    
+    // Convert back to local time for calculation
+    const localNext12PM = new Date(next12PM.getTime() - (pstOffset * 60000) - (now.getTimezoneOffset() * 60000))
+    
+    const timeDiff = localNext12PM.getTime() - now.getTime()
+    
+    if (timeDiff <= 0) {
+      return { hours: 0, minutes: 0, seconds: 0 }
+    }
+    
+    const hours = Math.floor(timeDiff / (1000 * 60 * 60))
+    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60))
+    const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000)
+    
+    return { hours, minutes, seconds }
+  }
+
+  const [timeLeftInWindow, setTimeLeftInWindow] = useState(calculateTimeUntilNext12PM())
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [referralCode] = useState("PIZZA123ABC")
@@ -728,8 +758,9 @@ export default function GamePage() {
           return { ...prev, minutes: prev.minutes - 1, seconds: 59 }
         } else if (prev.hours > 0) {
           return { hours: prev.hours - 1, minutes: 59, seconds: 59 }
-      } else {
-          return { hours: 0, minutes: 0, seconds: 0 }
+        } else {
+          // Timer reached zero, recalculate for next 12pm PST
+          return calculateTimeUntilNext12PM()
         }
       })
     }, 1000)
