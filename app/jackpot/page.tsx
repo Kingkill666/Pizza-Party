@@ -143,7 +143,7 @@ export default function JackpotPage() {
     }
 
     if (!canClaim) {
-      alert("Toppings can only be claimed between Monday 12pm PST and Tuesday 12pm PST!")
+      alert("Toppings can only be claimed between Sunday 12pm PST and Monday 12pm PST!")
       return
     }
 
@@ -250,13 +250,13 @@ export default function JackpotPage() {
                     Connect wallet to claim your toppings
                   </p>
                   <p className="text-xs text-gray-500 mt-1" style={{...customFontStyle, fontSize: '12px'}}>
-                    Toppings can only be claimed between Monday 12pm PST and Tuesday 12pm PST
+                    Toppings can only be claimed between Sunday 12pm PST and Monday 12pm PST
                   </p>
                 </>
               )}
               {isConnected && (
                 <p className="text-xs text-gray-500 mt-2" style={customFontStyle}>
-                  Can claim Toppings only between 12pm PST Monday- 12pm PST Tuesday
+                  Can claim Toppings only between 12pm PST Sunday- 12pm PST Monday
                 </p>
               )}
               {isConnected && userClaimableToppings === 0 && (
@@ -448,7 +448,7 @@ export default function JackpotPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <img src="/images/pepperoni-art.png" alt="Pepperoni" className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span><strong>Topping Claiming Window:</strong> Toppings can only be claimed between Monday 12pm PST (when claiming opens) and Tuesday 12pm PST (when weekly game ends)</span>
+                  <span><strong>Topping Claiming Window:</strong> Toppings can only be claimed between Sunday 12pm PST (when claiming opens) and Monday 12pm PST (when weekly game ends)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <img src="/images/pepperoni-art.png" alt="Pepperoni" className="w-4 h-4 mt-0.5 flex-shrink-0" />

@@ -113,7 +113,7 @@ export function formatJackpotAmount(amount: number): string {
   return amount.toLocaleString()
 }
 
-export function getWeeklyJackpotInfo() {
+export function getWeeklyJackpotInfo() { 
   const timeUntilDraw = calculateTimeUntilDraw()
   
   // Simulate weekly data
@@ -168,7 +168,7 @@ export function getUserClaimableToppings(address: string, isConnected: boolean):
   return Math.floor(Math.random() * 20) + 1
 }
 
-export function getTimeUntilClaimingWindow() {
+export function getTimeUntilClaimingWindow() { 
   return calculateTimeUntilClaimingWindow()
 }
 
