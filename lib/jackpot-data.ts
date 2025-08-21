@@ -3,37 +3,55 @@
 // Get next Monday at 12pm PST
 function getNextMondayAt12PM(): Date {
   const now = new Date()
-  const currentDay = now.getDay() // 0 = Sunday, 1 = Monday, etc.
+  
+  // Convert to PST (UTC-8)
+  const pstOffset = -8 * 60 // PST is UTC-8
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60000)
+  const pstTime = new Date(utc + (pstOffset * 60000))
+  
+  const currentDay = pstTime.getDay() // 0 = Sunday, 1 = Monday, etc.
   const daysUntilMonday = currentDay === 1 ? 7 : (8 - currentDay) % 7 // If today is Monday, get next Monday
   
-  const nextMonday = new Date(now)
-  nextMonday.setDate(now.getDate() + daysUntilMonday)
+  const nextMonday = new Date(pstTime)
+  nextMonday.setDate(pstTime.getDate() + daysUntilMonday)
   nextMonday.setHours(12, 0, 0, 0) // 12pm PST
   
   // If it's already past 12pm on Monday, get next Monday
-  if (currentDay === 1 && now.getHours() >= 12) {
+  if (currentDay === 1 && pstTime.getHours() >= 12) {
     nextMonday.setDate(nextMonday.getDate() + 7)
   }
   
-  return nextMonday
+  // Convert back to local time for display
+  const localTime = new Date(nextMonday.getTime() - (pstOffset * 60000) - (now.getTimezoneOffset() * 60000))
+  
+  return localTime
 }
 
 // Get next Sunday at 12pm PST (for claiming window)
 function getNextSundayAt12PM(): Date {
   const now = new Date()
-  const currentDay = now.getDay() // 0 = Sunday, 1 = Monday, etc.
+  
+  // Convert to PST (UTC-8)
+  const pstOffset = -8 * 60 // PST is UTC-8
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60000)
+  const pstTime = new Date(utc + (pstOffset * 60000))
+  
+  const currentDay = pstTime.getDay() // 0 = Sunday, 1 = Monday, etc.
   const daysUntilSunday = currentDay === 0 ? 7 : 7 - currentDay // If today is Sunday, get next Sunday
   
-  const nextSunday = new Date(now)
-  nextSunday.setDate(now.getDate() + daysUntilSunday)
+  const nextSunday = new Date(pstTime)
+  nextSunday.setDate(pstTime.getDate() + daysUntilSunday)
   nextSunday.setHours(12, 0, 0, 0) // 12pm PST
   
   // If it's already past 12pm on Sunday, get next Sunday
-  if (currentDay === 0 && now.getHours() >= 12) {
+  if (currentDay === 0 && pstTime.getHours() >= 12) {
     nextSunday.setDate(nextSunday.getDate() + 7)
   }
   
-  return nextSunday
+  // Convert back to local time for display
+  const localTime = new Date(nextSunday.getTime() - (pstOffset * 60000) - (now.getTimezoneOffset() * 60000))
+  
+  return localTime
 }
 
 // Calculate time until next draw
@@ -77,15 +95,21 @@ function checkDailyJackpotTime(): boolean {
 // Get time until claiming window (Sunday 12pm PST to Monday 12pm PST)
 function calculateTimeUntilClaimingWindow(): { days: number; hours: number; minutes: number; seconds: number } {
   const now = new Date()
-  const currentDay = now.getDay()
-  const currentHour = now.getHours()
+  
+  // Convert to PST (UTC-8)
+  const pstOffset = -8 * 60 // PST is UTC-8
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60000)
+  const pstTime = new Date(utc + (pstOffset * 60000))
+  
+  const currentDay = pstTime.getDay()
+  const currentHour = pstTime.getHours()
   
   let nextClaimingStart: Date
   
   if (currentDay === 0 && currentHour >= 12) {
     // It's Sunday after 12pm, next claiming is next Sunday
-    nextClaimingStart = new Date(now)
-    nextClaimingStart.setDate(now.getDate() + 7)
+    nextClaimingStart = new Date(pstTime)
+    nextClaimingStart.setDate(pstTime.getDate() + 7)
     nextClaimingStart.setHours(12, 0, 0, 0)
   } else if (currentDay === 1 && currentHour < 12) {
     // It's Monday before 12pm, claiming is still open
@@ -112,8 +136,14 @@ function calculateTimeUntilClaimingWindow(): { days: number; hours: number; minu
 // Check if toppings can be claimed (Sunday 12pm PST to Monday 12pm PST)
 function checkCanClaimToppings(): boolean {
   const now = new Date()
-  const currentDay = now.getDay()
-  const currentHour = now.getHours()
+  
+  // Convert to PST (UTC-8)
+  const pstOffset = -8 * 60 // PST is UTC-8
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60000)
+  const pstTime = new Date(utc + (pstOffset * 60000))
+  
+  const currentDay = pstTime.getDay()
+  const currentHour = pstTime.getHours()
   
   // Claiming window: Sunday 12pm PST to Monday 12pm PST
   return (currentDay === 0 && currentHour >= 12) || (currentDay === 1 && currentHour < 12)
@@ -133,6 +163,12 @@ export function formatJackpotAmount(amount: number): string {
 
 export function getWeeklyJackpotInfo() { 
   const timeUntilDraw = calculateTimeUntilDraw()
+  
+  // Debug logging
+  console.log('🕐 getWeeklyJackpotInfo called')
+  console.log('📅 timeUntilDraw:', timeUntilDraw)
+  console.log('🕐 Current time:', new Date().toLocaleString())
+  console.log('🕐 Next Monday 12pm PST:', getNextMondayAt12PM().toLocaleString())
   
   // Simulate weekly data
   const totalToppings = Math.floor(Math.random() * 1000) + 100
