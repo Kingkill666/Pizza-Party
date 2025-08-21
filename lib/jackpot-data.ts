@@ -37,7 +37,7 @@ function calculateTimeUntilDraw(): { days: number; hours: number; minutes: numbe
 }
 
 // Check if it's time for weekly jackpot draw (Sunday 12pm PST)
-function isWeeklyJackpotTime(): boolean {
+function checkWeeklyJackpotTime(): boolean {
   const now = new Date()
   const nextDraw = getNextSundayAt12PM()
   const timeDiff = nextDraw.getTime() - now.getTime()
@@ -47,7 +47,7 @@ function isWeeklyJackpotTime(): boolean {
 }
 
 // Check if it's time for daily jackpot draw
-function isDailyJackpotTime(): boolean {
+function checkDailyJackpotTime(): boolean {
   const now = new Date()
   const currentHour = now.getHours()
   const currentMinute = now.getMinutes()
@@ -57,7 +57,7 @@ function isDailyJackpotTime(): boolean {
 }
 
 // Get time until claiming window (Sunday 12pm PST to Monday 12pm PST)
-function getTimeUntilClaimingWindow(): { days: number; hours: number; minutes: number; seconds: number } {
+function calculateTimeUntilClaimingWindow(): { days: number; hours: number; minutes: number; seconds: number } {
   const now = new Date()
   const currentDay = now.getDay()
   const currentHour = now.getHours()
@@ -92,7 +92,7 @@ function getTimeUntilClaimingWindow(): { days: number; hours: number; minutes: n
 }
 
 // Check if toppings can be claimed (Sunday 12pm PST to Monday 12pm PST)
-function canClaimToppings(): boolean {
+function checkCanClaimToppings(): boolean {
   const now = new Date()
   const currentDay = now.getDay()
   const currentHour = now.getHours()
@@ -169,11 +169,11 @@ export function getUserClaimableToppings(address: string, isConnected: boolean):
 }
 
 export function getTimeUntilClaimingWindow() {
-  return getTimeUntilClaimingWindow()
+  return calculateTimeUntilClaimingWindow()
 }
 
 export function isWeeklyJackpotTime(): boolean {
-  return isWeeklyJackpotTime()
+  return checkWeeklyJackpotTime()
 }
 
 export function earnDailyPlayToppings(playerAddress: string): Promise<number> {
@@ -217,7 +217,7 @@ export function payDailyJackpotWinners(winners: string[], amount: number): Promi
 }
 
 export function isDailyJackpotTime(): boolean {
-  return isDailyJackpotTime()
+  return checkDailyJackpotTime()
 }
 
 export function getDailyJackpotAmount(): number {
@@ -230,4 +230,8 @@ export function getRealTimeDailyPlayerCount(): number {
 
 export function getRealTimeJackpotValue(): number {
   return Math.floor(Math.random() * 1000) + 100
+}
+
+export function canClaimToppings(): boolean {
+  return checkCanClaimToppings()
 }
