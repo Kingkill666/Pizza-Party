@@ -151,10 +151,7 @@ function checkCanClaimToppings(): boolean {
 
 // Simulated data functions
 export function calculateCommunityJackpot(): number {
-  // Simulate community jackpot based on current time
-  const baseAmount = 1000
-  const timeBonus = Math.floor(Date.now() / 100000) % 500
-  return baseAmount + timeBonus
+  return 0 // No community jackpot since no players
 }
 
 export function formatJackpotAmount(amount: number): string {
@@ -170,9 +167,9 @@ export function getWeeklyJackpotInfo() {
   console.log('🕐 Current time:', new Date().toLocaleString())
   console.log('🕐 Next Monday 12pm PST:', getNextMondayAt12PM().toLocaleString())
   
-  // Simulate weekly data
-  const totalToppings = Math.floor(Math.random() * 1000) + 100
-  const totalPlayers = Math.floor(Math.random() * 500) + 50
+  // Return zero since there are no actual players yet
+  const totalToppings = 0
+  const totalPlayers = 0
   
   return {
     totalToppings,
@@ -182,19 +179,19 @@ export function getWeeklyJackpotInfo() {
 }
 
 export function getDailyPlayerCount(): number {
-  return Math.floor(Math.random() * 100) + 10
+  return 0 // No actual players yet
 }
 
 export function getWeeklyPlayerCount(): number {
-  return Math.floor(Math.random() * 500) + 50
+  return 0 // No actual players yet
 }
 
 export function getToppingsAvailableToClaim(): number {
-  return Math.floor(Math.random() * 50) + 5
+  return 0 // No toppings available since no players
 }
 
 export function getTotalToppingsClaimed(): number {
-  return Math.floor(Math.random() * 1000) + 100
+  return 0 // No toppings claimed since no players
 }
 
 export function selectWeeklyJackpotWinners(): string[] {
@@ -275,15 +272,15 @@ export function isDailyJackpotTime(): boolean {
 }
 
 export function getDailyJackpotAmount(): number {
-  return Math.floor(Math.random() * 100) + 50
+  return 0 // No daily jackpot amount since no players
 }
 
 export function getRealTimeDailyPlayerCount(): number {
-  return Math.floor(Math.random() * 100) + 10
+  return 0 // No real-time players since no actual players
 }
 
 export function getRealTimeJackpotValue(): number {
-  return Math.floor(Math.random() * 1000) + 100
+  return 0 // No real-time jackpot value since no players
 }
 
 export function canClaimToppings(): boolean {
