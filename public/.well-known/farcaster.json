@@ -11,8 +11,8 @@
     "splashImageUrl": "https://u.cubeupload.com/vmfcoin/PizzaPartyHomepageLa.png",
     "splashBackgroundColor": "#b01c17",
     "homeUrl": "https://v0-farcaster-preview-issue.vercel.app",
-    "subtitle": "Play daily, win big — the cheesiest game on Base!",
-    "tagline": "The Tastiest Way to Chase Jackpots.",
+    "subtitle": "The Cheesiest Game On Base.",
+    "tagline": "The Tastiest Way to Win.",
     "primaryCategory": "games",
     "tags": [
       "games",
@@ -24,8 +24,6 @@
       "community",
       "fun",
       "rewards",
-      "casual",
-      "decentralized",
       "daily"
     ],
     "screenshotUrls": [
