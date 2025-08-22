@@ -1,8 +1,8 @@
 {
   "accountAssociation": {
-    "header": "eyJmaWQiOjEyMzQ1LCJ0eXBlIjoiY3VzdG9keSIsImtleSI6IjB4MTIzNDU2Nzg5MGFiY2RlZjEyMzQ1Njc4OTBhYmNkZWYxMjM0NTY3OCJ9",
-    "payload": "eyJkb21haW4iOiJ2MC1mYXJjYXN0ZXItcHJldmlldy1pc3N1ZS52ZXJjZWwuYXBwIn0",
-    "signature": "MHg5ODc2NTQzMjEwYWJjZGVmMTIzNDU2Nzg5MGFiY2RlZjEyMzQ1Njc4OTBhYmNkZWYxMjM0NTY3ODkwYWJjZGVm"
+    "header": "eyJmaWQiOjEwMTM0OTEsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgyYzM4YTgzQTEzNjFjODRCMzEzNzk0MjZCM0NmMWQyRjFCMDFGNzc0In0",
+    "payload": "eyJkb21haW4iOiJwaXp6YS1wYXJ0eS52bWZjb2luLmNvbSJ9",
+    "signature": "MHg0MzkwN2EwMTMyNGZlNzAxMGEyYWNiOTYyZTNjOGRjOTdlNjY0YTgwOWI5OGZkOTYwZWNiOTI3Yzg3MWMzY2I3N2U0NGUzNWQyYzUxNjVhNmIwZjA0MDNlMDdiNDY0ZmRmOTI5YTc5NzYwYWNmZDhlZDcyZjdkZGJkYTUxZDE1NDFi"
   },
   "frame": {
     "name": "Pizza Party",
