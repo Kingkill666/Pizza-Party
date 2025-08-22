@@ -209,7 +209,6 @@ export default function LeaderboardPage() {
     >
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
-          {getRankIcon(winner.rank)}
           <span className="font-bold text-lg" style={customFontStyle}>
             {winner.rank}.
           </span>
