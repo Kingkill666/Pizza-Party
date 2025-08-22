@@ -279,7 +279,7 @@ export default function LeaderboardPage() {
             {/* Header - Moved inside the white card */}
             <div className="text-center mb-6">
               <h1 className="text-4xl font-bold text-red-800 mb-2" style={customFontStyle}>
-                🏆 LEADER BOARD 🏆
+                LEADER BOARD
               </h1>
               <p className="text-lg text-gray-700" style={customFontStyle}>
                 See who's winning the most VMF tokens!
@@ -292,7 +292,7 @@ export default function LeaderboardPage() {
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border-4 border-blue-300 p-4">
                 <div className="text-center mb-4">
                   <h2 className="text-2xl font-bold text-blue-800 mb-2" style={customFontStyle}>
-                    🎯 DAILY WINNERS 🎯
+                    DAILY WINNERS
                   </h2>
                   <p className="text-sm text-blue-600" style={customFontStyle}>
                     Today's 8 lucky winners
@@ -365,7 +365,7 @@ export default function LeaderboardPage() {
               <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl border-4 border-purple-300 p-4">
                 <div className="text-center mb-4">
                   <h2 className="text-2xl font-bold text-purple-800 mb-2" style={customFontStyle}>
-                    🌟 WEEKLY WINNERS 🌟
+                    WEEKLY WINNERS
                   </h2>
                   <p className="text-sm text-purple-600" style={customFontStyle}>
                     This week's top 10 champions
