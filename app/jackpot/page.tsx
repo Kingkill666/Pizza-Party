@@ -235,20 +235,17 @@ export default function JackpotPage() {
               <Button
                 onClick={handleClaimToppings}
                 disabled={!isConnected || userClaimableToppings <= 0 || !canClaim}
-                className={`w-full text-lg font-bold py-3 px-6 rounded-xl border-4 shadow-lg transform hover:scale-105 transition-all ${
-                  isConnected && userClaimableToppings > 0 && canClaim
-                    ? "!bg-green-600 hover:!bg-green-700 text-white border-green-800"
-                    : "!bg-gray-400 text-gray-600 border-gray-500 cursor-not-allowed"
-                }`}
+                                  className={`w-full text-lg font-bold py-3 px-6 rounded-xl border-4 shadow-lg transform hover:scale-105 transition-all ${
+                    isConnected && userClaimableToppings > 0 && canClaim
+                      ? "!bg-red-700 hover:!bg-red-800 text-white border-red-900"
+                      : "!bg-red-700 text-white border-red-900 cursor-not-allowed opacity-60"
+                  }`}
                 style={customFontStyle}
               >
                 🍕 Claim {userClaimableToppings} Toppings 🍕
               </Button>
               {!isConnected && (
                 <>
-                  <p className="text-xs text-gray-500 mt-2" style={customFontStyle}>
-                    Wallet connection required to claim your toppings
-                  </p>
                   <p className="text-xs text-gray-500 mt-1" style={{...customFontStyle, fontSize: '12px'}}>
                     Toppings can only be claimed between Sunday 12pm PST and Monday 12pm PST
                   </p>
