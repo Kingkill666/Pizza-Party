@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     'fc:frame:image': 'https://pizzaparty.app/images/pizza-transparent.png',
     'fc:frame:button:1': 'Play Daily Game',
     'fc:frame:button:2': 'View Jackpot',
-    'fc:frame:button:3': 'Connect Wallet',
+    'fc:frame:button:3': 'View Leaderboard',
     'fc:frame:button:4': 'Share Pizza Party',
     'fc:frame:post_url': 'https://pizzaparty.app/api/frame',
   },

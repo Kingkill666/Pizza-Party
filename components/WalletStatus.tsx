@@ -21,9 +21,7 @@ export function WalletStatus({
 }: WalletStatusProps) {
   if (!isConnected) {
     return (
-      <Button
-        onClick={onConnect}
-        className="w-full !bg-blue-600 hover:!bg-blue-700 text-white border-2 border-blue-700 text-base font-bold py-2 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all touch-manipulation"
+      <div className="w-full bg-gray-100 text-gray-600 border-2 border-gray-300 text-base font-bold py-2 px-6 rounded-xl shadow-lg touch-manipulation flex items-center justify-center"
         style={{
           ...customFontStyle,
           letterSpacing: "1px",
@@ -31,8 +29,8 @@ export function WalletStatus({
           minHeight: "34px", // Reduced by 40% from 56px
         }}
       >
-        💳 Connect Wallet
-      </Button>
+        🔗 Wallet Connection Required
+      </div>
     )
   }
 

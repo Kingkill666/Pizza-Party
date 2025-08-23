@@ -52,13 +52,7 @@ export default function TestMainPage() {
           </div>
           
           <div className="flex items-center space-x-4">
-            <Button
-              variant="outline"
-              className="bg-white/20 border-white/30 text-white hover:bg-white/30"
-              onClick={() => setShowWalletModal(true)}
-            >
-              Connect Wallet
-            </Button>
+
           </div>
         </div>
       </header>
@@ -125,8 +119,8 @@ export default function TestMainPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
               <div>
                 <div className="text-2xl mb-2">1️⃣</div>
-                <h4 className="font-bold text-gray-800 mb-2">Connect Wallet</h4>
-                <p className="text-gray-600">Connect your wallet to start playing</p>
+                <h4 className="font-bold text-gray-800 mb-2">Auto-Detect Wallet</h4>
+                <p className="text-gray-600">Your wallet is automatically detected</p>
               </div>
               <div>
                 <div className="text-2xl mb-2">2️⃣</div>

@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import "./globals.css"
+import { AppWrapper } from "@/components/AppWrapper"
 
 export const metadata: Metadata = {
   title: "Pizza Party - The Tastiest Way to Chase Jackpots",
@@ -73,7 +74,11 @@ html {
 }
         `}</style>
       </head>
-      <body>{children}</body>
+      <body>
+        <AppWrapper>
+          {children}
+        </AppWrapper>
+      </body>
     </html>
   )
 }

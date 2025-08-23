@@ -35,7 +35,7 @@ export default function TestSimplePage() {
 
         // Test 3: Check if global Farcaster SDK is available
         addLog('🔧 Testing for global Farcaster SDK...')
-        if (typeof window !== 'undefined' && (window as any).farcaster) {
+        if (typeof window !== 'undefined' && window.farcaster) {
           addLog('✅ Global Farcaster SDK found')
         } else {
           addLog('⚠️ Global Farcaster SDK not found')

@@ -213,7 +213,7 @@ export default function AdminPage() {
                     <strong>Status:</strong> Not Connected ❌
                           </p>
                   <p className="text-xs text-red-700 mt-2">
-                    Connect wallet to access admin functions
+                    Wallet connection required to access admin functions
                           </p>
                         </div>
               )}

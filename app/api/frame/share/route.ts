@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
             buttons: [
               { label: "Play Daily Game" },
               { label: "View Jackpot" },
-              { label: "Connect Wallet" },
+              { label: "View Leaderboard" },
               { label: "Share Pizza Party" }
             ],
             postUrl: "https://pizzaparty.app/api/frame"

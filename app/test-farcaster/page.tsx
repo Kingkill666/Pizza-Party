@@ -27,17 +27,17 @@ export default function TestFarcasterPage() {
         addLog('🔍 Testing global objects...')
         
         // Check window.farcaster
-        if (typeof window !== 'undefined' && (window as any).farcaster) {
+        if (typeof window !== 'undefined' && window.farcaster) {
           addLog('✅ window.farcaster exists')
-          console.log('window.farcaster:', (window as any).farcaster)
+          console.log('window.farcaster:', window.farcaster)
         } else {
           addLog('❌ window.farcaster does not exist')
         }
 
         // Check window.sdk
-        if (typeof window !== 'undefined' && (window as any).sdk) {
+        if (typeof window !== 'undefined' && window.sdk) {
           addLog('✅ window.sdk exists')
-          console.log('window.sdk:', (window as any).sdk)
+          console.log('window.sdk:', window.sdk)
         } else {
           addLog('❌ window.sdk does not exist')
         }
@@ -64,10 +64,10 @@ export default function TestFarcasterPage() {
         addLog('🎯 Looking for ready function...')
         
         // Check window.farcaster.sdk.actions.ready
-        if ((window as any).farcaster?.sdk?.actions?.ready) {
+        if (window.farcaster?.sdk?.actions?.ready) {
           addLog('✅ Found window.farcaster.sdk.actions.ready')
           try {
-            await (window as any).farcaster.sdk.actions.ready()
+            await window.farcaster.sdk.actions.ready()
             addLog('✅ Successfully called window.farcaster.sdk.actions.ready()')
           } catch (error) {
             addLog(`❌ Error calling window.farcaster.sdk.actions.ready(): ${error}`)
@@ -77,10 +77,10 @@ export default function TestFarcasterPage() {
         }
 
         // Check window.sdk.actions.ready
-        if ((window as any).sdk?.actions?.ready) {
+        if (window.sdk?.actions?.ready) {
           addLog('✅ Found window.sdk.actions.ready')
           try {
-            await (window as any).sdk.actions.ready()
+            await window.sdk.actions.ready()
             addLog('✅ Successfully called window.sdk.actions.ready()')
           } catch (error) {
             addLog(`❌ Error calling window.sdk.actions.ready(): ${error}`)

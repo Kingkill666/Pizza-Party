@@ -247,7 +247,7 @@ export default function JackpotPage() {
               {!isConnected && (
                 <>
                   <p className="text-xs text-gray-500 mt-2" style={customFontStyle}>
-                    Connect wallet to claim your toppings
+                    Wallet connection required to claim your toppings
                   </p>
                   <p className="text-xs text-gray-500 mt-1" style={{...customFontStyle, fontSize: '12px'}}>
                     Toppings can only be claimed between Sunday 12pm PST and Monday 12pm PST

@@ -35,17 +35,16 @@ export async function POST(request: NextRequest) {
           }
         })
 
-      case 3: // Connect Wallet
+      case 3: // View Leaderboard
         return NextResponse.json({
           frames: {
             version: "vNext",
-            image: "https://pizzaparty.app/images/wallet-connect.png",
+            image: "https://pizzaparty.app/images/leaderboard.png",
             buttons: [
-              { label: "MetaMask" },
-              { label: "Coinbase Wallet" },
+              { label: "View Leaderboard" },
               { label: "Back to Home" }
             ],
-            postUrl: "https://pizzaparty.app/api/frame/wallet"
+            postUrl: "https://pizzaparty.app/api/frame/leaderboard"
           }
         })
 
@@ -71,7 +70,7 @@ export async function POST(request: NextRequest) {
             buttons: [
               { label: "Play Daily Game" },
               { label: "View Jackpot" },
-              { label: "Connect Wallet" },
+              { label: "View Leaderboard" },
               { label: "Share Pizza Party" }
             ],
             postUrl: "https://pizzaparty.app/api/frame"
@@ -87,7 +86,7 @@ export async function POST(request: NextRequest) {
         buttons: [
           { label: "Play Daily Game" },
           { label: "View Jackpot" },
-          { label: "Connect Wallet" },
+          { label: "View Leaderboard" },
           { label: "Share Pizza Party" }
         ],
         postUrl: "https://pizzaparty.app/api/frame"
@@ -104,7 +103,7 @@ export async function GET() {
       buttons: [
         { label: "Play Daily Game" },
         { label: "View Jackpot" },
-        { label: "Connect Wallet" },
+        { label: "View Leaderboard" },
         { label: "Share Pizza Party" }
       ],
       postUrl: "https://pizzaparty.app/api/frame"

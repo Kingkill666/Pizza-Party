@@ -4,7 +4,9 @@ import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useWallet } from '@/hooks/useWallet'
-import { WALLETS, initMobileOptimizations, isMobile, isIOS, isAndroid, isFarcaster } from '@/lib/wallet-config'
+import { useFarcasterWallet } from '@/components/FarcasterWalletProvider'
+import { formatWallet } from '@/lib/utils'
+import { initMobileOptimizations, isMobile, isIOS, isAndroid, isFarcaster } from '@/lib/wallet-config'
 import { AdvancedContractsService } from '@/lib/services/advanced-contracts-service'
 import { getVMFBalanceUltimate } from '@/lib/vmf-contract'
 import { ethers } from 'ethers'
@@ -22,7 +24,7 @@ import {
 } from '@/lib/jackpot-data'
 import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Clock, Users, Coins, Copy, Share2, ExternalLink, UsersIcon, AlertCircle, X, ArrowLeft } from 'lucide-react'
+import { Clock, Users, Coins, Copy, Share2, ExternalLink, UsersIcon, AlertCircle, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 
 export default function GamePage() {
@@ -32,7 +34,20 @@ export default function GamePage() {
   }
 
   // Wallet connection state
-  const { isConnected, connection, connectWallet, isConnecting, error, setError } = useWallet()
+  const { isConnected, connection, error, setError } = useWallet()
+  
+  // Farcaster wallet detection
+  const { 
+    fid, 
+    username, 
+    avatar, 
+    wallet: farcasterWalletAddress, 
+    signer: farcasterSigner, 
+    connected: farcasterConnected, 
+    loading: farcasterLoading, 
+    error: farcasterError,
+    isFarcasterEnvironment 
+  } = useFarcasterWallet()
   
   // Farcaster sharing functionality
   const { 
@@ -42,13 +57,12 @@ export default function GamePage() {
     shareReferralCode, 
     shareLeaderboard, 
     shareJackpotMilestone,
-    isSharing: isFarcasterSharing,
-    isFarcasterEnvironment 
+    isSharing: isFarcasterSharing
   } = useFarcasterShare()
   const [isProcessing, setIsProcessing] = useState(false)
   const [gameError, setGameError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [showWalletModal, setShowWalletModal] = useState(false)
+
   const [deviceInfo, setDeviceInfo] = useState({
     isMobile: false,
     isIOS: false,
@@ -180,7 +194,11 @@ export default function GamePage() {
 
   // Check if user has already entered today
   const checkDailyEntry = (): boolean => {
-    if (!isConnected || !connection) return false
+    const activeWallet = farcasterConnected && farcasterWalletAddress 
+      ? farcasterWalletAddress 
+      : (isConnected && connection ? connection.address : null)
+    
+    if (!activeWallet) return false
     
     const now = new Date()
     const pstOffset = -8
@@ -191,8 +209,8 @@ export default function GamePage() {
     const gameDate = isBeforeNoonPST ? today : yesterday
     
     // Check both localStorage entries
-    const entryKey = `pizza_entry_${connection.address}_${gameDate}`
-    const dailyEntryKey = `daily_entry_${connection.address}`
+    const entryKey = `pizza_entry_${activeWallet}_${gameDate}`
+    const dailyEntryKey = `daily_entry_${activeWallet}`
     
     const hasEnteredToday = localStorage.getItem(entryKey) === 'true' || 
                            localStorage.getItem(dailyEntryKey) !== null
@@ -202,6 +220,20 @@ export default function GamePage() {
 
   // Initialize Advanced Contracts Service
   const getAdvancedContractsService = async () => {
+    // Use Farcaster signer if available, otherwise fallback to wallet provider
+    if (farcasterConnected && farcasterSigner) {
+      try {
+        // Use Farcaster signer with a public RPC provider
+        const provider = new ethers.JsonRpcProvider('https://base.blockpi.network/v1/rpc/public')
+        console.log('✅ Using Farcaster signer for transactions')
+        return new AdvancedContractsService(provider, farcasterSigner)
+      } catch (error) {
+        console.error('❌ Failed to initialize contract service with Farcaster signer:', error)
+        throw error
+      }
+    }
+    
+    // Fallback to regular wallet provider
     if (!window.ethereum) return null
     
     try {
@@ -235,7 +267,8 @@ export default function GamePage() {
 
   // Check if user has already entered today from contract
   const checkContractDailyEntry = async (): Promise<boolean> => {
-    if (!isConnected || !connection || !window.ethereum) return false
+    const hasActiveWallet = farcasterConnected && farcasterWalletAddress || (isConnected && connection)
+    if (!hasActiveWallet) return false
     
     try {
       const service = await getAdvancedContractsService()
@@ -253,7 +286,8 @@ export default function GamePage() {
   // Update hasEnteredToday state when connection changes
   useEffect(() => {
     const updateEntryStatus = async () => {
-      if (isConnected && connection) {
+      const hasActiveWallet = farcasterConnected && farcasterWalletAddress || (isConnected && connection)
+      if (hasActiveWallet) {
         // Check both localStorage and contract state
         const localStorageEntry = checkDailyEntry()
         const contractEntry = await checkContractDailyEntry()
@@ -265,11 +299,12 @@ export default function GamePage() {
     }
     
     updateEntryStatus()
-  }, [isConnected, connection])
+  }, [isConnected, connection, farcasterConnected, farcasterWalletAddress])
 
   // Periodically update real-time data
   useEffect(() => {
-    if (!isConnected || !connection) return
+    const hasActiveWallet = farcasterConnected && farcasterWalletAddress || (isConnected && connection)
+    if (!hasActiveWallet) return
 
     // Update data immediately when connected
     updateAllRealTimeData()
@@ -280,7 +315,7 @@ export default function GamePage() {
     }, 30000) // 30 seconds
 
     return () => clearInterval(interval)
-  }, [isConnected, connection])
+  }, [isConnected, connection, farcasterConnected, farcasterWalletAddress])
 
   // Get next game reset time
   const getNextGameReset = () => {
@@ -315,9 +350,9 @@ export default function GamePage() {
   // Check VMF balance
   const checkVMFBalance = async (address: string) => {
     try {
-      const balance = await getVMFBalanceUltimate(address)
-      setVmfBalance(balance)
-      return parseFloat(balance)
+      const balance = getVMFBalanceUltimate()
+      setVmfBalance(balance.toString())
+      return balance
     } catch (error) {
       console.error('Error checking VMF balance:', error)
       setVmfBalance('0')
@@ -327,8 +362,13 @@ export default function GamePage() {
 
   // Handle game entry
   const handleEnterGame = async () => {
-    if (!isConnected || !connection) {
-      setShowWalletModal(true)
+    // Check for Farcaster wallet first, then fallback to regular wallet
+    const activeWallet = farcasterConnected && farcasterWalletAddress 
+      ? { address: farcasterWalletAddress, signer: farcasterSigner }
+      : (isConnected && connection ? connection : null)
+    
+    if (!activeWallet) {
+      setGameError('Wallet connection required. Please connect your wallet to play.')
       return
     }
 
@@ -343,7 +383,7 @@ export default function GamePage() {
     }
 
     // Check VMF balance before allowing entry
-    const balance = await checkVMFBalance(connection.address)
+    const balance = await checkVMFBalance(activeWallet.address)
     if (balance < 1) {
       setGameError('You need at least 1 VMF to enter the game. Please get some VMF tokens first.')
       return
@@ -371,16 +411,16 @@ export default function GamePage() {
       const txHash = await service.enterDailyGame()
       
       // Earn toppings for daily play (only when wallet is connected)
-      if (isConnected && connection?.address) {
-        const earnedDaily = earnDailyPlayToppings(connection.address, isConnected)
-        if (earnedDaily) {
+      if (activeWallet.address) {
+        const earnedDaily = await earnDailyPlayToppings(activeWallet.address)
+        if (earnedDaily > 0) {
           console.log('🍕 Earned daily play topping!')
         }
         
         // Check VMF balance and earn VMF holdings toppings
-        const vmfBalance = await checkVMFBalance(connection.address)
+        const vmfBalance = await checkVMFBalance(activeWallet.address)
         if (vmfBalance > 0) {
-          earnVMFHoldingsToppings(connection.address, isConnected, vmfBalance)
+          await earnVMFHoldingsToppings(activeWallet.address)
         }
       }
       
@@ -405,8 +445,8 @@ export default function GamePage() {
       const today = pstTime.toDateString()
       const yesterday = new Date(pstTime.getTime() - (24 * 60 * 60 * 1000)).toDateString()
       const gameDate = isBeforeNoonPST ? today : yesterday
-      const entryKey = `pizza_entry_${connection.address}_${gameDate}`
-      const dailyEntryKey = `daily_entry_${connection.address}`
+      const entryKey = `pizza_entry_${activeWallet.address}_${gameDate}`
+      const dailyEntryKey = `daily_entry_${activeWallet.address}`
       
       localStorage.setItem(entryKey, 'true')
       localStorage.setItem(dailyEntryKey, Date.now().toString())
@@ -452,12 +492,8 @@ export default function GamePage() {
           const service = await getAdvancedContractsService()
           if (!service) throw new Error('Failed to initialize contract service')
           
-          // Get current game ID and check if draw is ready
-          const gameId = await service.getCurrentGameId()
-          const isDailyReady = await service.isDailyDrawReady()
-          
-          console.log('📊 Current game ID:', gameId)
-          console.log('📊 Daily draw ready:', isDailyReady)
+          // Get current game info (placeholder for future implementation)
+          console.log('📊 Contract service initialized successfully')
           
           // For now, use localStorage as the primary source
           // The new contract structure doesn't have direct player count functions
@@ -527,12 +563,11 @@ export default function GamePage() {
           const service = await getAdvancedContractsService()
           if (!service) return
           
-          const toppings = await service.getPlayerToppings(connection.address)
+          // Get player toppings (placeholder for future implementation)
+          console.log('🍕 Player toppings feature not yet implemented')
           
-          console.log('🍕 Player toppings:', toppings.toString())
-          
-          // Update localStorage with current toppings
-          localStorage.setItem(`toppings_${connection.address}`, toppings.toString())
+          // Update localStorage with placeholder toppings
+          localStorage.setItem(`toppings_${connection.address}`, '0')
           
         } catch (contractError) {
           console.error('❌ Error reading player toppings from contract:', contractError)
@@ -553,8 +588,9 @@ export default function GamePage() {
           const service = await getAdvancedContractsService()
           if (!service) return
           
-          const jackpotAmount = await service.getDailyJackpot()
-          const jackpotFormatted = await service.getDailyJackpotFormatted()
+          // Get jackpot amount (placeholder for future implementation)
+          const jackpotAmount = BigInt(0)
+          const jackpotFormatted = '0'
           
           console.log('💰 Contract jackpot amount:', jackpotAmount.toString())
           
@@ -591,15 +627,7 @@ export default function GamePage() {
     }
   }
 
-  // Handle wallet connection
-  const handleWalletConnect = async (walletId: string) => {
-    try {
-      await connectWallet(walletId)
-      setShowWalletModal(false)
-    } catch (error) {
-      console.error('Error connecting wallet:', error)
-    }
-  }
+
 
   // Initialize mobile optimizations and device detection
   useEffect(() => {
@@ -951,6 +979,7 @@ export default function GamePage() {
                 }}
               onClick={handleEnterGame}
               disabled={isProcessing || hasEnteredToday}
+              data-testid="enter-game"
               >
               {isProcessing ? 'Processing...' : (
                 <>
@@ -974,10 +1003,14 @@ export default function GamePage() {
               )}
 
             {/* Wallet Status Display */}
-            {isConnected && connection && (
+            {(farcasterConnected && farcasterWalletAddress) || (isConnected && connection) ? (
               <div className="bg-green-100 border-2 border-green-300 rounded-xl p-3 text-center">
                 <p className="text-green-800 font-bold text-sm" style={customFontStyle}>
-                  ✅ Connected to {connection.walletName || 'Wallet'} {connection.address?.slice(0, 6)}...{connection.address?.slice(-4)}
+                  {farcasterConnected ? (
+                    `✅ Connected via Farcaster (FID: ${fid}) ${formatWallet(farcasterWalletAddress)}`
+                  ) : (
+                    `✅ Connected to ${connection?.walletName || 'Wallet'} ${formatWallet(connection?.address || null)}`
+                  )}
                 </p>
                 <p className="text-green-700 text-xs mt-1" style={customFontStyle}>
                   💰 VMF Balance: {parseFloat(vmfBalance).toFixed(2)} VMF
@@ -988,7 +1021,7 @@ export default function GamePage() {
                   </p>
                 )}
               </div>
-            )}
+            ) : null}
 
             {/* Weekly Jackpot Button */}
               <Link href="/jackpot">
@@ -1042,8 +1075,9 @@ export default function GamePage() {
                 className="w-full !bg-blue-600 hover:!bg-blue-700 text-white text-lg font-bold py-3 px-6 rounded-xl border-4 border-blue-800 shadow-lg transform hover:scale-105 transition-all"
               style={{ ...customFontStyle, letterSpacing: "1px", fontSize: "1.25rem" }}
               onClick={() => {
-                if (!isConnected || !connection) {
-                  setShowWalletModal(true)
+                const hasActiveWallet = farcasterConnected && farcasterWalletAddress || (isConnected && connection)
+                if (!hasActiveWallet) {
+                  setGameError('Wallet connection required to invite friends.')
                 } else {
                   setShowInviteModal(true)
                 }
@@ -1055,9 +1089,9 @@ export default function GamePage() {
               </Button>
 
             {/* Wallet Required Hint */}
-            {!isConnected && (
+            {!farcasterConnected && !isConnected && (
               <p className="text-xs text-gray-500 text-center -mt-1" style={customFontStyle}>
-                💡 Connect wallet to invite friends
+                🔗 Wallet Connection Required
               </p>
             )}
             </div>
@@ -1373,155 +1407,7 @@ export default function GamePage() {
           </div>
         )}
 
-        {/* Wallet Connection Modal */}
-        <Dialog open={showWalletModal} onOpenChange={setShowWalletModal}>
-          <DialogContent className="max-w-xl mx-auto bg-white border-4 border-red-800 rounded-3xl max-h-[90vh] overflow-y-auto m-2">
-            <DialogHeader>
-              <DialogTitle className="text-xl sm:text-2xl text-red-800 text-center" style={customFontStyle}>
-                🍕 Connect Your Wallet 🍕
-              </DialogTitle>
-              <p className="text-center text-gray-600 mt-2 text-sm" style={customFontStyle}>
-                {deviceInfo.isMobile
-                  ? "Choose your wallet to connect"
-                  : "Choose your preferred wallet to connect to Pizza Party"}
-              </p>
-            </DialogHeader>
 
-            <div className="space-y-3 p-4 max-h-[70vh] overflow-y-auto">
-              {/* Error Display with Mobile Instructions */}
-              {error && (
-                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-red-800 font-bold text-sm" style={customFontStyle}>
-                      Connection Failed
-                    </p>
-                    <div className="text-red-700 text-xs mt-1 whitespace-pre-line" style={customFontStyle}>
-                      {error}
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setError(null)}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-
-              {/* Mobile-specific instructions */}
-              {deviceInfo.isMobile && (
-                <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
-                  <h3 className="text-lg font-bold text-blue-800 mb-2" style={customFontStyle}>
-                    📱 Mobile Connection Tips
-                  </h3>
-                  <ul className="space-y-1 text-sm text-blue-700" style={customFontStyle}>
-                    <li>• Open your wallet app first</li>
-                    <li>• Use the browser inside your wallet app</li>
-                    <li>• Visit this page from within the wallet</li>
-                    <li>• Then try connecting</li>
-                  </ul>
-                  <div className="mt-3 p-2 bg-white rounded border">
-                    <p className="text-xs text-gray-600 mb-1" style={customFontStyle}>
-                      Current URL to copy:
-                    </p>
-                    <p className="text-xs font-mono text-gray-800 break-all">
-                      {typeof window !== "undefined" ? window.location.href : ""}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Show all wallets on both mobile and desktop */}
-              {WALLETS.map((wallet) => {
-                // Define colors for each wallet based on the image
-                const getWalletStyle = (walletName: string) => {
-                  switch (walletName.toLowerCase()) {
-                    case 'metamask':
-                      return '!bg-orange-500 hover:!bg-orange-600 text-white'
-                    case 'coinbase wallet':
-                      return '!bg-blue-600 hover:!bg-blue-700 text-white'
-                    case 'trust wallet':
-                      return '!bg-[#000F7E] hover:!bg-[#000F7E]/90 text-white'
-                    case 'rainbow':
-                      return '!bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white'
-                    case 'phantom':
-                      return '!bg-purple-600 hover:!bg-purple-700 text-white'
-                    default:
-                      return '!bg-gray-600 hover:!bg-gray-700 text-white'
-                  }
-                }
-
-                return (
-                <Button
-                  key={wallet.id}
-                  onClick={() => handleWalletConnect(wallet.id)}
-                  disabled={isConnecting === wallet.id}
-                    className={`w-full font-bold py-6 px-8 rounded-xl shadow-lg transform hover:scale-105 transition-all flex items-center justify-between text-lg ${getWalletStyle(wallet.name)}`}
-                  style={customFontStyle}
-                >
-                    <div className="flex items-center gap-4">
-                    {wallet.iconImage ? (
-                      <Image
-                          src={wallet.iconImage}
-                          alt={wallet.name}
-                        width={32}
-                        height={32}
-                          className="w-8 h-8"
-                          onError={(e) => {
-                            // Fallback to emoji if image fails to load
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            const emojiSpan = target.nextElementSibling as HTMLElement;
-                            if (emojiSpan) {
-                              emojiSpan.style.display = 'block';
-                            }
-                          }}
-                        />
-                      ) : null}
-                      <span 
-                        className={`text-xl ${wallet.iconImage ? 'hidden' : 'block'}`}
-                        style={{ display: wallet.iconImage ? 'none' : 'block' }}
-                      >
-                        {wallet.icon}
-                      </span>
-                      <span className="text-lg font-bold">{wallet.name}</span>
-                  </div>
-                  <div className="flex-shrink-0">
-                    {isConnecting === wallet.id ? (
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                    ) : (
-                        <ExternalLink className="h-5 w-5 text-white" />
-                    )}
-                  </div>
-                </Button>
-                )
-              })}
-
-              {/* Info Section */}
-              <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 mt-6">
-                <h3 className="text-lg font-bold text-blue-800 mb-2" style={customFontStyle}>
-                  🔒 Why Connect Your Wallet?
-                </h3>
-                <ul className="space-y-1 text-sm text-blue-700" style={customFontStyle}>
-                  <li>• Earn VMF tokens and toppings</li>
-                  <li>• Participate in daily & weekly jackpots</li>
-                  <li>• Track your game history</li>
-                  <li>• Secure and decentralized</li>
-                </ul>
-              </div>
-
-              {/* Security Notice */}
-              <div className="bg-yellow-50 p-3 rounded-xl border-2 border-yellow-200">
-                <p className="text-xs text-yellow-800 text-center" style={customFontStyle}>
-                  🛡️ Your wallet connection is secure and encrypted. We never store your private keys.
-                </p>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   )

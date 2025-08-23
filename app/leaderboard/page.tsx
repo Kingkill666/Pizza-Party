@@ -46,7 +46,7 @@ export default function LeaderboardPage() {
 
   // Invite Friends Modal State
   const [showInviteModal, setShowInviteModal] = useState(false)
-  const [showWalletModal, setShowWalletModal] = useState(false)
+
   const [showShareModal, setShowShareModal] = useState(false)
   const [copied, setCopied] = useState(false)
   const { connection, isConnected, connectWallet, isConnecting, error, setError } = useWallet()
@@ -189,18 +189,7 @@ export default function LeaderboardPage() {
     }
   }
 
-  // Wallet connection handler
-  const handleWalletConnect = async (walletId: string) => {
-    try {
-      await connectWallet(walletId)
-      setShowWalletModal(false)
-      // If wallet connects successfully, show the invite modal
-      setShowInviteModal(true)
-    } catch (err) {
-      console.error('Failed to connect wallet:', err)
-      setError('Failed to connect wallet')
-    }
-  }
+
 
   const renderWinnerEntry = (winner: Winner) => (
     <div
@@ -348,7 +337,7 @@ export default function LeaderboardPage() {
                     }}
                     onClick={() => {
                       if (!isConnected || !connection) {
-                        setShowWalletModal(true)
+                        setError('Wallet connection required to invite friends.')
                       } else {
                         setShowInviteModal(true)
                       }
@@ -403,101 +392,7 @@ export default function LeaderboardPage() {
           </CardContent>
         </Card>
 
-        {/* Wallet Connection Modal */}
-        <Dialog open={showWalletModal} onOpenChange={setShowWalletModal}>
-          <DialogContent className="max-w-md mx-auto bg-white border-2 border-red-500 rounded-3xl">
-            <DialogHeader>
-              <DialogTitle className="text-xl sm:text-2xl text-red-800 flex items-center gap-2 justify-center" style={customFontStyle}>
-                🍕 Connect Your Wallet 🍕
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 p-4">
-              <p className="text-center text-gray-800" style={customFontStyle}>
-                Choose your preferred wallet to connect to Pizza Party
-              </p>
-              
-              <div className="space-y-3">
-                {WALLETS.map((wallet) => {
-                  // Define colors for each wallet based on the image
-                  const getWalletStyle = (walletName: string) => {
-                    switch (walletName.toLowerCase()) {
-                      case 'metamask':
-                        return '!bg-orange-500 hover:!bg-orange-600 text-white'
-                      case 'coinbase wallet':
-                        return '!bg-blue-600 hover:!bg-blue-700 text-white'
-                      case 'trust wallet':
-                        return '!bg-[#000F7E] hover:!bg-[#000F7E]/90 text-white'
-                      case 'rainbow':
-                        return '!bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white'
-                      case 'phantom':
-                        return '!bg-purple-600 hover:!bg-purple-700 text-white'
-                      default:
-                        return '!bg-gray-600 hover:!bg-gray-700 text-white'
-                    }
-                  }
 
-                  return (
-                    <Button
-                      key={wallet.id}
-                      onClick={() => handleWalletConnect(wallet.id)}
-                      disabled={!!isConnecting}
-                      className={`w-full font-bold py-6 px-8 rounded-xl shadow-lg transform hover:scale-105 transition-all flex items-center justify-between text-lg ${getWalletStyle(wallet.name)}`}
-                      style={customFontStyle}
-                    >
-                      <div className="flex items-center gap-4">
-                        {wallet.iconImage != null ? (
-                          <Image
-                            src={wallet.iconImage}
-                            alt={wallet.name}
-                            width={32}
-                            height={32}
-                            className="w-8 h-8"
-                            onError={(e) => {
-                              // Fallback to emoji if image fails to load
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              const emojiSpan = target.nextElementSibling as HTMLElement;
-                              if (emojiSpan) {
-                                emojiSpan.style.display = 'block';
-                              }
-                            }}
-                          />
-                        ) : null}
-                        <span 
-                          className={`text-xl ${wallet.iconImage ? 'hidden' : 'block'}`}
-                          style={{ display: wallet.iconImage ? 'none' : 'block' }}
-                        >
-                          {wallet.icon}
-                        </span>
-                        <span className="text-lg font-bold">{wallet.name}</span>
-                      </div>
-                      <ExternalLink className="h-5 w-5 text-white" />
-                    </Button>
-                  )
-                })}
-              </div>
-              
-              {error && (
-                <div className="bg-red-100 border-2 border-red-300 rounded-lg p-3 text-center">
-                  <p className="text-red-800 font-bold" style={customFontStyle}>{error}</p>
-                </div>
-              )}
-
-              {/* Why Connect Your Wallet Section */}
-              <div className="bg-blue-50 p-4 rounded-xl border border-gray-300">
-                <h3 className="text-lg font-bold text-blue-800 mb-2 flex items-center gap-2" style={customFontStyle}>
-                  🔒 Why Connect Your Wallet?
-                </h3>
-                <ul className="space-y-1 text-sm text-blue-700" style={customFontStyle}>
-                  <li>• Earn VMF tokens and toppings</li>
-                  <li>• Participate in daily & weekly jackpots</li>
-                  <li>• Track your game history</li>
-                  <li>• Secure and decentralized</li>
-                </ul>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
 
         {/* Invite Friends Modal */}
         <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
