@@ -12,16 +12,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ExternalLink, AlertCircle, X } from "lucide-react";
-import { useWallet } from "@/hooks/useWallet";
 import {
-  WALLETS,
   isMobile,
   isIOS,
   isAndroid,
   isFarcaster,
   initMobileOptimizations,
 } from "@/lib/wallet-config";
-import { WalletStatus } from "@/components/WalletStatus";
+import { useFarcasterWallet } from "@/components/FarcasterWalletProvider";
 import { sdk } from "@farcaster/miniapp-sdk";
 
 export default function HomePage() {
@@ -40,15 +38,14 @@ export default function HomePage() {
   });
 
   const {
-    connection,
-    isConnecting,
+    fid,
+    username,
+    wallet,
+    connected: isConnected,
+    loading: isConnecting,
     error,
-    connectWallet,
-    disconnect,
-    isConnected,
-    formattedAddress,
-    setError,
-  } = useWallet();
+    signMessage,
+  } = useFarcasterWallet();
 
   // Initialize mobile optimizations and device detection
   useEffect(() => {

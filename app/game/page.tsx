@@ -135,6 +135,19 @@ export default function GamePage() {
   const [gaslessAvailable, setGaslessAvailable] = useState(false)
   const [hasEnteredToday, setHasEnteredToday] = useState(false)
 
+  // Debug Farcaster wallet state
+  useEffect(() => {
+    console.log('🔍 Farcaster Wallet Debug:', {
+      isFarcasterEnvironment,
+      farcasterConnected,
+      farcasterLoading,
+      farcasterWalletAddress,
+      farcasterError,
+      fid,
+      username
+    });
+  }, [isFarcasterEnvironment, farcasterConnected, farcasterLoading, farcasterWalletAddress, farcasterError, fid, username]);
+
   // Social media platforms for sharing
   const socialPlatforms = [
     {
@@ -367,8 +380,18 @@ export default function GamePage() {
       ? { address: farcasterWalletAddress, signer: farcasterSigner }
       : (isConnected && connection ? connection : null)
     
+    // If we're in Farcaster environment but wallet isn't connected yet, wait a bit
+    if (isFarcasterEnvironment && !farcasterConnected && farcasterLoading) {
+      setGameError('Loading Farcaster wallet... Please wait a moment.')
+      return
+    }
+    
     if (!activeWallet) {
-      setGameError('Wallet connection required. Please connect your wallet to play.')
+      if (isFarcasterEnvironment) {
+        setGameError('Farcaster wallet not detected. Please refresh the page or try again.')
+      } else {
+        setGameError('Wallet connection required. Please connect your wallet to play.')
+      }
       return
     }
 
@@ -1077,7 +1100,13 @@ export default function GamePage() {
               onClick={() => {
                 const hasActiveWallet = farcasterConnected && farcasterWalletAddress || (isConnected && connection)
                 if (!hasActiveWallet) {
-                  setGameError('Wallet connection required to invite friends.')
+                  if (isFarcasterEnvironment && !farcasterConnected && farcasterLoading) {
+                    setGameError('Loading Farcaster wallet... Please wait a moment.')
+                  } else if (isFarcasterEnvironment) {
+                    setGameError('Farcaster wallet not detected. Please refresh the page or try again.')
+                  } else {
+                    setGameError('Wallet connection required to invite friends.')
+                  }
                 } else {
                   setShowInviteModal(true)
                 }

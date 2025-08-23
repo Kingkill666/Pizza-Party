@@ -38,7 +38,7 @@ export default function WalletConnector() {
     return (
       <div className="wallet-connector">
               <div className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium" data-testid="wallet-status">
-        🔗 Wallet Connection Required
+        {isFarcasterEnvironment && farcasterLoading ? 'Loading Farcaster wallet...' : '🔗 Wallet Connection Required'}
       </div>
         {(error || farcasterError) && (
           <p className="error-message">
