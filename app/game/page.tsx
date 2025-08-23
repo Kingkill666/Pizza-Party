@@ -36,7 +36,7 @@ export default function GamePage() {
   // Wallet connection state
   const { isConnected, connection, error, setError } = useWallet()
   
-  // Farcaster mini app wallet detection
+  // Farcaster mini app wallet detection with enhanced options
   const { 
     fid, 
     username, 
@@ -47,8 +47,16 @@ export default function GamePage() {
     isFarcasterEnvironment,
     isReady: farcasterIsReady,
     isError: farcasterIsError,
-    signer: farcasterSigner
-  } = useFarcasterMiniApp()
+    signer: farcasterSigner,
+    retryCount: farcasterRetryCount,
+    retryDetection: farcasterRetryDetection,
+    walletDisplay: farcasterWalletDisplay,
+    userDisplay: farcasterUserDisplay
+  } = useFarcasterMiniApp({
+    timeoutMs: 8000, // 8 second timeout for slower connections
+    maxRetries: 3,   // Allow 3 retry attempts
+    retryDelayMs: 2000 // Wait 2 seconds between retries
+  })
   
   // Farcaster sharing functionality
   const { 
@@ -136,18 +144,20 @@ export default function GamePage() {
   const [gaslessAvailable, setGaslessAvailable] = useState(false)
   const [hasEnteredToday, setHasEnteredToday] = useState(false)
 
-  // Debug Farcaster wallet state
+  // Debug Farcaster wallet state with enhanced metrics
   useEffect(() => {
     console.log('🔍 Farcaster Wallet Debug:', {
       isFarcasterEnvironment,
       farcasterConnected,
       farcasterLoading,
-      farcasterWalletAddress,
+      farcasterWalletAddress: farcasterWalletDisplay,
       farcasterError,
-      fid,
-      username
+      userDisplay: farcasterUserDisplay,
+      retryCount: farcasterRetryCount,
+      isReady: farcasterIsReady,
+      isError: farcasterIsError
     });
-  }, [isFarcasterEnvironment, farcasterConnected, farcasterLoading, farcasterWalletAddress, farcasterError, fid, username]);
+  }, [isFarcasterEnvironment, farcasterConnected, farcasterLoading, farcasterWalletDisplay, farcasterError, farcasterUserDisplay, farcasterRetryCount, farcasterIsReady, farcasterIsError]);
 
   // Social media platforms for sharing
   const socialPlatforms = [
@@ -388,7 +398,9 @@ export default function GamePage() {
     }
     
     if (!activeWallet) {
-      if (isFarcasterEnvironment) {
+      if (isFarcasterEnvironment && farcasterIsError) {
+        setGameError(`Farcaster wallet detection failed (attempt ${farcasterRetryCount}/3). Click retry or refresh the page.`)
+      } else if (isFarcasterEnvironment) {
         setGameError('Farcaster wallet not detected. Please refresh the page or try again.')
       } else {
         setGameError('Wallet connection required. Please connect your wallet to play.')

@@ -250,6 +250,27 @@ export const FarcasterWalletProvider = ({ children }: { children: ReactNode }) =
     signMessage
   };
 
+  // Handle retry events from the hook
+  useEffect(() => {
+    const handleRetry = () => {
+      console.log('🔄 Retry event received, re-initializing Farcaster detection...');
+      // Reset state and re-detect
+      setFid(null);
+      setUsername(null);
+      setAvatar(null);
+      setWallet(null);
+      setSigner(null);
+      setError(null);
+      setLoading(true);
+      setIsFarcasterEnvironment(false);
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener('farcaster-retry', handleRetry);
+      return () => window.removeEventListener('farcaster-retry', handleRetry);
+    }
+  }, []);
+
   // Expose provider globally for QA testing
   useEffect(() => {
     if (typeof window !== "undefined") {
