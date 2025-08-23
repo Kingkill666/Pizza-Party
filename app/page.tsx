@@ -20,6 +20,7 @@ import {
   initMobileOptimizations,
 } from "@/lib/wallet-config";
 import { useFarcasterMiniApp } from "@/hooks/useFarcasterMiniApp";
+import { SignInWithFarcaster } from "@/components/SignInWithFarcaster";
 import { sdk } from "@farcaster/miniapp-sdk";
 
 export default function HomePage() {
@@ -503,6 +504,21 @@ export default function HomePage() {
                 </Button>
               </Link>
 
+              {/* Sign in With Farcaster Button */}
+              <SignInWithFarcaster
+                domain="pizza-party.vmfcoin.com"
+                uri="https://pizza-party.vmfcoin.com/login"
+                redirectUrl="https://pizza-party.vmfcoin.com/game"
+                onSuccess={(userData) => {
+                  console.log('🎉 Farcaster authentication successful:', userData);
+                  // Handle successful authentication
+                }}
+                onError={(error) => {
+                  console.error('❌ Farcaster authentication failed:', error);
+                  // Handle authentication error
+                }}
+                customFontStyle={customFontStyle}
+              />
 
             </div>
           </CardContent>
