@@ -19,7 +19,7 @@ import {
   isFarcaster,
   initMobileOptimizations,
 } from "@/lib/wallet-config";
-import { useFarcasterWallet } from "@/components/FarcasterWalletProvider";
+import { useFarcasterMiniApp } from "@/hooks/useFarcasterMiniApp";
 import { sdk } from "@farcaster/miniapp-sdk";
 
 export default function HomePage() {
@@ -45,7 +45,7 @@ export default function HomePage() {
     loading: isConnecting,
     error,
     signMessage,
-  } = useFarcasterWallet();
+  } = useFarcasterMiniApp();
 
   // Initialize mobile optimizations and device detection
   useEffect(() => {

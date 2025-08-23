@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useWallet } from '@/hooks/useWallet'
-import { useFarcasterWallet } from '@/components/FarcasterWalletProvider'
+import { useFarcasterMiniApp } from '@/hooks/useFarcasterMiniApp'
 import { formatWallet } from '@/lib/utils'
 import { initMobileOptimizations, isMobile, isIOS, isAndroid, isFarcaster } from '@/lib/wallet-config'
 import { AdvancedContractsService } from '@/lib/services/advanced-contracts-service'
@@ -36,18 +36,19 @@ export default function GamePage() {
   // Wallet connection state
   const { isConnected, connection, error, setError } = useWallet()
   
-  // Farcaster wallet detection
+  // Farcaster mini app wallet detection
   const { 
     fid, 
     username, 
-    avatar, 
     wallet: farcasterWalletAddress, 
-    signer: farcasterSigner, 
     connected: farcasterConnected, 
     loading: farcasterLoading, 
     error: farcasterError,
-    isFarcasterEnvironment 
-  } = useFarcasterWallet()
+    isFarcasterEnvironment,
+    isReady: farcasterIsReady,
+    isError: farcasterIsError,
+    signer: farcasterSigner
+  } = useFarcasterMiniApp()
   
   // Farcaster sharing functionality
   const { 
