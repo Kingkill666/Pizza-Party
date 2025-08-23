@@ -1088,16 +1088,10 @@ export default function GamePage() {
               <UsersIcon className="ml-2 h-5 w-5" />
               </Button>
 
-            {/* Wallet Required Hint */}
-            {!farcasterConnected && !isConnected && (
-              <p className="text-xs text-gray-500 text-center -mt-1" style={customFontStyle}>
-                🔗 Wallet Connection Required
-              </p>
-            )}
             </div>
 
             {/* Daily Game Window Countdown - Moved to BOTTOM */}
-            <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 mb-4">
+            <div className="bg-blue-50 p-4 rounded-xl border-2 border-blue-200 mb-4" style={{ marginTop: '20px' }}>
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Clock className="h-5 w-5 text-blue-600" />
                 <p className="font-semibold text-blue-800 text-center" style={customFontStyle}>
